@@ -21,10 +21,11 @@ Continuity / retention layer on top of v15: resume last plan, favorites, recent 
 - Core fish database, product database, recommendation engine, FIELD LIVE logic, and FIELD MODE logic are unchanged.
 - Existing index markup remains unchanged; v16 loads as a small post-core extension from `pwa.js`.
 
-## Pending device verification
-- GitHub Pages reflects V16 on iPhone Home Screen.
-- Favorite a fish, return home, confirm MY TARGETS.
-- Reopen app and confirm last-plan resume.
-- v15/v16 offline relaunch remains pending until tested on device.
+## Device verification
+- GitHub Pages reflects V16 on iPhone Home Screen: pass (2026-08-24)
+- MY TARGETS / last-plan card renders on iPhone: pass
+- Recent target renders on iPhone: pass
+- Favorite add/remove on device: not yet explicitly verified
+- Offline airplane-mode relaunch: still pending
 
-Status: LOCAL QA PASS / DEVICE QA PENDING
+Status: DEVICE UI QA PASS / FAVORITE + OFFLINE DEVICE QA PENDING
