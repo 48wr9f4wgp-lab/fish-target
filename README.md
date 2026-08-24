@@ -4,11 +4,11 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 
 ## Current build
 
-- Canonical working version: v16
+- Canonical working version: v17
 - DEV / device test: GitHub Pages from `main`
 - Primary target: iPhone Safari / Home Screen PWA-style usage
 - Production candidate: Vercel only at release checkpoints; one project / one fixed URL
-- v15 offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
+- v15/v16 offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
 
 ## Current product layers
 
@@ -16,6 +16,7 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - v14 — FIELD MODE for on-the-water use
 - v15 — PWA shell / network-first offline fallback
 - v16 — last-plan resume, favorite targets, recent targets
+- v17 — MY TACKLE: owned rod/reel registration and simple compatibility matching
 
 ## Main files
 
@@ -26,7 +27,8 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - `app.js` — rendering, recommendation state, live-condition logic, persistence
 - `field-mode.js` — FIELD MODE
 - `pwa.js` / `sw.js` — PWA and offline shell
-- `continuity.js` / `continuity.css` — v16 retention/continuity layer
+- `continuity.js` / `continuity.css` — retention/continuity layer
+- `tackle.js` / `tackle.css` — MY TACKLE and compatibility checks
 
 ## Release workflow
 
@@ -49,4 +51,5 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - FIELD MODE opens and returns correctly.
 - Save/restore survives unavailable localStorage.
 - MY TARGETS resume/favorites/recent flows do not block first-use UX.
+- MY TACKLE tolerates partial specifications and does not overstate model-specific compatibility.
 - No horizontal overflow at iPhone widths.
