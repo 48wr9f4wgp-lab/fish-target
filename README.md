@@ -4,7 +4,7 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 
 ## Current build
 
-- Canonical working version: v19
+- Canonical working version: v20 accuracy candidate
 - DEV / device test: GitHub Pages from `main`
 - Primary target: iPhone Safari / Home Screen PWA-style usage
 - Production candidate: Vercel only at release checkpoints; one project / one fixed URL
@@ -27,6 +27,7 @@ Anything outside that path is secondary and should be collapsed, hidden from fir
 - v17 — MY TACKLE: owned rod/reel registration and simple compatibility matching
 - v18 — fit explanation: per-spec ○/△/× breakdown and NEXT BUY guidance
 - v19 — simplification pass: compact home, collapsed filters, compressed fish cards, one condition group, one details group
+- v20 — recommendation accuracy pass: unit-aware MY TACKLE matching, shore/boat lure-bait consistency, and high-risk species corrections
 
 ## Main files
 
@@ -40,7 +41,9 @@ Anything outside that path is secondary and should be collapsed, hidden from fir
 - `continuity.js` / `continuity.css` — retention/continuity layer
 - `tackle.js` / `tackle.css` — MY TACKLE and compatibility checks
 - `fit-explain.js` / `fit-explain.css` — compatibility reasoning and buy guidance
-- `simplify.js` / `simplify.css` — v19 information hierarchy and progressive disclosure
+- `simplify.js` / `simplify.css` — information hierarchy and progressive disclosure
+- `accuracy.js` — v20 high-risk recommendation and unit-semantics corrections
+- `ACCURACY_AUDIT_V20.md` — 19-species accuracy audit and release caveats
 
 ## Release workflow
 
@@ -57,13 +60,13 @@ Anything outside that path is secondary and should be collapsed, hidden from fir
 - Home renders all 19 target fish.
 - Search and filters work.
 - Fish -> result renders method, FIRST CAST, tackle, MY TACKLE, and three field steps before optional detail.
-- Shore/boat changes update method and products where applicable.
+- Shore/boat changes update method, LURE/BAIT metadata, and products where applicable.
 - Manual FIRST CAST is not overwritten until AUTO is restored.
 - Saltwater marine state does not leak into freshwater targets.
 - FIELD MODE opens and returns correctly.
 - Save/restore survives unavailable localStorage.
 - MY TARGETS resume/favorites/recent flows do not block first-use UX.
-- MY TACKLE tolerates partial specifications and does not overstate model-specific compatibility.
+- MY TACKLE compares only compatible units: g/oz for lure weight, 号 for line号; cm/inch/egi号/hook号/lb must not be silently reinterpreted.
 - Fit explanation must distinguish `推奨内`, `要確認`, and `差が大きい` without presenting manufacturer certification.
-- Optional live/detail content must remain collapsed by default in v19.
+- Optional live/detail content remains collapsed by default.
 - No horizontal overflow at iPhone widths.

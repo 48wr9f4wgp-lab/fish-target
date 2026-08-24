@@ -38,5 +38,6 @@
     await loadScript('./tackle.js','tackle-js');
     await loadScript('./fit-explain.js','fit-explain-js');
     await loadScript('./simplify.js','simplify-js');
+    await loadScript('./accuracy.js','accuracy-js');
   })();
 })();

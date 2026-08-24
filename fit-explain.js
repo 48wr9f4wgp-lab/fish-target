@@ -4,8 +4,12 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const nums=s=>(String(s||'').match(/\d+(?:\.\d+)?/g)||[]).map(Number);
   const range=s=>{const n=nums(s);return n.length?{min:n[0],max:n[1]??n[0]}:null};
+  const tokenValue=s=>{const t=String(s||'').trim();if(t.includes('/')){const [a,b]=t.split('/').map(Number);return b?a/b:NaN}return +t};
+  const unitRange=(s,unit)=>{const text=String(s||''),n='(\\d+(?:\\.\\d+)?|\\d+\\/\\d+)',between='(?:〜|～|~|-)';let m=text.match(new RegExp(`${n}\\s*${between}\\s*${n}\\s*${unit}`,'i'));if(m)return {min:tokenValue(m[1]),max:tokenValue(m[2])};m=text.match(new RegExp(`${n}\\s*${unit}`,'i'));if(m){const v=tokenValue(m[1]);return {min:v,max:v}}return null};
+  const weightRange=s=>{const g=unitRange(s,'g\\b');if(g)return g;const oz=unitRange(s,'oz\\b');return oz?{min:oz.min*28.3495,max:oz.max*28.3495}:null};
   const distance=(v,r)=>v<r.min?r.min-v:v>r.max?v-r.max:0;
-  const fmtRange=(r,suffix='')=>r?(r.min===r.max?`${r.min}${suffix}`:`${r.min}〜${r.max}${suffix}`):'未判定';
+  const fmtRange=(r,suffix='')=>r?(r.min===r.max?`${round(r.min)}${suffix}`:`${round(r.min)}〜${round(r.max)}${suffix}`):'未判定';
+  const round=v=>Math.round(v*10)/10;
   const read=()=>{try{const raw=typeof storeGet==='function'?storeGet(KEY):localStorage.getItem(KEY);const x=raw?JSON.parse(raw):{};return {rods:Array.isArray(x.rods)?x.rods:[],reels:Array.isArray(x.reels)?x.reels:[]}}catch{return {rods:[],reels:[]}}};
   const powerRange=s=>{
     const tail=String(s||'').split('/').slice(1).join('/').trim().toUpperCase();
@@ -19,12 +23,13 @@
     const n=nums(s).filter(v=>v>=500&&v<=30000);
     return n.length?{min:n[0],max:n[1]??n[0]}:null;
   };
-  const lineSpec=s=>{
-    const text=String(s||'');
-    const type=/PE/i.test(text)?'PE':/ナイロン/.test(text)?'ナイロン':/フロロ/.test(text)?'フロロ':null;
-    const n=nums(text);
-    return {type,range:n.length?{min:n[0],max:n[1]??n[0]}:null};
-  };
+  const lineOptions=s=>String(s||'').split(/\s*\/\s*/).map(part=>{
+    const type=/\bPE\b/i.test(part)?'PE':/ナイロン/.test(part)?'ナイロン':/フロロ/.test(part)?'フロロ':null;
+    if(!type)return null;
+    const no=unitRange(part,'号');if(no)return {type,unit:'号',range:no};
+    const lb=unitRange(part,'lb\\b');if(lb)return {type,unit:'lb',range:lb};
+    return {type,unit:null,range:null};
+  }).filter(Boolean);
   const mark=l=>l===0?'○':l===1?'△':'×';
   const levelText=(l,ok,warn,bad)=>l===0?ok:l===1?warn:bad;
 
@@ -32,23 +37,27 @@
     if(!rod)return [];
     const out=[];
     const targetLen=/ft/i.test(p.rod||'')?range(p.rod?.match(/[^/]+/)?.[0]||p.rod):null;
-    if(+rod.length&&targetLen){
-      const d=distance(+rod.length,targetLen),level=d===0?0:d<=1?1:2;
-      out.push({name:'長さ',level,owned:`${rod.length}ft`,target:fmtRange(targetLen,'ft'),note:levelText(level,'推奨範囲内',`${d.toFixed(1)}ft差。立ち位置・飛距離を確認`,'推奨長から差が大きい')});
-    }else out.push({name:'長さ',level:1,owned:rod.length?`${rod.length}ft`:'未入力',target:targetLen?fmtRange(targetLen,'ft'):'対象外',note:'入力または推奨値が不足'});
+    if(targetLen){
+      if(+rod.length){const d=distance(+rod.length,targetLen),level=d===0?0:d<=1?1:2;out.push({name:'長さ',level,owned:`${rod.length}ft`,target:fmtRange(targetLen,'ft'),note:levelText(level,'推奨範囲内',`${d.toFixed(1)}ft差。立ち位置・飛距離を確認`,'推奨長から差が大きい')})}
+      else out.push({name:'長さ',level:1,owned:'未入力',target:fmtRange(targetLen,'ft'),note:'長さ未入力のため要確認'});
+    }
     const targetPower=powerRange(p.rod);
-    if(rod.power&&targetPower){
-      const pr=POWER.indexOf(rod.power),d=distance(pr,targetPower),level=d===0?0:d<=1?1:2;
-      const target=`${POWER[targetPower.min]}${targetPower.min===targetPower.max?'':`〜${POWER[targetPower.max]}`}`;
-      const direction=pr>targetPower.max?'強め':pr<targetPower.min?'弱め':'範囲内';
-      out.push({name:'パワー',level,owned:rod.power,target,note:levelText(level,'推奨範囲内',`推奨より1段${direction}`,'推奨パワーとの差が大きい')});
-    }else out.push({name:'パワー',level:1,owned:rod.power||'未入力',target:targetPower?`${POWER[targetPower.min]}〜${POWER[targetPower.max]}`:'対象外',note:'入力または推奨値が不足'});
+    if(targetPower){
+      if(rod.power){
+        const pr=POWER.indexOf(rod.power),d=distance(pr,targetPower),level=d===0?0:d<=1?1:2;
+        const target=`${POWER[targetPower.min]}${targetPower.min===targetPower.max?'':`〜${POWER[targetPower.max]}`}`;
+        const direction=pr>targetPower.max?'強め':pr<targetPower.min?'弱め':'範囲内';
+        out.push({name:'パワー',level,owned:rod.power,target,note:levelText(level,'推奨範囲内',`推奨より1段${direction}`,'推奨パワーとの差が大きい')});
+      }else out.push({name:'パワー',level:1,owned:'未入力',target:`${POWER[targetPower.min]}${targetPower.min===targetPower.max?'':`〜${POWER[targetPower.max]}`}`,note:'パワー未入力のため要確認'});
+    }
     if(p.style!=='bait'){
-      const castRange=range(r?.size||p.size);
-      if(+rod.maxLure&&castRange){
-        const level=+rod.maxLure>=castRange.max?0:+rod.maxLure>=castRange.min?1:2;
-        out.push({name:'ルアー上限',level,owned:`MAX ${rod.maxLure}g`,target:fmtRange(castRange,'g'),note:levelText(level,'FIRST CAST上限まで対応','軽い側は対応。重い側は超える','FIRST CAST下限にも届かない')});
-      }else out.push({name:'ルアー上限',level:1,owned:rod.maxLure?`MAX ${rod.maxLure}g`:'未入力',target:castRange?fmtRange(castRange,'g'):'対象外',note:'入力またはFIRST CAST重量が不足'});
+      const castRange=weightRange(r?.size||p.size);
+      if(castRange){
+        if(+rod.maxLure){
+          const level=+rod.maxLure>=castRange.max?0:+rod.maxLure>=castRange.min?1:2;
+          out.push({name:'ルアー上限',level,owned:`MAX ${rod.maxLure}g`,target:fmtRange(castRange,'g'),note:levelText(level,'FIRST CAST上限まで対応','軽い側は対応。重い側は超える','FIRST CAST下限にも届かない')});
+        }else out.push({name:'ルアー上限',level:1,owned:'未入力',target:fmtRange(castRange,'g'),note:'重量上限未入力のため要確認'});
+      }
     }
     return out;
   }
@@ -57,19 +66,23 @@
     if(!reel)return [];
     const out=[];
     const target=reelRange(p.reel);
-    if(+reel.size&&target){
-      const d=distance(+reel.size,target),level=d===0?0:d<=1000?1:2;
-      out.push({name:'番手',level,owned:`${reel.size}番`,target:fmtRange(target,'番'),note:levelText(level,'推奨範囲内','1クラス差。糸巻量・重量を確認','推奨番手から差が大きい')});
-    }else out.push({name:'番手',level:1,owned:reel.size?`${reel.size}番`:'未入力',target:target?fmtRange(target,'番'):'対象外',note:'入力または推奨値が不足'});
-    const spec=lineSpec(p.line);
-    if(reel.lineType&&spec.type){
-      const level=reel.lineType===spec.type?0:1;
-      out.push({name:'ライン種',level,owned:reel.lineType,target:spec.type,note:level===0?'推奨と一致':'種類が異なる。用途とショック吸収を確認'});
-    }else out.push({name:'ライン種',level:1,owned:reel.lineType||'未入力',target:spec.type||'対象外',note:'入力または推奨値が不足'});
-    if(+reel.lineNo&&spec.range){
-      const d=distance(+reel.lineNo,spec.range),level=d===0?0:d<=0.5?1:2;
-      out.push({name:'ライン号数',level,owned:`${reel.lineNo}号`,target:fmtRange(spec.range,'号'),note:levelText(level,'推奨範囲内','0.5号以内の差。飛距離/強度を確認','推奨号数との差が大きい')});
-    }else out.push({name:'ライン号数',level:1,owned:reel.lineNo?`${reel.lineNo}号`:'未入力',target:spec.range?fmtRange(spec.range,'号'):'対象外',note:'入力または推奨値が不足'});
+    if(target){
+      if(+reel.size){const d=distance(+reel.size,target),level=d===0?0:d<=1000?1:2;out.push({name:'番手',level,owned:`${reel.size}番`,target:fmtRange(target,'番'),note:levelText(level,'推奨範囲内','1クラス差。糸巻量・重量を確認','推奨番手から差が大きい')})}
+      else out.push({name:'番手',level:1,owned:'未入力',target:fmtRange(target,'番'),note:'番手未入力のため要確認'});
+    }
+    const options=lineOptions(p.line);
+    if(options.length){
+      const matched=reel.lineType?options.find(x=>x.type===reel.lineType):null;
+      const allowed=[...new Set(options.map(x=>x.type))].join(' / ');
+      if(reel.lineType)out.push({name:'ライン種',level:matched?0:1,owned:reel.lineType,target:allowed,note:matched?'推奨候補と一致':'推奨候補とは異なる'});
+      else out.push({name:'ライン種',level:1,owned:'未入力',target:allowed,note:'ライン種類未入力のため要確認'});
+      if(matched?.unit==='号'){
+        if(+reel.lineNo){const d=distance(+reel.lineNo,matched.range),level=d===0?0:d<=0.5?1:2;out.push({name:'ライン号数',level,owned:`${reel.lineNo}号`,target:fmtRange(matched.range,'号'),note:levelText(level,'推奨範囲内','0.5号以内の差。飛距離/強度を確認','推奨号数との差が大きい')})}
+        else out.push({name:'ライン号数',level:1,owned:'未入力',target:fmtRange(matched.range,'号'),note:'号数未入力のため要確認'});
+      }else if(matched?.unit==='lb'){
+        out.push({name:'ライン強度',level:1,owned:'MY TACKLEは号数入力',target:fmtRange(matched.range,'lb'),note:'lb表記は号数へ自動換算せず、実ラインの強度表示で確認'});
+      }
+    }
     return out;
   }
 
@@ -77,14 +90,7 @@
   function bestRod(rods,p,r){return rods.map(x=>({item:x,rows:rodDetails(x,p,r)})).sort((a,b)=>score(a.rows)-score(b.rows))[0]||null}
   function bestReel(reels,p){return reels.map(x=>({item:x,rows:reelDetails(x,p)})).sort((a,b)=>score(a.rows)-score(b.rows))[0]||null}
 
-  function ensureVersion(){
-    document.title='FISH TARGET v18';
-    const v=document.querySelector('.version');if(v)v.textContent='V18';
-    const rb=document.querySelector('#result .toprow .brand');if(rb)rb.textContent='TARGET GAME PLAN · V18';
-  }
-
   function render(){
-    ensureVersion();
     const body=document.getElementById('tackleFitBody');
     if(!body||typeof cur==='undefined'||!cur)return;
     const db=read();
@@ -102,7 +108,6 @@
     body.insertAdjacentHTML('beforeend',`<div class="fitBreakdown" id="fitBreakdown"><div class="fitBreakdownHead"><b>判定の内訳</b><span>○ 推奨内 / △ 要確認 / × 差が大きい</span></div><div class="fitRows">${rows.map(x=>`<div class="fitCheckRow level${x.level}"><span class="name">${esc(x.name)}</span><span class="mark">${mark(x.level)}</span><div class="detail"><b>${esc(x.owned)} → 推奨 ${esc(x.target)}</b><small>${esc(x.note)}</small></div></div>`).join('')}</div><div class="buyDecision ${decision.klass}"><span>NEXT BUY</span><b>${esc(decision.title)} · ${esc(decision.text)}</b></div></div>`);
   }
 
-  ensureVersion();
   render();
   if(typeof renderResult==='function'){
     const prev=renderResult;
