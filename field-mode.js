@@ -22,8 +22,8 @@
     document.getElementById('fmTackle').innerHTML=gear.map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
     document.getElementById('fmSteps').innerHTML=(p.steps||[]).slice(0,3).map((x,i)=>`<div class="fmStep"><i>${i+1}</i><span>${x}</span></div>`).join('');
     const w=LIVE.weather,m=cur.water==='salt'?LIVE.marine:null;
-    let status='BASE',text='FIELD LIVE未取得。魚種・季節・時刻の基準プランを表示中。';
-    if(w){const f=fieldStatus(+w.wind||0,+w.gust||0,+w.precipitation||0,m?.wave);status=f[0];text=`<strong>${LIVE.place?.name||'現在地'}：</strong>風 ${w.wind??'-'}m/s・突風 ${w.gust??'-'}m/s${m?.wave!=null?`・波 ${m.wave}m`:''}。現在のFIRST CAST補正を反映済み。`;}
+    let status='BASE',text=FEATURES.fieldLive?'FIELD LIVE未取得。魚種・季節・時刻の基準プランを表示中。':'魚種・季節・時刻の基準プランを表示中。';
+    if(FEATURES.fieldLive&&w){const f=fieldStatus(+w.wind||0,+w.gust||0,+w.precipitation||0,m?.wave);status=f[0];text=`<strong>${LIVE.place?.name||'現在地'}：</strong>風 ${w.wind??'-'}m/s・突風 ${w.gust??'-'}m/s${m?.wave!=null?`・波 ${m.wave}m`:''}。現在のFIRST CAST補正を反映済み。`;}
     set('fmStatus',status);document.getElementById('fmCondition').innerHTML=text;
   }
   function openFieldMode(){if(!cur)return;renderFieldMode();show('fieldmode');track('field_mode_open',{fish:cur.name,method:basePlan().method})}

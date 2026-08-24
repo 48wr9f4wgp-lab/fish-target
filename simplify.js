@@ -73,7 +73,8 @@
     if(autoCard){autoCard.classList.add('v19Retired');const h=autoCard.previousElementSibling;if(h?.matches('h2.sectionTitle'))h.classList.add('v19Retired')}
 
     if(body&&fieldBtn){
-      const conditions=makeGroup('v19Conditions','今日の条件を反映','天候・海況・手動条件でプランを補正',actions||fieldBtn);
+      const fieldLiveEnabled=document.documentElement.dataset.fieldLive==='on';
+      const conditions=makeGroup('v19Conditions',fieldLiveEnabled?'今日の条件を反映':'条件を調整',fieldLiveEnabled?'天候・海況・手動条件でプランを補正':'風・潮・水色を必要な時だけ入力',actions||fieldBtn);
       const cbody=conditions?.querySelector('.v19GroupBody');
       const fieldLive=document.querySelector('#result .fieldLive');
       const autoAdjust=document.getElementById('autoAdjust');
@@ -81,12 +82,14 @@
       if(fieldLive&&!fieldLive.closest('#v19Conditions'))moveWithHeading(fieldLive,cbody);
       if(autoAdjust&&!autoAdjust.closest('#v19Conditions'))moveWithHeading(autoAdjust,cbody);
       if(refine&&!refine.closest('#v19Conditions'))cbody.appendChild(refine);
-      let state=document.getElementById('v19ConditionState');
-      if(!state){state=document.createElement('span');state.id='v19ConditionState';state.className='v19ConditionState';conditions.querySelector('summary span')?.appendChild(state)}
-      const fit=document.getElementById('fieldFit');
-      const sync=()=>{if(state)state.textContent=fit?.textContent?.replace('FIELD STATUS · ','')||'未取得'};
-      sync();
-      if(fit&&!fit.dataset.v19Observed){fit.dataset.v19Observed='1';new MutationObserver(sync).observe(fit,{childList:true,characterData:true,subtree:true})}
+      if(fieldLiveEnabled){
+        let state=document.getElementById('v19ConditionState');
+        if(!state){state=document.createElement('span');state.id='v19ConditionState';state.className='v19ConditionState';conditions.querySelector('summary span')?.appendChild(state)}
+        const fit=document.getElementById('fieldFit');
+        const sync=()=>{if(state)state.textContent=fit?.textContent?.replace('FIELD STATUS · ','')||'未取得'};
+        sync();
+        if(fit&&!fit.dataset.v19Observed){fit.dataset.v19Observed='1';new MutationObserver(sync).observe(fit,{childList:true,characterData:true,subtree:true})}
+      }
 
       const details=makeGroup('v19Details','詳細を見る','仕掛け・根拠・製品・持ち物・注意点',conditions);
       const dbody=details?.querySelector('.v19GroupBody');
