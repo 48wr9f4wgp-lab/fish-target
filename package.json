@@ -1,0 +1,8 @@
+{
+  "name": "fish-target-rc",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "test:syntax": "node --check data.js && node --check products.js && node --check app.js && node --check tackle.js && node --check accuracy.js && node --check pwa.js && node --check sw.js"
+  }
+}

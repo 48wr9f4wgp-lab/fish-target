@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>FISH TARGET console QA</title>
+<script>
+  fetch('../index.html?console-qa=1').then(response=>response.text()).then(html=>{
+    const probe=`<base href="../"><script>
+      window.__fishTargetQaErrors=[];
+      const qaPush=(type,value)=>window.__fishTargetQaErrors.push({type,value:String(value||'unknown')});
+      window.addEventListener('error',event=>qaPush(event.target===window?'error':'asset',event.message||event.target?.src||event.target?.href),true);
+      window.addEventListener('unhandledrejection',event=>qaPush('unhandledrejection',event.reason?.message||event.reason));
+      const originalConsoleError=console.error.bind(console);
+      console.error=(...args)=>{qaPush('console.error',args.map(String).join(' '));originalConsoleError(...args)};
+    <\/script>`;
+    const report=`<script>
+      setTimeout(()=>{
+        const output=document.createElement('pre');
+        output.id='qa-errors';
+        output.textContent=JSON.stringify(window.__fishTargetQaErrors);
+        document.body.appendChild(output);
+      },1500);
+    <\/script>`;
+    document.open();
+    document.write(html.replace('<head>','<head>'+probe).replace('</body>',report+'</body>'));
+    document.close();
+  });
+</script>

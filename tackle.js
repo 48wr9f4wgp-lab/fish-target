@@ -43,6 +43,8 @@
     return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
   }
 
+  globalThis.FISH_TARGET_TACKLE_LOGIC=Object.freeze({weightRange,lineOptions,rodFit,reelFit});
+
   const best=(items,fn)=>items.map(x=>({...x,fit:fn(x)})).sort((a,b)=>a.fit.level-b.fit.level)[0]||null;
 
   function ensureUI(){
