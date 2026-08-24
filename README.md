@@ -56,7 +56,7 @@ Anything outside that path is secondary and should be collapsed, hidden from fir
 6. GitHub Pages automatically updates the DEV URL for iPhone testing.
 7. Keep GitHub Pages as the only current deployment route.
 
-Local verification: run `npm test`, then serve `dist/` as the site root for browser QA.
+Local verification: run `npm test`, then `npm run serve` and open `/dist/` for browser/offline QA.
 
 ## Critical regression flows
 
