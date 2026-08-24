@@ -1,5 +1,6 @@
 
 const $=id=>document.getElementById(id);
+const FEATURES=Object.freeze({fieldLive:typeof document!=='undefined'&&document.documentElement.dataset.fieldLive==='on'});
 const LIVE={place:null,weather:null,marine:null,hourly:null,marineHourly:null,marineMessage:'',loading:false};
 let waterFilter='all',styleFilter='all',difficultyFilter='all',cur=null,from='home';
 const seasonNow=(()=>{const m=new Date().getMonth()+1;return [3,4,5].includes(m)?'春':[6,7,8].includes(m)?'夏':[9,10,11].includes(m)?'秋':'冬'})();
@@ -252,6 +253,17 @@ function renderProducts(p){
 }
 function savedData(){try{let a=JSON.parse(storeGet('fish_target_v9')||'null');if(Array.isArray(a))return a;const old=JSON.parse(storeGet('fish_target_v8')||storeGet('fish_target_v7')||storeGet('fish_target_v6')||storeGet('fish_target_v5')||'[]');if(Array.isArray(old)&&old.length){storeSet('fish_target_v9',JSON.stringify(old));return old}return []}catch{return[]}}
 function renderSaved(){const a=savedData();$('savedList').innerHTML=a.length?'':'<div class="empty">まだ保存はないで。診断結果から保存できる。</div>';a.forEach((s,i)=>{const d=document.createElement('div');d.className='saveRow';d.innerHTML=`<button class="op"><strong>${s.fish}</strong><span>${s.place} ・ ${s.season} ・ ${s.goal}</span></button><button class="del" aria-label="削除">×</button>`;d.querySelector('.op').onclick=()=>{const f=F.find(x=>x.name===s.fish);if(f)openFish(f,s)};d.querySelector('.del').onclick=()=>{storeSet('fish_target_v9',JSON.stringify(savedData().filter((_,j)=>j!==i)));renderSaved();toast('削除した')};$('savedList').appendChild(d)})}
+
+const renderRotationCore=renderRotation;
+renderRotation=function(p){const out=renderRotationCore(p);const reset=$('autoReset');if(reset)reset.hidden=!state.rotationManual;return out};
+if(!FEATURES.fieldLive){
+  renderAutoAdjust=()=>{};
+  renderFieldLive=()=>{};
+  fetchWeather=async()=>{};
+  searchSpot=async()=>{};
+  const evidenceRowsCore=evidenceRows;
+  evidenceRows=p=>evidenceRowsCore(p).filter(([key])=>key!=='FIELD LIVE');
+}
 
 if($('spotSearchBtn')){$('spotSearchBtn').onclick=searchSpot;$('spotQuery').addEventListener('keydown',e=>{if(e.key==='Enter')searchSpot()})}
 if($('autoReset'))$('autoReset').onclick=()=>{if(!cur)return;restoreAutoRotation();renderResult();toast('FIRST CASTをAUTOに戻した')};

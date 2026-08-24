@@ -14,8 +14,8 @@ test('generated HTML, result header, assets, and SW share one build version',()=
   assert.deepEqual(versionContract({config,html,worker}),[]);
   assert.doesNotMatch(html,/FISH TARGET V(?:15|19)\b/i);
   assert.doesNotMatch(html,/TARGET GAME PLAN · V(?:15|19)\b/i);
-  assert.doesNotMatch(html,/__(?:BUILD_VERSION|BUILD_ID|SHELL_MANIFEST)__/);
-  assert.doesNotMatch(worker,/__(?:BUILD_VERSION|BUILD_ID|SHELL_MANIFEST)__/);
+  assert.doesNotMatch(html,/__(?:BUILD_VERSION|BUILD_ID|FIELD_LIVE_STATE|SHELL_MANIFEST)__/);
+  assert.doesNotMatch(worker,/__(?:BUILD_VERSION|BUILD_ID|FIELD_LIVE_STATE|SHELL_MANIFEST)__/);
 });
 
 test('stale V19 asset mixing is rejected by the version contract',()=>{

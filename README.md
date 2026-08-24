@@ -7,7 +7,7 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - Canonical build version: `build.config.json` (single source of truth)
 - DEV / device test: GitHub Pages from `main`
 - Primary target: iPhone Safari / Home Screen PWA-style usage
-- Production candidate: Vercel only at release checkpoints; one project / one fixed URL
+- Current and release-candidate delivery route: GitHub Pages only
 - Offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
 
 ## Product rule
@@ -54,7 +54,7 @@ Anything outside that path is secondary and should be collapsed, hidden from fir
 4. Open a PR and inspect the diff.
 5. Merge to `main` only after QA passes.
 6. GitHub Pages automatically updates the DEV URL for iPhone testing.
-7. Vercel is updated only at production checkpoints.
+7. Keep GitHub Pages as the only current deployment route.
 
 Local verification: run `npm test`, then serve `dist/` as the site root for browser QA.
 

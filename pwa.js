@@ -11,7 +11,7 @@
     if(offline){
       el.textContent='OFFLINE · 基本診断は利用可';
       const weather=document.getElementById('weatherEmpty');
-      if(weather)weather.textContent='オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。FIELD LIVEは接続復帰後に取得できます。';
+      if(weather)weather.textContent=document.documentElement.dataset.fieldLive==='on'?'オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。FIELD LIVEは接続復帰後に取得できます。':'オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。';
     }
   };
   window.addEventListener('online',()=>{renderNetwork(); if(typeof toast==='function')toast('オンラインに復帰した')});

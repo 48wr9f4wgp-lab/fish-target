@@ -7,7 +7,8 @@ export function versionContract({config,html,worker}){
   if(!html.includes(`TARGET GAME PLAN · ${version}`))errors.push('result header version mismatch');
   if(!html.includes(`data-build="${buildId}"`))errors.push('HTML build id mismatch');
   if(!worker.includes(`fish-target-shell-${buildId}`))errors.push('SW cache version mismatch');
-  if(/__(?:BUILD_VERSION|BUILD_ID|SHELL_MANIFEST)__/.test(html+worker))errors.push('unresolved build token');
+  if(!html.includes(`data-field-live="${config.features?.fieldLive?'on':'off'}"`))errors.push('fieldLive feature mismatch');
+  if(/__(?:BUILD_VERSION|BUILD_ID|FIELD_LIVE_STATE|SHELL_MANIFEST)__/.test(html+worker))errors.push('unresolved build token');
 
   const localAssets=[...html.matchAll(/(?:href|src)="(?!https?:|#)([^"?]+)(?:\?v=([^"&]+))?"/g)];
   for(const [,asset,assetVersion] of localAssets){
