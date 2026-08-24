@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#061b22" name="theme-color"/>
-<title>FISH TARGET v13</title>
+<title>FISH TARGET v14</title>
 <link href="style.css" rel="stylesheet"/>
 <link href="quick-plan.css" rel="stylesheet"/>
+<link href="field-mode.css" rel="stylesheet"/>
 </head>
 <body>
 <div class="app">
 <section class="view on" id="home">
 <header class="hero">
-<div class="brandRow"><div class="brand">FISH TARGET · SMART GAME PLAN</div><span class="version">V13</span></div>
+<div class="brandRow"><div class="brand">FISH TARGET · SMART GAME PLAN</div><span class="version">V14</span></div>
 <h1>魚を選ぶ。<br/>最初の1投まで決まる。</h1>
 <p>おすすめ釣法、タックル、仕掛けに加えて「まず何を投げるか」「反応がなければ何を変えるか」まで1本化。</p>
 <div class="heroStats"><span>19魚種</span><span>LIVE WEATHER</span><span>JMA潮位表</span><span>25釣法</span><span>仕掛け図解</span></div>
@@ -22,105 +22,31 @@
 <main class="body">
 <div class="head"><h2>人気ターゲット</h2><span>ワンタップ診断</span></div>
 <div class="quick" id="quick"></div>
-<div class="filterPanel">
-<div class="filterRow"><span>水域</span><div class="filters" id="waterFilters"></div></div>
-<div class="filterRow"><span>釣り方</span><div class="filters" id="styleFilters"></div></div>
-<div class="filterRow"><span>難易度</span><div class="filters" id="difficultyFilters"></div></div>
-</div>
-<div class="head"><h2>魚を選ぶ</h2><span id="count"></span></div>
-<div class="grid" id="grid"></div>
+<div class="filterPanel"><div class="filterRow"><span>水域</span><div class="filters" id="waterFilters"></div></div><div class="filterRow"><span>釣り方</span><div class="filters" id="styleFilters"></div></div><div class="filterRow"><span>難易度</span><div class="filters" id="difficultyFilters"></div></div></div>
+<div class="head"><h2>魚を選ぶ</h2><span id="count"></span></div><div class="grid" id="grid"></div>
 </main>
 </section>
 <section class="view" id="result">
-<header class="resultHero">
-<div class="toprow"><button aria-label="戻る" class="back" id="back">‹</button><div class="brand">TARGET GAME PLAN · V13</div><span style="width:42px"></span></div>
-<div class="target"><div><div class="brand" id="meta"></div><h1 id="rname"></h1><p id="sub"></p></div><div class="tart" id="tart"></div></div>
-</header>
+<header class="resultHero"><div class="toprow"><button aria-label="戻る" class="back" id="back">‹</button><div class="brand">TARGET GAME PLAN · V14</div><span style="width:42px"></span></div><div class="target"><div><div class="brand" id="meta"></div><h1 id="rname"></h1><p id="sub"></p></div><div class="tart" id="tart"></div></div></header>
 <main class="body">
-<section class="card planCard">
-<div class="planTop"><div><div class="recommend">おすすめ No.1</div><div class="method" id="pmethod"></div></div><span class="difficultyBadge" id="difficultyBadge"></span></div>
-<div class="why" id="why"></div><div class="quickPromise">まずは FIRST CAST → タックル → 3ステップだけ見ればOK</div>
-<div class="planFacts"><span id="planPlace"></span><span id="planSeason"></span><span id="planTime"></span></div>
-<details class="planOptions"><summary><span><b>条件を変更</b><small>釣り場・季節・狙い</small></span><em>任意</em></summary><div class="planOptionsBody"><div class="label">釣り場</div><div class="choices" id="places"></div><div class="label">季節</div><div class="choices" id="seasons"></div><div class="label">狙い</div><div class="choices" id="goals"></div></div></details></section><h2 class="coreTitle accentTitle sectionTitle">3秒プラン · FIRST CAST<small>最初に投げる物と動かし方。ここが最優先。</small></h2><section class="firstCast">
-<div class="firstCastKicker" id="firstCastKicker">最初の1投 · AUTO</div>
-<div class="firstName" id="firstBait"></div>
-<div class="firstGrid"><div><span>サイズ / 重さ</span><b id="firstSize"></b></div><div><span>色</span><b id="firstColor"></b></div><div><span>レンジ</span><b id="firstRange"></b></div><div><span>操作</span><b id="firstAction"></b></div></div>
-<div class="rotationLabel">次に替える候補</div><div class="rotation" id="rotation"></div>
-<div class="switchRule" id="switchRule"></div>
-</section><h2 class="coreTitle sectionTitle">必須タックル<small>この4点を合わせれば基本セットが成立。</small></h2><div class="gear" id="gear"></div><h2 class="coreTitle sectionTitle">現場では3ステップ<small>迷ったらこの順番だけ実行。</small></h2><section class="card"><div class="steps" id="steps"></div><div class="tip" id="seasonTip"></div></section><div class="actions"><button id="copy">一覧をコピー</button><button class="save" id="save">このプランを保存</button></div><div class="detailDivider">ここから先は条件を詰めたい時だけ</div><h2 class="sectionTitle liveTitle">FIELD LIVE<small>現在天候・海況・次の6時間を取得して、FIRST CASTを自動補正。</small></h2><section class="card fieldLive">
-<div class="fieldHead"><div><span class="liveDot"></span><strong>LIVE CONDITIONS</strong><small id="fieldUpdated">釣行地を選んで取得</small></div><span class="fitBadge" id="fieldFit">FIELD STATUS · 未取得</span></div>
-<div class="spotPresets" id="spotPresets"></div>
-<div class="spotSearch"><input autocomplete="off" id="spotQuery" placeholder="市区町村・港周辺を検索 例：沼津、糸魚川"/><button id="spotSearchBtn">検索</button></div>
-<div class="spotResults" id="spotResults"></div>
-<div class="weatherEmpty" id="weatherEmpty">釣行地を選ぶと、気温・風・突風・降水を取得。海水魚では波・海面水温・流れもモデル値として表示する。</div>
-<div class="weatherGrid" hidden="" id="weatherGrid">
-<div><span>地点</span><b id="wxPlace">-</b></div><div><span>天候</span><b id="wxCode">-</b></div>
-<div><span>気温</span><b id="wxTemp">-</b></div><div><span>風</span><b id="wxWind">-</b></div>
-<div><span>最大瞬間風</span><b id="wxGust">-</b></div><div><span>降水</span><b id="wxRain">-</b></div>
-</div>
-<div class="marineGrid" hidden="" id="marineGrid">
-<div><span>波高</span><b id="seaWave">-</b></div><div><span>海面水温</span><b id="seaTemp">-</b></div>
-<div><span>流れ</span><b id="seaCurrent">-</b></div><div><span>海面高度</span><b id="seaLevel">-</b></div>
-</div>
-<div class="marineNote" hidden="" id="marineNote"></div>
-<div class="fieldWindow" hidden="" id="fieldWindow">
-<div class="windowHead"><b>NEXT 6 HOURS</b><small>風・雨・波と対象魚の基本時間帯から、釣行のしやすさだけを比較</small></div>
-<div class="weatherWindows" id="weatherWindows"></div>
-</div>
-<div class="fieldSafety" id="fieldSafety"></div>
-<div class="tideOfficial" id="tideOfficial"><div><b>気象庁 潮位表</b><small>天文潮位の予測。実測潮位ではない。</small></div><a href="https://www.data.jma.go.jp/kaiyou/db/tide/suisan/index.php" id="jmaTideLink" rel="noopener" target="_blank">公式を開く ›</a></div>
-<p class="sourceNote">Weather / Marine model: Open-Meteo（CC BY 4.0・Preview評価用途）。海況モデルは沿岸精度に限界があり航海用途不可。天文潮位: 気象庁。商用公開時はAPI契約を再設計する。</p>
-</section><h2 class="sectionTitle liveTitle">LIVE AUTO ADJUST<small>取得した条件を、最初の1投・規格・持ち物へ自動反映。</small></h2><section class="card autoAdjust" id="autoAdjust">
-<div class="autoAdjustHead"><div><strong>AUTO GAME PLAN</strong><small id="autoAdjustUpdated">FIELD LIVE未取得でも基準プランは使用可能</small></div><span class="autoMode" id="autoMode">BASE</span></div>
-<div class="autoPickGrid">
-<div class="autoPick"><span>FIRST CAST</span><b id="autoCast">基準プラン</b></div>
-<div class="autoPick"><span>規格補正</span><b id="autoGearAdjust">基準規格</b></div>
-<div class="autoPick"><span>追加PACK</span><b id="autoPackAdjust">標準装備</b></div>
-<div class="autoPick"><span>狙いやすい時間</span><b id="autoWindow">FIELD LIVE取得後に表示</b></div>
-</div>
-<div class="autoReason" id="autoReason">魚種・季節・時間帯の基準から開始。地点を選ぶと風・雨・波・流れを反映する。</div>
-<button class="autoReset" hidden="" id="autoReset" type="button">FIRST CASTをAUTO提案に戻す</button>
-</section>
-<details class="refine" id="refine">
-<summary><span><b>条件を調整</b><small>任意。魚を選ぶだけでも使える。</small></span><em id="refineSummary"></em></summary>
-<div class="refineBody">
-<p class="refineNote">季節・端末時刻は自動。風はFIELD LIVE取得時に自動反映。潮・水色は現段階では手動入力。</p>
-<div class="label">風</div><div class="choices" id="winds"></div>
-<div class="label">潮</div><div class="choices" id="tides"></div>
-<div class="label">水色</div><div class="choices" id="waters"></div>
-</div>
-</details>
-<h2 class="sectionTitle">今日の条件補正<small>「釣れる確率」ではなく、入力条件に対する攻め方の補正。</small></h2>
-<section class="card autoCard">
-<div class="autoTop"><strong>NOW ASSIST</strong><span class="autoBadge">HEURISTIC / 目安</span></div>
-<div class="autoSignals"><div class="signal"><span>季節</span><b id="autoSeason"></b></div><div class="signal"><span>時間帯</span><b id="autoTime"></b></div><div class="signal"><span>時刻相性</span><b id="timeFit"></b></div><div class="signal"><span>攻めるレンジ</span><b id="autoRange"></b></div></div>
-<div class="autoAdvice" id="autoAdvice"></div>
-<div class="manualNote">風はFIELD LIVEの取得値を反映。波・流れは海況モデル値。潮汐は気象庁公式表を確認し、モデル海面高度を「公式の満干潮」とは扱わない。</div>
-</section>
-<h2 class="sectionTitle">推奨根拠<small>なぜこのGame Planなのかを分解。</small></h2>
-<section class="card evidence" id="evidence"></section>
-<section id="productsSection"><h2 class="sectionTitle">実在製品の比較候補<small>本体とルアー/仕掛けを分け、今の釣法に合わせて切替。</small></h2><div class="productGuide"><span>OFFICIAL CHECK</span><b id="productMethod"></b><small>価格・在庫はライブ取得していない</small></div>
-<div class="productSubhead"><b>ロッド / リール候補</b><span>規格適合を優先</span></div><div class="productGrid" id="products"></div>
-<div class="productSubhead"><b>ルアー / 仕掛け候補</b><span>FIRST CASTと接続</span></div><div class="productGrid" id="fieldProducts"></div>
-<div class="verified" id="productVerified"></div></section>
-<h2 class="sectionTitle">釣行セット<small>「買う必要がある物」だけ残せるチェックリスト。</small></h2>
-<section class="card shoppingCard"><div class="shoppingTop"><div><strong>PACK LIST</strong><small>チェック状態は端末に保存</small></div><span id="shoppingCount">0/0</span></div><div class="shoppingList" id="shoppingList"></div></section>
-<h2 class="sectionTitle">仕掛け図<small>竿側から魚側へ。パーツをタップすると役割を表示。</small></h2>
-<section class="card rigCard">
-<div class="rigAxis"><span>ROD / REEL</span><span>TARGET</span></div>
-<div class="rigDiagram" id="rigDiagram"></div>
-<div aria-live="polite" class="rigHelp" id="rigHelp"></div>
-<details class="rigText"><summary>接続順をテキストで確認</summary><div class="rig" id="rig"></div></details>
-</section>
-<h2 class="sectionTitle">失敗しやすい所<small>初心者が外しやすいポイント</small></h2><section class="card"><ul class="warn" id="mistakes"></ul></section>
-<p class="disclaimer">※ 一般的な国内釣法を基準にした初期推奨。地域、水深、潮、風、魚のサイズ、釣り場ルールで最適解は変わります。安全装備・立入規制・禁漁期間を優先してください。</p>
-</main>
-</section>
+<section class="card planCard"><div class="planTop"><div><div class="recommend">おすすめ No.1</div><div class="method" id="pmethod"></div></div><span class="difficultyBadge" id="difficultyBadge"></span></div><div class="why" id="why"></div><div class="quickPromise">まずは FIRST CAST → タックル → 3ステップだけ見ればOK</div><div class="planFacts"><span id="planPlace"></span><span id="planSeason"></span><span id="planTime"></span></div><details class="planOptions"><summary><span><b>条件を変更</b><small>釣り場・季節・狙い</small></span><em>任意</em></summary><div class="planOptionsBody"><div class="label">釣り場</div><div class="choices" id="places"></div><div class="label">季節</div><div class="choices" id="seasons"></div><div class="label">狙い</div><div class="choices" id="goals"></div></div></details></section>
+<h2 class="coreTitle accentTitle sectionTitle">3秒プラン · FIRST CAST<small>最初に投げる物と動かし方。ここが最優先。</small></h2><section class="firstCast"><div class="firstCastKicker" id="firstCastKicker">最初の1投 · AUTO</div><div class="firstName" id="firstBait"></div><div class="firstGrid"><div><span>サイズ / 重さ</span><b id="firstSize"></b></div><div><span>色</span><b id="firstColor"></b></div><div><span>レンジ</span><b id="firstRange"></b></div><div><span>操作</span><b id="firstAction"></b></div></div><div class="rotationLabel">次に替える候補</div><div class="rotation" id="rotation"></div><div class="switchRule" id="switchRule"></div></section>
+<h2 class="coreTitle sectionTitle">必須タックル<small>この4点を合わせれば基本セットが成立。</small></h2><div class="gear" id="gear"></div>
+<h2 class="coreTitle sectionTitle">現場では3ステップ<small>迷ったらこの順番だけ実行。</small></h2><section class="card"><div class="steps" id="steps"></div><div class="tip" id="seasonTip"></div></section>
+<div class="actions"><button id="copy">一覧をコピー</button><button class="save" id="save">このプランを保存</button></div><button class="fieldModeLaunch" id="fieldModeBtn" type="button">現場モードを開く</button>
+<div class="detailDivider">ここから先は条件を詰めたい時だけ</div>
+<h2 class="sectionTitle liveTitle">FIELD LIVE<small>現在天候・海況・次の6時間を取得して、FIRST CASTを自動補正。</small></h2><section class="card fieldLive"><div class="fieldHead"><div><span class="liveDot"></span><strong>LIVE CONDITIONS</strong><small id="fieldUpdated">釣行地を選んで取得</small></div><span class="fitBadge" id="fieldFit">FIELD STATUS · 未取得</span></div><div class="spotPresets" id="spotPresets"></div><div class="spotSearch"><input autocomplete="off" id="spotQuery" placeholder="市区町村・港周辺を検索 例：沼津、糸魚川"/><button id="spotSearchBtn">検索</button></div><div class="spotResults" id="spotResults"></div><div class="weatherEmpty" id="weatherEmpty">釣行地を選ぶと、気温・風・突風・降水を取得。海水魚では波・海面水温・流れもモデル値として表示する。</div><div class="weatherGrid" hidden="" id="weatherGrid"><div><span>地点</span><b id="wxPlace">-</b></div><div><span>天候</span><b id="wxCode">-</b></div><div><span>気温</span><b id="wxTemp">-</b></div><div><span>風</span><b id="wxWind">-</b></div><div><span>最大瞬間風</span><b id="wxGust">-</b></div><div><span>降水</span><b id="wxRain">-</b></div></div><div class="marineGrid" hidden="" id="marineGrid"><div><span>波高</span><b id="seaWave">-</b></div><div><span>海面水温</span><b id="seaTemp">-</b></div><div><span>流れ</span><b id="seaCurrent">-</b></div><div><span>海面高度</span><b id="seaLevel">-</b></div></div><div class="marineNote" hidden="" id="marineNote"></div><div class="fieldWindow" hidden="" id="fieldWindow"><div class="windowHead"><b>NEXT 6 HOURS</b><small>風・雨・波と対象魚の基本時間帯から、釣行のしやすさだけを比較</small></div><div class="weatherWindows" id="weatherWindows"></div></div><div class="fieldSafety" id="fieldSafety"></div><div class="tideOfficial" id="tideOfficial"><div><b>気象庁 潮位表</b><small>天文潮位の予測。実測潮位ではない。</small></div><a href="https://www.data.jma.go.jp/kaiyou/db/tide/suisan/index.php" id="jmaTideLink" rel="noopener" target="_blank">公式を開く ›</a></div><p class="sourceNote">Weather / Marine model: Open-Meteo（CC BY 4.0・Preview評価用途）。海況モデルは沿岸精度に限界があり航海用途不可。天文潮位: 気象庁。商用公開時はAPI契約を再設計する。</p></section>
+<h2 class="sectionTitle liveTitle">LIVE AUTO ADJUST<small>取得した条件を、最初の1投・規格・持ち物へ自動反映。</small></h2><section class="card autoAdjust" id="autoAdjust"><div class="autoAdjustHead"><div><strong>AUTO GAME PLAN</strong><small id="autoAdjustUpdated">FIELD LIVE未取得でも基準プランは使用可能</small></div><span class="autoMode" id="autoMode">BASE</span></div><div class="autoPickGrid"><div class="autoPick"><span>FIRST CAST</span><b id="autoCast">基準プラン</b></div><div class="autoPick"><span>規格補正</span><b id="autoGearAdjust">基準規格</b></div><div class="autoPick"><span>追加PACK</span><b id="autoPackAdjust">標準装備</b></div><div class="autoPick"><span>狙いやすい時間</span><b id="autoWindow">FIELD LIVE取得後に表示</b></div></div><div class="autoReason" id="autoReason">魚種・季節・時間帯の基準から開始。地点を選ぶと風・雨・波・流れを反映する。</div><button class="autoReset" hidden="" id="autoReset" type="button">FIRST CASTをAUTO提案に戻す</button></section>
+<details class="refine" id="refine"><summary><span><b>条件を調整</b><small>任意。魚を選ぶだけでも使える。</small></span><em id="refineSummary"></em></summary><div class="refineBody"><p class="refineNote">季節・端末時刻は自動。風はFIELD LIVE取得時に自動反映。潮・水色は現段階では手動入力。</p><div class="label">風</div><div class="choices" id="winds"></div><div class="label">潮</div><div class="choices" id="tides"></div><div class="label">水色</div><div class="choices" id="waters"></div></div></details>
+<h2 class="sectionTitle">今日の条件補正<small>「釣れる確率」ではなく、入力条件に対する攻め方の補正。</small></h2><section class="card autoCard"><div class="autoTop"><strong>NOW ASSIST</strong><span class="autoBadge">HEURISTIC / 目安</span></div><div class="autoSignals"><div class="signal"><span>季節</span><b id="autoSeason"></b></div><div class="signal"><span>時間帯</span><b id="autoTime"></b></div><div class="signal"><span>時刻相性</span><b id="timeFit"></b></div><div class="signal"><span>攻めるレンジ</span><b id="autoRange"></b></div></div><div class="autoAdvice" id="autoAdvice"></div><div class="manualNote">風はFIELD LIVEの取得値を反映。波・流れは海況モデル値。潮汐は気象庁公式表を確認し、モデル海面高度を「公式の満干潮」とは扱わない。</div></section>
+<h2 class="sectionTitle">推奨根拠<small>なぜこのGame Planなのかを分解。</small></h2><section class="card evidence" id="evidence"></section>
+<section id="productsSection"><h2 class="sectionTitle">実在製品の比較候補<small>本体とルアー/仕掛けを分け、今の釣法に合わせて切替。</small></h2><div class="productGuide"><span>OFFICIAL CHECK</span><b id="productMethod"></b><small>価格・在庫はライブ取得していない</small></div><div class="productSubhead"><b>ロッド / リール候補</b><span>規格適合を優先</span></div><div class="productGrid" id="products"></div><div class="productSubhead"><b>ルアー / 仕掛け候補</b><span>FIRST CASTと接続</span></div><div class="productGrid" id="fieldProducts"></div><div class="verified" id="productVerified"></div></section>
+<h2 class="sectionTitle">釣行セット<small>「買う必要がある物」だけ残せるチェックリスト。</small></h2><section class="card shoppingCard"><div class="shoppingTop"><div><strong>PACK LIST</strong><small>チェック状態は端末に保存</small></div><span id="shoppingCount">0/0</span></div><div class="shoppingList" id="shoppingList"></div></section>
+<h2 class="sectionTitle">仕掛け図<small>竿側から魚側へ。パーツをタップすると役割を表示。</small></h2><section class="card rigCard"><div class="rigAxis"><span>ROD / REEL</span><span>TARGET</span></div><div class="rigDiagram" id="rigDiagram"></div><div aria-live="polite" class="rigHelp" id="rigHelp"></div><details class="rigText"><summary>接続順をテキストで確認</summary><div class="rig" id="rig"></div></details></section>
+<h2 class="sectionTitle">失敗しやすい所<small>初心者が外しやすいポイント</small></h2><section class="card"><ul class="warn" id="mistakes"></ul></section><p class="disclaimer">※ 一般的な国内釣法を基準にした初期推奨。地域、水深、潮、風、魚のサイズ、釣り場ルールで最適解は変わります。安全装備・立入規制・禁漁期間を優先してください。</p>
+</main></section>
+<section class="view fieldModeView" id="fieldmode"><header class="fieldModeHead"><button aria-label="プランへ戻る" class="fieldBack" id="fieldBack">‹</button><div><span>FIELD MODE</span><small>釣り場で見る情報だけ</small></div><div class="fieldStatusMini" id="fmStatus">BASE</div></header><main class="fieldModeBody"><div class="fieldTarget"><span id="fmMethod"></span><h1 id="fmFish"></h1><p id="fmPlace"></p></div><section class="fmFirst"><div class="fmKicker">FIRST CAST</div><h2 id="fmBait"></h2><div class="fmGrid"><div><span>サイズ / 重さ</span><b id="fmSize"></b></div><div><span>レンジ</span><b id="fmRange"></b></div><div><span>色</span><b id="fmColor"></b></div><div><span>操作</span><b id="fmAction"></b></div></div><div class="fmNext"><span>次の候補</span><b id="fmNext"></b></div></section><h2 class="fmTitle">必須タックル</h2><section class="fmTackle" id="fmTackle"></section><h2 class="fmTitle">3ステップ</h2><section class="fmSteps" id="fmSteps"></section><section class="fmCondition" id="fmCondition"></section><button class="fmBackPlan" id="fmBackPlan" type="button">詳細プランへ戻る</button></main></section>
 <section class="view" id="saved"><header class="savedHead"><h1>保存したプラン</h1><p>現場で見返すセットアップ。</p></header><div class="savedList" id="savedList"></div></section>
-<nav class="nav"><button class="on" data-v="home">魚を探す</button><button data-v="saved">保存</button></nav>
-<div aria-live="polite" class="toast" id="toast" role="status"></div>
-</div>
-<script src="data.js"></script>
-<script src="products.js"></script>
-<script src="app.js"></script>
+<nav class="nav"><button class="on" data-v="home">魚を探す</button><button data-v="saved">保存</button></nav><div aria-live="polite" class="toast" id="toast" role="status"></div></div>
+<script src="data.js"></script><script src="products.js"></script><script src="app.js"></script><script src="field-mode.js"></script>
 </body></html>
