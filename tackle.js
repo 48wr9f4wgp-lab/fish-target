@@ -7,19 +7,22 @@
   const uid=()=>`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`;
   const nums=s=>(String(s||'').match(/\d+(?:\.\d+)?/g)||[]).map(Number);
   const range=s=>{const n=nums(s);return n.length?{min:n[0],max:n[1]??n[0]}:null};
+  const tokenValue=s=>{const t=String(s||'').trim();if(t.includes('/')){const [a,b]=t.split('/').map(Number);return b? a/b : NaN}return +t};
+  const unitRange=(s,unit)=>{const text=String(s||''),n='(\\d+(?:\\.\\d+)?|\\d+\\/\\d+)',between='(?:〜|～|~|-)';let m=text.match(new RegExp(`${n}\\s*${between}\\s*${n}\\s*${unit}`,'i'));if(m)return {min:tokenValue(m[1]),max:tokenValue(m[2])};m=text.match(new RegExp(`${n}\\s*${unit}`,'i'));if(m){const v=tokenValue(m[1]);return {min:v,max:v}}return null};
+  const weightRange=s=>{const g=unitRange(s,'g\\b');if(g)return g;const oz=unitRange(s,'oz\\b');return oz?{min:oz.min*28.3495,max:oz.max*28.3495}:null};
   const powerRange=s=>{const tail=String(s||'').split('/').slice(1).join('/').trim().toUpperCase();if(!tail||/^\d/.test(tail))return null;const hits=POWER.filter(p=>new RegExp(`(^|[^A-Z])${p}([^A-Z]|$)`).test(tail));if(!hits.length)return null;const ranks=hits.map(p=>POWER.indexOf(p));return {min:Math.min(...ranks),max:Math.max(...ranks)}};
   const reelRange=s=>{const n=nums(s).filter(v=>v>=500&&v<=30000);return n.length?{min:n[0],max:n[1]??n[0]}:null};
-  const lineSpec=s=>{const text=String(s||'');const type=/PE/i.test(text)?'PE':/ナイロン/.test(text)?'ナイロン':/フロロ/.test(text)?'フロロ':null;const n=nums(text);return {type,range:n.length?{min:n[0],max:n[1]??n[0]}:null}};
+  const lineOptions=s=>String(s||'').split(/\s*\/\s*/).map(part=>{const type=/\bPE\b/i.test(part)?'PE':/ナイロン/.test(part)?'ナイロン':/フロロ/.test(part)?'フロロ':null;if(!type)return null;const no=unitRange(part,'号');if(no)return {type,unit:'号',range:no};const lb=unitRange(part,'lb\\b');if(lb)return {type,unit:'lb',range:lb};return {type,unit:null,range:null}}).filter(Boolean);
   const distance=(v,r)=>v<r.min?r.min-v:v>r.max?v-r.max:0;
 
   function rodFit(rod,p,r){
     const checks=[];
     const targetLen=/ft/i.test(p.rod||'')?range(p.rod?.match(/[^/]+/)?.[0]||p.rod):null;
-    if(+rod.length&&targetLen){const d=distance(+rod.length,targetLen);checks.push(d===0?0:d<=1?1:2)}
+    if(targetLen){if(+rod.length){const d=distance(+rod.length,targetLen);checks.push(d===0?0:d<=1?1:2)}else checks.push(1)}
     const targetPower=powerRange(p.rod);
-    if(rod.power&&targetPower){const pr=POWER.indexOf(rod.power);const d=distance(pr,targetPower);checks.push(d===0?0:d<=1?1:2)}
-    const castRange=range(r?.size||p.size);
-    if(p.style!=='bait'&&+rod.maxLure&&castRange){checks.push(+rod.maxLure>=castRange.max?0:+rod.maxLure>=castRange.min?1:2)}
+    if(targetPower){if(rod.power){const pr=POWER.indexOf(rod.power);const d=distance(pr,targetPower);checks.push(d===0?0:d<=1?1:2)}else checks.push(1)}
+    const castRange=p.style!=='bait'?weightRange(r?.size||p.size):null;
+    if(castRange){if(+rod.maxLure)checks.push(+rod.maxLure>=castRange.max?0:+rod.maxLure>=castRange.min?1:2);else checks.push(1)}
     const worst=checks.length?Math.max(...checks):1;
     return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
   }
@@ -27,10 +30,15 @@
   function reelFit(reel,p){
     const checks=[];
     const target=reelRange(p.reel);
-    if(+reel.size&&target){const d=distance(+reel.size,target);checks.push(d===0?0:d<=1000?1:2)}
-    const spec=lineSpec(p.line);
-    if(reel.lineType&&spec.type)checks.push(reel.lineType===spec.type?0:1);
-    if(+reel.lineNo&&spec.range){const d=distance(+reel.lineNo,spec.range);checks.push(d===0?0:d<=0.5?1:2)}
+    if(target){if(+reel.size){const d=distance(+reel.size,target);checks.push(d===0?0:d<=1000?1:2)}else checks.push(1)}
+    const options=lineOptions(p.line);
+    if(options.length){
+      const matched=reel.lineType?options.find(x=>x.type===reel.lineType):null;
+      checks.push(reel.lineType?(matched?0:1):1);
+      if(matched?.unit==='号'){
+        if(+reel.lineNo){const d=distance(+reel.lineNo,matched.range);checks.push(d===0?0:d<=0.5?1:2)}else checks.push(1);
+      }else if(matched?.unit==='lb')checks.push(1);
+    }
     const worst=checks.length?Math.max(...checks):1;
     return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
   }
@@ -38,9 +46,6 @@
   const best=(items,fn)=>items.map(x=>({...x,fit:fn(x)})).sort((a,b)=>a.fit.level-b.fit.level)[0]||null;
 
   function ensureUI(){
-    document.title='FISH TARGET v17';
-    const v=document.querySelector('.version');if(v)v.textContent='V17';
-    const rb=document.querySelector('#result .toprow .brand');if(rb)rb.textContent='TARGET GAME PLAN · V17';
     if(!document.getElementById('myTackleHome')){
       const anchor=document.getElementById('myTargets')||document.querySelector('.filterPanel');
       if(anchor)anchor.insertAdjacentHTML('afterend',`<section class="myTackleHome" id="myTackleHome"><div class="head"><h2>MY TACKLE</h2><button class="tackleManage" id="tackleManage" type="button">登録・編集</button></div><div class="tackleSummary" id="tackleSummary"></div></section>`);
@@ -95,7 +100,7 @@
     const rod=best(db.rods,x=>rodFit(x,p,r)),reel=best(db.reels,x=>reelFit(x,p));
     const item=(kind,x,target)=>x?`<div class="fitItem level${x.fit.level}"><div class="fitKind">${kind}</div><div><b>${esc(x.name)}</b><span>${esc(x.fit.label)}</span></div><small>推奨 ${esc(target)}</small></div>`:`<div class="fitItem level1"><div class="fitKind">${kind}</div><div><b>未登録</b><span>判定できません</span></div><small>推奨 ${esc(target)}</small></div>`;
     const worst=Math.max(rod?.fit.level??1,reel?.fit.level??1);const summary=worst===0?'手持ちで組みやすい':worst===1?'一部条件を確認':'買い足し候補あり';
-    body.innerHTML=`<div class="fitSummary level${worst}"><span>判定</span><b>${summary}</b></div><div class="fitItems">${item('ROD',rod,p.rod||cur.rod)}${item('REEL',reel,p.reel||cur.reel)}</div><p class="fitNote">長さ・パワー・ルアー上限、リール番手・ライン号数の入力値から簡易照合。メーカー固有の許容値やドラグ性能までは未判定。</p>`;
+    body.innerHTML=`<div class="fitSummary level${worst}"><span>判定</span><b>${summary}</b></div><div class="fitItems">${item('ROD',rod,p.rod||cur.rod)}${item('REEL',reel,p.reel||cur.reel)}</div><p class="fitNote">入力済みの長さ・パワー・重量上限、番手・ライン規格だけを簡易照合。cm/inch/エギ号数をgへ誤変換せず、lb表記は自動判定しない。</p>`;
   }
 
   function refresh(){renderOwned();renderHomeSummary();renderFit()}
