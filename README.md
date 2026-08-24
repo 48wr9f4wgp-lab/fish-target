@@ -4,11 +4,11 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 
 ## Current build
 
-- Canonical working version: v17
+- Canonical working version: v18
 - DEV / device test: GitHub Pages from `main`
 - Primary target: iPhone Safari / Home Screen PWA-style usage
 - Production candidate: Vercel only at release checkpoints; one project / one fixed URL
-- v15/v16 offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
+- Offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
 
 ## Current product layers
 
@@ -17,6 +17,7 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - v15 — PWA shell / network-first offline fallback
 - v16 — last-plan resume, favorite targets, recent targets
 - v17 — MY TACKLE: owned rod/reel registration and simple compatibility matching
+- v18 — fit explanation: per-spec ○/△/× breakdown and NEXT BUY guidance
 
 ## Main files
 
@@ -29,6 +30,7 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - `pwa.js` / `sw.js` — PWA and offline shell
 - `continuity.js` / `continuity.css` — retention/continuity layer
 - `tackle.js` / `tackle.css` — MY TACKLE and compatibility checks
+- `fit-explain.js` / `fit-explain.css` — v18 compatibility reasoning and buy guidance
 
 ## Release workflow
 
@@ -52,4 +54,5 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - Save/restore survives unavailable localStorage.
 - MY TARGETS resume/favorites/recent flows do not block first-use UX.
 - MY TACKLE tolerates partial specifications and does not overstate model-specific compatibility.
+- Fit explanation must distinguish `推奨内`, `要確認`, and `差が大きい` without presenting manufacturer certification.
 - No horizontal overflow at iPhone widths.

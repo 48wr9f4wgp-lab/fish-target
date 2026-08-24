@@ -31,8 +31,10 @@
 
   loadCss('./continuity.css','continuity-css');
   loadCss('./tackle.css','tackle-css');
+  loadCss('./fit-explain.css','fit-explain-css');
   (async()=>{
     await loadScript('./continuity.js','continuity-js');
     await loadScript('./tackle.js','tackle-js');
+    await loadScript('./fit-explain.js','fit-explain-js');
   })();
 })();
