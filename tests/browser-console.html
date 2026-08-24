@@ -2,8 +2,8 @@
 <meta charset="utf-8">
 <title>FISH TARGET console QA</title>
 <script>
-  fetch('../index.html?console-qa=1').then(response=>response.text()).then(html=>{
-    const probe=`<base href="../"><script>
+  fetch('../dist/index.html?console-qa=1').then(response=>response.text()).then(html=>{
+    const probe=`<base href="../dist/"><script>
       window.__fishTargetQaErrors=[];
       const qaPush=(type,value)=>window.__fishTargetQaErrors.push({type,value:String(value||'unknown')});
       window.addEventListener('error',event=>qaPush(event.target===window?'error':'asset',event.message||event.target?.src||event.target?.href),true);
