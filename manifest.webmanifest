@@ -1,0 +1,20 @@
+{
+  "name": "FISH TARGET",
+  "short_name": "FISH TARGET",
+  "description": "魚を選ぶだけで、釣法・タックル・仕掛け・最初の1投まで決める釣行アドバイザー",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f6f6",
+  "theme_color": "#061b22",
+  "lang": "ja",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
