@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="ja">
+<html lang="ja" data-build="__BUILD_ID__">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
@@ -8,18 +8,18 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="FISH TARGET" name="apple-mobile-web-app-title"/>
-<link href="manifest.webmanifest" rel="manifest"/>
-<link href="icon.svg" rel="icon" type="image/svg+xml"/>
-<title>FISH TARGET v15</title>
-<link href="style.css" rel="stylesheet"/>
-<link href="quick-plan.css" rel="stylesheet"/>
-<link href="field-mode.css" rel="stylesheet"/>
-<link href="pwa.css" rel="stylesheet"/></head>
+<link href="manifest.webmanifest?v=__BUILD_ID__" rel="manifest"/>
+<link href="icon.svg?v=__BUILD_ID__" rel="icon" type="image/svg+xml"/>
+<title>FISH TARGET __BUILD_VERSION__</title>
+<link href="style.css?v=__BUILD_ID__" rel="stylesheet"/>
+<link href="quick-plan.css?v=__BUILD_ID__" rel="stylesheet"/>
+<link href="field-mode.css?v=__BUILD_ID__" rel="stylesheet"/>
+<link href="pwa.css?v=__BUILD_ID__" rel="stylesheet"/></head>
 <body>
 <div class="app">
 <section class="view on" id="home">
 <header class="hero">
-<div class="brandRow"><div class="brand">FISH TARGET · SMART GAME PLAN</div><span class="version">V15</span></div>
+<div class="brandRow"><div class="brand">FISH TARGET · SMART GAME PLAN</div><span class="version">__BUILD_VERSION__</span></div>
 <h1>魚を選ぶ。<br/>最初の1投まで決まる。</h1>
 <p>おすすめ釣法、タックル、仕掛けに加えて「まず何を投げるか」「反応がなければ何を変えるか」まで1本化。</p>
 <div class="heroStats"><span>19魚種</span><span>LIVE WEATHER</span><span>JMA潮位表</span><span>25釣法</span><span>仕掛け図解</span></div>
@@ -39,7 +39,7 @@
 </section>
 <section class="view" id="result">
 <header class="resultHero">
-<div class="toprow"><button aria-label="戻る" class="back" id="back">‹</button><div class="brand">TARGET GAME PLAN · V15</div><span style="width:42px"></span></div>
+<div class="toprow"><button aria-label="戻る" class="back" id="back">‹</button><div class="brand">TARGET GAME PLAN · __BUILD_VERSION__</div><span style="width:42px"></span></div>
 <div class="target"><div><div class="brand" id="meta"></div><h1 id="rname"></h1><p id="sub"></p></div><div class="tart" id="tart"></div></div>
 </header>
 <main class="body">
@@ -137,7 +137,7 @@
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
 <div aria-live="polite" class="networkStatus" id="networkStatus" hidden>OFFLINE · 基本診断は利用可</div>
 </div>
-<script src="data.js"></script>
-<script src="products.js"></script>
-<script src="app.js"></script><script src="field-mode.js"></script><script src="pwa.js"></script>
+<script src="data.js?v=__BUILD_ID__"></script>
+<script src="products.js?v=__BUILD_ID__"></script>
+<script src="app.js?v=__BUILD_ID__"></script><script src="field-mode.js?v=__BUILD_ID__"></script><script src="pwa.js?v=__BUILD_ID__"></script>
 </body></html>

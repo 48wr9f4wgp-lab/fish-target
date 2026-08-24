@@ -1,12 +1,6 @@
 (()=>{
   const once=(el,key)=>{if(!el||el.dataset[key])return false;el.dataset[key]='1';return true};
-  const text=(sel,value)=>{const el=document.querySelector(sel);if(el)el.textContent=value};
-
-  function setVersion(){
-    const build=String(globalThis.FISH_TARGET_BUILD_VERSION||'20');
-    document.title=`FISH TARGET v${build}`;
-    text('.version',`V${build}`);
-    text('#result .toprow .brand',`TARGET GAME PLAN · V${build}`);
+  function updateHeroCopy(){
     const hero=document.querySelector('.hero > p');
     if(hero)hero.textContent='魚を選ぶだけで、釣法・FIRST CAST・手持ちタックル判定まで。';
   }
@@ -106,7 +100,7 @@
     collapseFitDetails();
   }
 
-  function apply(){setVersion();compactHome();compactResult()}
+  function apply(){updateHeroCopy();compactHome();compactResult()}
   apply();
   if(typeof renderResult==='function'){
     const prev=renderResult;

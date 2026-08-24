@@ -1,6 +1,6 @@
 (()=>{
-  const BUILD='20';
-  globalThis.FISH_TARGET_BUILD_VERSION=BUILD;
+  const BUILD=document.documentElement.dataset.build;
+  if(!BUILD)throw new Error('Missing generated build id');
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const status=()=>document.getElementById('networkStatus');
   const renderNetwork=()=>{
@@ -41,6 +41,5 @@
     await loadScript('./tackle.js','tackle-js');
     await loadScript('./fit-explain.js','fit-explain-js');
     await loadScript('./simplify.js','simplify-js');
-    await loadScript('./accuracy.js','accuracy-js');
   })();
 })();
