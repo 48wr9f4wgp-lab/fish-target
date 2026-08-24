@@ -1,4 +1,4 @@
-const CACHE='fish-target-shell-v20';
+const CACHE='fish-target-shell-v20b';
 const SHELL=[
   './',
   './index.html',
@@ -44,14 +44,15 @@ self.addEventListener('fetch',event=>{
 
   event.respondWith((async()=>{
     try{
-      const fresh=await fetch(request);
+      const freshRequest=new Request(request,{cache:'reload'});
+      const fresh=await fetch(freshRequest);
       if(fresh && fresh.ok){
         const cache=await caches.open(CACHE);
         cache.put(request,fresh.clone()).catch(()=>{});
       }
       return fresh;
     }catch(err){
-      const cached=await caches.match(request);
+      const cached=await caches.match(request,{ignoreSearch:true});
       if(cached)return cached;
       if(request.mode==='navigate'){
         const appShell=await caches.match('./index.html');
