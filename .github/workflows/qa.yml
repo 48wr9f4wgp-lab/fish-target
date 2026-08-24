@@ -1,0 +1,33 @@
+name: static-qa
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  static-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          for f in *.js; do
+            echo "checking $f"
+            node --check "$f"
+          done
+      - name: Check Service Worker shell files exist
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const sw=fs.readFileSync('sw.js','utf8');
+          const files=[...sw.matchAll(/'\.\/([^']+)'/g)].map(m=>m[1]).filter(Boolean);
+          const missing=files.filter(f=>f!==''&&!fs.existsSync(f));
+          if(missing.length){
+            console.error('Missing cached files:',missing);
+            process.exit(1);
+          }
+          console.log(`Service Worker shell OK: ${files.length} files`);
+          NODE
