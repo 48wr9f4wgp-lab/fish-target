@@ -25,13 +25,19 @@
     steps:['船長指示やベイト反応の下まで沈める','狙うレンジを高速巻きで長く通す','バイト後も慌てて大合わせせず巻きを維持し、取り込み後はリーダーを確認する']
   });
 
+  const aori=F.find(x=>x.name==='アオリイカ');
+  if(aori)aori.leader='フロロ 2.5〜3号';
+
+  const tachiuo=F.find(x=>x.name==='タチウオ');
+  if(tachiuo){tachiuo.style='bait';tachiuo.size='テンヤ2〜6号目安';}
+
   if(O['ヒラメ']?.['船'])O['ヒラメ']['船'].style='bait';
   if(O['タチウオ']?.['船'])O['タチウオ']['船'].style='bait';
   if(O['マダイ']?.['船'])O['マダイ']['船'].style='lure';
 
   const bass=F.find(x=>x.name==='ブラックバス');
   if(bass&&!bass.mistakes.some(x=>x.includes('生体'))){
-    bass.mistakes=[...bass.mistakes,'特定外来生物のため生体で釣り場外へ移動しない。地域のリリース規則も確認する'];
+    bass.mistakes=[...bass.mistakes,'特定外来生物のため、生きたままの運搬・保管などは原則禁止。釣り場・自治体のルールも確認する'];
   }
 
   if(typeof rotationFor==='function'){
