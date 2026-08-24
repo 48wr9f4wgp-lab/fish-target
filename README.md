@@ -1,23 +1,32 @@
 # FISH TARGET
 
-Fish-first fishing setup advisor. Choose a target fish and get a recommended method, tackle, rig, first cast, products, live-condition adjustment, and a field-use plan.
+Fish-first fishing setup advisor. Choose a target fish and get a recommended method, FIRST CAST, required tackle, owned-tackle compatibility, and a field-use plan.
 
 ## Current build
 
-- Canonical working version: v18
+- Canonical working version: v19
 - DEV / device test: GitHub Pages from `main`
 - Primary target: iPhone Safari / Home Screen PWA-style usage
 - Production candidate: Vercel only at release checkpoints; one project / one fixed URL
 - Offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
 
+## Product rule
+
+The default experience must answer one question as fast as possible:
+
+`釣りたい魚 -> 何で釣る -> 最初に何を投げる -> 手持ちでいける -> 現場で何をする`
+
+Anything outside that path is secondary and should be collapsed, hidden from first view, or removed if it does not materially improve the decision.
+
 ## Current product layers
 
-- v13 — 3-second result hierarchy: method → FIRST CAST → tackle → three steps
+- v13 — 3-second result hierarchy: method -> FIRST CAST -> tackle -> three steps
 - v14 — FIELD MODE for on-the-water use
 - v15 — PWA shell / network-first offline fallback
 - v16 — last-plan resume, favorite targets, recent targets
 - v17 — MY TACKLE: owned rod/reel registration and simple compatibility matching
 - v18 — fit explanation: per-spec ○/△/× breakdown and NEXT BUY guidance
+- v19 — simplification pass: compact home, collapsed filters, compressed fish cards, one condition group, one details group
 
 ## Main files
 
@@ -30,7 +39,8 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - `pwa.js` / `sw.js` — PWA and offline shell
 - `continuity.js` / `continuity.css` — retention/continuity layer
 - `tackle.js` / `tackle.css` — MY TACKLE and compatibility checks
-- `fit-explain.js` / `fit-explain.css` — v18 compatibility reasoning and buy guidance
+- `fit-explain.js` / `fit-explain.css` — compatibility reasoning and buy guidance
+- `simplify.js` / `simplify.css` — v19 information hierarchy and progressive disclosure
 
 ## Release workflow
 
@@ -46,7 +56,7 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 
 - Home renders all 19 target fish.
 - Search and filters work.
-- Fish → result renders method, FIRST CAST, tackle, rig, and pack list.
+- Fish -> result renders method, FIRST CAST, tackle, MY TACKLE, and three field steps before optional detail.
 - Shore/boat changes update method and products where applicable.
 - Manual FIRST CAST is not overwritten until AUTO is restored.
 - Saltwater marine state does not leak into freshwater targets.
@@ -55,4 +65,5 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 - MY TARGETS resume/favorites/recent flows do not block first-use UX.
 - MY TACKLE tolerates partial specifications and does not overstate model-specific compatibility.
 - Fit explanation must distinguish `推奨内`, `要確認`, and `差が大きい` without presenting manufacturer certification.
+- Optional live/detail content must remain collapsed by default in v19.
 - No horizontal overflow at iPhone widths.

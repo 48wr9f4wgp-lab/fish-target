@@ -1,4 +1,4 @@
-const CACHE='fish-target-shell-v18';
+const CACHE='fish-target-shell-v19';
 const SHELL=[
   './',
   './index.html',
@@ -9,6 +9,7 @@ const SHELL=[
   './continuity.css',
   './tackle.css',
   './fit-explain.css',
+  './simplify.css',
   './data.js',
   './products.js',
   './app.js',
@@ -17,6 +18,7 @@ const SHELL=[
   './continuity.js',
   './tackle.js',
   './fit-explain.js',
+  './simplify.js',
   './manifest.webmanifest',
   './icon.svg'
 ];
