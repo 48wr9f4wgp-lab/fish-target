@@ -1,4 +1,6 @@
 (()=>{
+  const BUILD='20';
+  const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const status=()=>document.getElementById('networkStatus');
   const renderNetwork=()=>{
     const el=status();
@@ -16,17 +18,17 @@
   renderNetwork();
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('SW registration failed',err));
+      navigator.serviceWorker.register(versioned('./sw.js'),{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(err=>console.warn('SW registration failed',err));
     });
   }
 
   const loadCss=(href,key)=>{
     if(document.querySelector(`link[data-extension="${key}"]`))return;
-    const css=document.createElement('link');css.rel='stylesheet';css.href=href;css.dataset.extension=key;document.head.appendChild(css);
+    const css=document.createElement('link');css.rel='stylesheet';css.href=versioned(href);css.dataset.extension=key;document.head.appendChild(css);
   };
   const loadScript=(src,key)=>new Promise(resolve=>{
     if(document.querySelector(`script[data-extension="${key}"]`)){resolve();return}
-    const js=document.createElement('script');js.src=src;js.async=false;js.dataset.extension=key;js.onload=resolve;js.onerror=()=>{console.warn('extension load failed',src);resolve()};document.body.appendChild(js);
+    const js=document.createElement('script');js.src=versioned(src);js.async=false;js.dataset.extension=key;js.onload=resolve;js.onerror=()=>{console.warn('extension load failed',src);resolve()};document.body.appendChild(js);
   });
 
   loadCss('./continuity.css','continuity-css');
