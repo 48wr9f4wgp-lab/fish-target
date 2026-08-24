@@ -20,15 +20,19 @@
     });
   }
 
-  // v16 continuity extension: keep the stable core markup intact and load after the app.
-  if(!document.querySelector('link[data-v16-continuity]')){
-    const css=document.createElement('link');
-    css.rel='stylesheet';css.href='./continuity.css';css.dataset.v16Continuity='1';
-    document.head.appendChild(css);
-  }
-  if(!document.querySelector('script[data-v16-continuity]')){
-    const js=document.createElement('script');
-    js.src='./continuity.js';js.async=false;js.dataset.v16Continuity='1';
-    document.body.appendChild(js);
-  }
+  const loadCss=(href,key)=>{
+    if(document.querySelector(`link[data-extension="${key}"]`))return;
+    const css=document.createElement('link');css.rel='stylesheet';css.href=href;css.dataset.extension=key;document.head.appendChild(css);
+  };
+  const loadScript=(src,key)=>new Promise(resolve=>{
+    if(document.querySelector(`script[data-extension="${key}"]`)){resolve();return}
+    const js=document.createElement('script');js.src=src;js.async=false;js.dataset.extension=key;js.onload=resolve;js.onerror=()=>{console.warn('extension load failed',src);resolve()};document.body.appendChild(js);
+  });
+
+  loadCss('./continuity.css','continuity-css');
+  loadCss('./tackle.css','tackle-css');
+  (async()=>{
+    await loadScript('./continuity.js','continuity-js');
+    await loadScript('./tackle.js','tackle-js');
+  })();
 })();
