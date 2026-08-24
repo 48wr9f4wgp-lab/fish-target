@@ -1,39 +1,52 @@
 # FISH TARGET
 
-Fish-first fishing setup advisor. Choose a target fish and get a recommended method, tackle, rig, first cast, products, and a pack list.
+Fish-first fishing setup advisor. Choose a target fish and get a recommended method, tackle, rig, first cast, products, live-condition adjustment, and a field-use plan.
 
 ## Current build
 
-- Canonical working version: v12 source
-- Primary target: iPhone Safari / PWA-style web usage
-- Deployment: Vercel, but only after local QA
-- Production URL policy: one project / one fixed URL; do not create per-version Vercel projects
+- Canonical working version: v16
+- DEV / device test: GitHub Pages from `main`
+- Primary target: iPhone Safari / Home Screen PWA-style usage
+- Production candidate: Vercel only at release checkpoints; one project / one fixed URL
+- v15 offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
 
-## Files
+## Current product layers
 
-- `index.html` — markup only
-- `style.css` — UI styles
+- v13 — 3-second result hierarchy: method → FIRST CAST → tackle → three steps
+- v14 — FIELD MODE for on-the-water use
+- v15 — PWA shell / network-first offline fallback
+- v16 — last-plan resume, favorite targets, recent targets
+
+## Main files
+
+- `index.html` — stable core markup
+- `style.css` / `quick-plan.css` / `field-mode.css` — core UI
 - `data.js` — fish/method data
 - `products.js` — product recommendation data
-- `app.js` — rendering, state, live-condition logic, persistence
+- `app.js` — rendering, recommendation state, live-condition logic, persistence
+- `field-mode.js` — FIELD MODE
+- `pwa.js` / `sw.js` — PWA and offline shell
+- `continuity.js` / `continuity.css` — v16 retention/continuity layer
 
-## Release rules
+## Release workflow
 
-1. Edit source files locally/GitHub.
-2. Run JS syntax checks and local HTTP smoke test.
-3. Verify iPhone-width layout and critical flows.
-4. Only then deploy to the existing Vercel project.
-5. Do not use Base64 loaders, gzip reconstruction, inline file-path placeholders, or HTML post-processing at deploy time.
-6. Do not create a new Vercel project for every version.
+1. Create a feature branch from `main`.
+2. Implement without changing unrelated core logic.
+3. Run syntax, mobile-width, behavior, and regression QA.
+4. Open a PR and inspect the diff.
+5. Merge to `main` only after QA passes.
+6. GitHub Pages automatically updates the DEV URL for iPhone testing.
+7. Vercel is updated only at production checkpoints.
 
 ## Critical regression flows
 
 - Home renders all 19 target fish.
 - Search and filters work.
-- Fish -> result renders tackle, rig, first cast, pack list.
+- Fish → result renders method, FIRST CAST, tackle, rig, and pack list.
 - Shore/boat changes update method and products where applicable.
-- LIVE data only influences recommendations after successful fetch.
-- Manual first-cast choice must not be overwritten until AUTO is restored.
-- Saltwater marine cards must disappear for freshwater fish.
-- Save/restore must not crash if localStorage is unavailable.
+- Manual FIRST CAST is not overwritten until AUTO is restored.
+- Saltwater marine state does not leak into freshwater targets.
+- FIELD MODE opens and returns correctly.
+- Save/restore survives unavailable localStorage.
+- MY TARGETS resume/favorites/recent flows do not block first-use UX.
 - No horizontal overflow at iPhone widths.
