@@ -3,6 +3,13 @@
   globalThis.__FISH_TARGET_ACCURACY__=true;
   if(typeof F==='undefined'||typeof O==='undefined')return;
 
+  const setVersion=()=>{
+    document.title='FISH TARGET v20';
+    const v=document.querySelector('.version');if(v)v.textContent='V20';
+    const rb=document.querySelector('#result .toprow .brand');if(rb)rb.textContent='TARGET GAME PLAN · V20';
+  };
+  setVersion();
+
   const sawara=F.find(x=>x.name==='サワラ');
   if(sawara){
     Object.assign(sawara,{
@@ -78,7 +85,7 @@
 
   if(typeof renderResult==='function'){
     const previousRenderResult=renderResult;
-    renderResult=function(...args){const out=previousRenderResult.apply(this,args);syncPlanMeta();return out};
+    renderResult=function(...args){const out=previousRenderResult.apply(this,args);setVersion();syncPlanMeta();return out};
   }
   if(typeof renderHome==='function')renderHome();
   if(typeof cur!=='undefined'&&cur&&typeof renderResult==='function')renderResult();
