@@ -1,0 +1,1 @@
+GitHub is canonical. Deploy only after local syntax, behavior, visual, and regression checks. Use one fixed Vercel project/URL. Do not use Base64/gzip reconstruction or HTML post-processing loaders.

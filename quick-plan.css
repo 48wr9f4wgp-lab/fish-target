@@ -1,0 +1,8 @@
+/* v13 quick-plan hierarchy */
+.quickPromise{margin-top:10px;padding:9px 11px;border-radius:12px;background:#eaf7f5;color:#276861;font-size:9px;font-weight:900;line-height:1.45}
+.planOptions{margin-top:12px;border-top:1px solid #edf2f3;padding-top:4px}
+.planOptions summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:8px 2px;cursor:pointer}
+.planOptions summary::-webkit-details-marker{display:none}.planOptions summary b{display:block;font-size:11px}.planOptions summary small{display:block;margin-top:2px;font-size:8px;color:#829397}.planOptions summary em{font-style:normal;font-size:8px;font-weight:950;color:#087f75;background:var(--mint);padding:5px 7px;border-radius:999px}.planOptions[open] summary{border-bottom:1px solid #edf2f3}.planOptionsBody{padding:3px 0 2px}
+.coreTitle{margin-top:15px}.coreTitle+*{scroll-margin-top:12px}.detailDivider{margin:24px 2px 7px;padding-top:16px;border-top:1px solid #dbe6e7;color:#7a8d91;font-size:9px;font-weight:900;letter-spacing:.04em;text-align:center}
+.actions{margin:12px 0 2px}.actions button{min-height:48px}.actions .save{box-shadow:0 8px 22px rgba(16,38,45,.12)}
+@media(max-width:420px){.planCard{padding-bottom:10px}.method{font-size:26px}.coreTitle{font-size:17px}}
