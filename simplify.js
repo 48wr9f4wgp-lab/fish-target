@@ -78,7 +78,7 @@
     if(autoCard){autoCard.classList.add('v19Retired');const h=autoCard.previousElementSibling;if(h?.matches('h2.sectionTitle'))h.classList.add('v19Retired')}
 
     if(body&&fieldBtn){
-      const conditions=makeGroup('v19Conditions','今日の条件を反映','天候・海況・手動条件でプランを補正',fieldBtn);
+      const conditions=makeGroup('v19Conditions','今日の条件を反映','天候・海況・手動条件でプランを補正',actions||fieldBtn);
       const cbody=conditions?.querySelector('.v19GroupBody');
       const fieldLive=document.querySelector('#result .fieldLive');
       const autoAdjust=document.getElementById('autoAdjust');
