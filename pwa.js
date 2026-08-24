@@ -1,5 +1,6 @@
 (()=>{
   const BUILD='20';
+  globalThis.FISH_TARGET_BUILD_VERSION=BUILD;
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const status=()=>document.getElementById('networkStatus');
   const renderNetwork=()=>{
