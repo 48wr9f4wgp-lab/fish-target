@@ -3,9 +3,10 @@
   const text=(sel,value)=>{const el=document.querySelector(sel);if(el)el.textContent=value};
 
   function setVersion(){
-    document.title='FISH TARGET v19';
-    text('.version','V19');
-    text('#result .toprow .brand','TARGET GAME PLAN · V19');
+    const build=String(globalThis.FISH_TARGET_BUILD_VERSION||'20');
+    document.title=`FISH TARGET v${build}`;
+    text('.version',`V${build}`);
+    text('#result .toprow .brand',`TARGET GAME PLAN · V${build}`);
     const hero=document.querySelector('.hero > p');
     if(hero)hero.textContent='魚を選ぶだけで、釣法・FIRST CAST・手持ちタックル判定まで。';
   }
