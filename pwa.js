@@ -19,4 +19,16 @@
       navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('SW registration failed',err));
     });
   }
+
+  // v16 continuity extension: keep the stable core markup intact and load after the app.
+  if(!document.querySelector('link[data-v16-continuity]')){
+    const css=document.createElement('link');
+    css.rel='stylesheet';css.href='./continuity.css';css.dataset.v16Continuity='1';
+    document.head.appendChild(css);
+  }
+  if(!document.querySelector('script[data-v16-continuity]')){
+    const js=document.createElement('script');
+    js.src='./continuity.js';js.async=false;js.dataset.v16Continuity='1';
+    document.body.appendChild(js);
+  }
 })();
