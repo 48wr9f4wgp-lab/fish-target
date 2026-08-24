@@ -23,6 +23,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Prepare V20 cache-busted entrypoint
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          for name in ['style.css','quick-plan.css','field-mode.css','pwa.css']:
+              s = s.replace(f'href="{name}"', f'href="{name}?v=20"')
+          for name in ['data.js','products.js','app.js','field-mode.js','pwa.js']:
+              s = s.replace(f'src="{name}"', f'src="{name}?v=20"')
+          p.write_text(s, encoding='utf-8')
+          PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
