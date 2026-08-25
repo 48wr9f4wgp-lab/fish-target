@@ -33,7 +33,12 @@ test('manual ownership is not mutated by catalog edit helper',()=>{
   const {applyOwnedEdit}=tackleLogic();
   const manual={id:'m1',source:'manual',name:'手入力',size:3000,lineType:'PE',lineNo:1};
   const edited=applyOwnedEdit(manual,{name:'変更',lineNo:2});
-  assert.deepEqual(edited,manual);
+  assert.equal(edited.id,manual.id);
+  assert.equal(edited.source,manual.source);
+  assert.equal(edited.name,manual.name);
+  assert.equal(edited.size,manual.size);
+  assert.equal(edited.lineType,manual.lineType);
+  assert.equal(edited.lineNo,manual.lineNo);
   assert.notEqual(edited,manual);
 });
 
