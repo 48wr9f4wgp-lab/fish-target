@@ -4,6 +4,17 @@
   const catalog=globalThis.FISH_TARGET_CATALOG||null;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const normalizeOwned=x=>({...x,source:x?.source||'manual'});
+  const applyOwnedEdit=(item,{name,lineType,lineNo}={})=>{
+    const next={...item};
+    if(item?.source==='catalog'){
+      const overrides={...(item.user_overrides||{})};
+      if(name!==undefined){next.name=String(name||'').trim()||item.name;overrides.nickname=next.name}
+      if(lineType!==undefined){next.lineType=String(lineType||'').trim();overrides.lineType=next.lineType}
+      if(lineNo!==undefined){const n=Number(lineNo);next.lineNo=Number.isFinite(n)&&n>0?n:null;overrides.lineNo=next.lineNo}
+      next.user_overrides=overrides;
+    }
+    return next;
+  };
   const read=()=>{try{const raw=typeof storeGet==='function'?storeGet(KEY):localStorage.getItem(KEY);const x=raw?JSON.parse(raw):{};return {rods:Array.isArray(x.rods)?x.rods.map(normalizeOwned):[],reels:Array.isArray(x.reels)?x.reels.map(normalizeOwned):[]}}catch{return {rods:[],reels:[]}}};
   const write=x=>{const raw=JSON.stringify(x);if(typeof storeSet==='function')storeSet(KEY,raw);else try{localStorage.setItem(KEY,raw)}catch{}};
   const uid=()=>`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`;
@@ -18,140 +29,64 @@
   const distance=(v,r)=>v<r.min?r.min-v:v>r.max?v-r.max:0;
 
   function rodFit(rod,p,r){
-    const checks=[];
-    const targetLen=/ft/i.test(p.rod||'')?range(p.rod?.match(/[^/]+/)?.[0]||p.rod):null;
+    const checks=[];const targetLen=/ft/i.test(p.rod||'')?range(p.rod?.match(/[^/]+/)?.[0]||p.rod):null;
     if(targetLen){if(+rod.length){const d=distance(+rod.length,targetLen);checks.push(d===0?0:d<=1?1:2)}else checks.push(1)}
-    const targetPower=powerRange(p.rod);
-    if(targetPower){if(rod.power){const pr=POWER.indexOf(rod.power);const d=distance(pr,targetPower);checks.push(d===0?0:d<=1?1:2)}else checks.push(1)}
-    const castRange=p.style!=='bait'?weightRange(r?.size||p.size):null;
-    if(castRange){if(+rod.maxLure)checks.push(+rod.maxLure>=castRange.max?0:+rod.maxLure>=castRange.min?1:2);else checks.push(1)}
-    const worst=checks.length?Math.max(...checks):1;
-    return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
+    const targetPower=powerRange(p.rod);if(targetPower){if(rod.power){const pr=POWER.indexOf(rod.power);const d=distance(pr,targetPower);checks.push(d===0?0:d<=1?1:2)}else checks.push(1)}
+    const castRange=p.style!=='bait'?weightRange(r?.size||p.size):null;if(castRange){if(+rod.maxLure)checks.push(+rod.maxLure>=castRange.max?0:+rod.maxLure>=castRange.min?1:2);else checks.push(1)}
+    const worst=checks.length?Math.max(...checks):1;return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
   }
-
   function reelFit(reel,p){
-    const checks=[];
-    const target=reelRange(p.reel);
-    if(target){if(+reel.size){const d=distance(+reel.size,target);checks.push(d===0?0:d<=1000?1:2)}else checks.push(1)}
-    const options=lineOptions(p.line);
-    if(options.length){
-      const matched=reel.lineType?options.find(x=>x.type===reel.lineType):null;
-      checks.push(reel.lineType?(matched?0:1):1);
-      if(matched?.unit==='号'){
-        if(+reel.lineNo){const d=distance(+reel.lineNo,matched.range);checks.push(d===0?0:d<=0.5?1:2)}else checks.push(1);
-      }else if(matched?.unit==='lb')checks.push(1);
-    }
-    const worst=checks.length?Math.max(...checks):1;
-    return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
+    const checks=[];const target=reelRange(p.reel);if(target){if(+reel.size){const d=distance(+reel.size,target);checks.push(d===0?0:d<=1000?1:2)}else checks.push(1)}
+    const options=lineOptions(p.line);if(options.length){const matched=reel.lineType?options.find(x=>x.type===reel.lineType):null;checks.push(reel.lineType?(matched?0:1):1);if(matched?.unit==='号'){if(+reel.lineNo){const d=distance(+reel.lineNo,matched.range);checks.push(d===0?0:d<=0.5?1:2)}else checks.push(1)}else if(matched?.unit==='lb')checks.push(1)}
+    const worst=checks.length?Math.max(...checks):1;return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
   }
 
-  globalThis.FISH_TARGET_TACKLE_LOGIC=Object.freeze({weightRange,lineOptions,rodFit,reelFit,normalizeOwned});
+  globalThis.FISH_TARGET_TACKLE_LOGIC=Object.freeze({weightRange,lineOptions,rodFit,reelFit,normalizeOwned,applyOwnedEdit});
   const best=(items,fn)=>items.map(x=>({...x,fit:fn(x)})).sort((a,b)=>a.fit.level-b.fit.level)[0]||null;
+  const statusMeta=status=>catalog?.statusInfo?.(status)||{label:'状態不明',needsReview:true};
+  const statusFor=x=>catalog?.get?.(x?.product_id)?.status||x?.catalog_status||'unknown';
 
-  const catalogPanel=(kind,label)=>catalog?`<div class="tackleEntryModes" data-kind="${kind}"><button class="on" data-mode="catalog" type="button">商品から選ぶ</button><button data-mode="manual" type="button">旧モデル・その他を手入力</button></div><div class="catalogPanel" id="${kind}CatalogPanel"><div class="catalogDevNote">V23 DEV · 開発用デモCatalog。実メーカー仕様の転載データではありません。</div><div class="catalogSearch"><input id="${kind}CatalogSearch" autocomplete="off" placeholder="シリーズ・モデルを検索"></div><div class="tackleFormGrid"><label>メーカー<select id="${kind}CatalogMaker"></select></label><label>シリーズ<select id="${kind}CatalogSeries"></select></label><label class="wide">モデル<select id="${kind}CatalogModel"></select></label></div><div class="catalogPreview" id="${kind}CatalogPreview"></div>${kind==='reel'?`<div class="catalogLine"><b>今巻いているライン</b><small>リールの商品仕様と実際に巻いているラインは別なので、ここだけ指定。</small><div class="tackleFormGrid"><label>種類<select id="catalogReelLineType"><option value="">未指定</option><option>PE</option><option>ナイロン</option><option>フロロ</option></select></label><label>号数<input id="catalogReelLineNo" inputmode="decimal" placeholder="1.5"></label></div></div>`:''}<button class="tackleAdd" id="addCatalog${label}" type="button">この${kind==='rod'?'ロッド':'リール'}を登録</button></div>`:`<div class="catalogUnavailable">商品Catalogは現在利用できません。手入力で登録できます。</div>`;
+  const catalogPanel=(kind,label)=>catalog?`<div class="tackleEntryModes" data-kind="${kind}"><button class="on" data-mode="catalog" type="button">商品から選ぶ</button><button data-mode="manual" type="button">旧モデル・その他を手入力</button></div><div class="catalogPanel" id="${kind}CatalogPanel"><div class="catalogDevNote">V23 DEV · 開発用デモCatalog。実メーカー仕様の転載データではありません。</div><div class="catalogSearch"><input id="${kind}CatalogSearch" autocomplete="off" placeholder="シリーズ・モデルを検索"></div><div class="tackleFormGrid"><label>メーカー<select id="${kind}CatalogMaker"></select></label><label>シリーズ<select id="${kind}CatalogSeries"></select></label><label class="wide">モデル<select id="${kind}CatalogModel"></select></label></div><div class="catalogLoadState" id="${kind}CatalogLoadState"></div><div class="catalogPreview" id="${kind}CatalogPreview"></div>${kind==='reel'?`<div class="catalogLine"><b>今巻いているライン</b><small>リールの商品仕様と実際に巻いているラインは別なので、ここだけ指定。</small><div class="tackleFormGrid"><label>種類<select id="catalogReelLineType"><option value="">未指定</option><option>PE</option><option>ナイロン</option><option>フロロ</option></select></label><label>号数<input id="catalogReelLineNo" inputmode="decimal" placeholder="1.5"></label></div></div>`:''}<button class="tackleAdd" id="addCatalog${label}" type="button">この${kind==='rod'?'ロッド':'リール'}を登録</button></div>`:`<div class="catalogUnavailable">商品Catalogは現在利用できません。手入力で登録できます。</div>`;
 
   function ensureUI(){
-    if(!document.getElementById('myTackleHome')){
-      const anchor=document.getElementById('myTargets')||document.querySelector('.filterPanel');
-      if(anchor)anchor.insertAdjacentHTML('afterend',`<section class="myTackleHome" id="myTackleHome"><div class="head"><h2>MY TACKLE</h2><button class="tackleManage" id="tackleManage" type="button">登録・編集</button></div><div class="tackleSummary" id="tackleSummary"></div></section>`);
-    }
-    if(!document.getElementById('tackleFitCard')){
-      const gear=document.getElementById('gear');
-      if(gear)gear.insertAdjacentHTML('afterend',`<section class="card tackleFitCard" id="tackleFitCard"><div class="tackleFitHead"><div><span>MY TACKLE CHECK</span><strong>手持ちでいける？</strong></div><button id="tackleEditFromResult" type="button">編集</button></div><div id="tackleFitBody"></div></section>`);
-    }
-    if(!document.getElementById('tackleSheet')){
-      document.body.insertAdjacentHTML('beforeend',`<div class="tackleBackdrop" id="tackleBackdrop" hidden></div><section class="tackleSheet" id="tackleSheet" aria-modal="true" role="dialog" hidden><div class="tackleSheetHead"><div><span>MY TACKLE</span><h2>手持ちを登録</h2></div><button id="tackleClose" aria-label="閉じる">×</button></div><div class="tackleSheetBody"><div class="tackleFormCard"><h3>ロッドを追加</h3>${catalogPanel('rod','Rod')}<div class="manualPanel" id="rodManualPanel" ${catalog?'hidden':''}><div class="tackleFormGrid"><label class="wide">名前<input id="rodName" placeholder="例：ショアジギロッド 96MH"></label><label>長さ ft<input id="rodLength" inputmode="decimal" placeholder="9.6"></label><label>パワー<select id="rodPower"><option value="">未指定</option>${POWER.map(p=>`<option>${p}</option>`).join('')}</select></label><label class="wide">ルアー上限 g<input id="rodMaxLure" inputmode="decimal" placeholder="60"></label></div><button class="tackleAdd" id="addRod" type="button">手入力ロッドを追加</button></div></div><div class="tackleFormCard"><h3>リールを追加</h3>${catalogPanel('reel','Reel')}<div class="manualPanel" id="reelManualPanel" ${catalog?'hidden':''}><div class="tackleFormGrid"><label class="wide">名前<input id="reelName" placeholder="例：4000XG"></label><label>番手<input id="reelSize" inputmode="numeric" placeholder="4000"></label><label>ライン<select id="reelLineType"><option value="">未指定</option><option>PE</option><option>ナイロン</option><option>フロロ</option></select></label><label class="wide">ライン号数<input id="reelLineNo" inputmode="decimal" placeholder="1.5"></label></div><button class="tackleAdd" id="addReel" type="button">手入力リールを追加</button></div></div><div class="tackleOwned" id="tackleOwned"></div></div></section>`);
-    }
-    document.getElementById('tackleManage')?.addEventListener('click',openSheet);
-    document.getElementById('tackleEditFromResult')?.addEventListener('click',openSheet);
-    document.getElementById('tackleClose')?.addEventListener('click',closeSheet);
-    document.getElementById('tackleBackdrop')?.addEventListener('click',closeSheet);
-    document.getElementById('addRod')?.addEventListener('click',addRod);
-    document.getElementById('addReel')?.addEventListener('click',addReel);
-    document.getElementById('addCatalogRod')?.addEventListener('click',()=>addCatalog('rod'));
-    document.getElementById('addCatalogReel')?.addEventListener('click',()=>addCatalog('reel'));
-    document.querySelectorAll('.tackleEntryModes button').forEach(b=>b.addEventListener('click',()=>setEntryMode(b.closest('.tackleEntryModes').dataset.kind,b.dataset.mode)));
-    if(catalog){setupCatalog('rod');setupCatalog('reel')}
+    if(!document.getElementById('myTackleHome')){const anchor=document.getElementById('myTargets')||document.querySelector('.filterPanel');if(anchor)anchor.insertAdjacentHTML('afterend',`<section class="myTackleHome" id="myTackleHome"><div class="head"><h2>MY TACKLE</h2><button class="tackleManage" id="tackleManage" type="button">登録・編集</button></div><div class="tackleSummary" id="tackleSummary"></div></section>`)}
+    if(!document.getElementById('tackleFitCard')){const gear=document.getElementById('gear');if(gear)gear.insertAdjacentHTML('afterend',`<section class="card tackleFitCard" id="tackleFitCard"><div class="tackleFitHead"><div><span>MY TACKLE CHECK</span><strong>手持ちでいける？</strong></div><button id="tackleEditFromResult" type="button">編集</button></div><div id="tackleFitBody"></div></section>`)}
+    if(!document.getElementById('tackleSheet'))document.body.insertAdjacentHTML('beforeend',`<div class="tackleBackdrop" id="tackleBackdrop" hidden></div><section class="tackleSheet" id="tackleSheet" aria-modal="true" role="dialog" hidden><div class="tackleSheetHead"><div><span>MY TACKLE</span><h2>手持ちを登録</h2></div><button id="tackleClose" aria-label="閉じる">×</button></div><div class="tackleSheetBody"><div class="tackleFormCard"><h3>ロッドを追加</h3>${catalogPanel('rod','Rod')}<div class="manualPanel" id="rodManualPanel" ${catalog?'hidden':''}><div class="tackleFormGrid"><label class="wide">名前<input id="rodName" placeholder="例：ショアジギロッド 96MH"></label><label>長さ ft<input id="rodLength" inputmode="decimal" placeholder="9.6"></label><label>パワー<select id="rodPower"><option value="">未指定</option>${POWER.map(p=>`<option>${p}</option>`).join('')}</select></label><label class="wide">ルアー上限 g<input id="rodMaxLure" inputmode="decimal" placeholder="60"></label></div><button class="tackleAdd" id="addRod" type="button">手入力ロッドを追加</button></div></div><div class="tackleFormCard"><h3>リールを追加</h3>${catalogPanel('reel','Reel')}<div class="manualPanel" id="reelManualPanel" ${catalog?'hidden':''}><div class="tackleFormGrid"><label class="wide">名前<input id="reelName" placeholder="例：4000XG"></label><label>番手<input id="reelSize" inputmode="numeric" placeholder="4000"></label><label>ライン<select id="reelLineType"><option value="">未指定</option><option>PE</option><option>ナイロン</option><option>フロロ</option></select></label><label class="wide">ライン号数<input id="reelLineNo" inputmode="decimal" placeholder="1.5"></label></div><button class="tackleAdd" id="addReel" type="button">手入力リールを追加</button></div></div><div class="tackleOwned" id="tackleOwned"></div></div></section>`);
+    document.getElementById('tackleManage')?.addEventListener('click',openSheet);document.getElementById('tackleEditFromResult')?.addEventListener('click',openSheet);document.getElementById('tackleClose')?.addEventListener('click',closeSheet);document.getElementById('tackleBackdrop')?.addEventListener('click',closeSheet);document.getElementById('addRod')?.addEventListener('click',addRod);document.getElementById('addReel')?.addEventListener('click',addReel);document.getElementById('addCatalogRod')?.addEventListener('click',()=>addCatalog('rod'));document.getElementById('addCatalogReel')?.addEventListener('click',()=>addCatalog('reel'));document.querySelectorAll('.tackleEntryModes button').forEach(b=>b.addEventListener('click',()=>setEntryMode(b.closest('.tackleEntryModes').dataset.kind,b.dataset.mode)));if(catalog){setupCatalog('rod');setupCatalog('reel')}
   }
 
-  function setEntryMode(kind,mode){
-    const modes=document.querySelector(`.tackleEntryModes[data-kind="${kind}"]`);if(!modes)return;
-    modes.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));
-    const cp=document.getElementById(`${kind}CatalogPanel`),mp=document.getElementById(`${kind}ManualPanel`);
-    if(cp)cp.hidden=mode!=='catalog';if(mp)mp.hidden=mode!=='manual';
-  }
+  function setEntryMode(kind,mode){const modes=document.querySelector(`.tackleEntryModes[data-kind="${kind}"]`);if(!modes)return;modes.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));const cp=document.getElementById(`${kind}CatalogPanel`),mp=document.getElementById(`${kind}ManualPanel`);if(cp)cp.hidden=mode!=='catalog';if(mp)mp.hidden=mode!=='manual'}
 
   function setupCatalog(kind){
-    const category=kind;
-    const maker=document.getElementById(`${kind}CatalogMaker`),series=document.getElementById(`${kind}CatalogSeries`),model=document.getElementById(`${kind}CatalogModel`),search=document.getElementById(`${kind}CatalogSearch`);
-    if(!maker||!series||!model)return;
-    maker.innerHTML=catalog.makersFor(category).map(x=>`<option>${esc(x)}</option>`).join('');
-    const updateSeries=()=>{const values=catalog.seriesFor(maker.value,category);series.innerHTML=values.map(x=>`<option>${esc(x)}</option>`).join('');updateModels()};
-    const updateModels=()=>{const items=catalog.list({maker:maker.value,category,series:series.value,query:search?.value||''});model.innerHTML=items.map(x=>`<option value="${esc(x.product_id)}">${esc(x.model)}</option>`).join('');renderCatalogPreview(kind)};
-    maker.addEventListener('change',updateSeries);series.addEventListener('change',updateModels);model.addEventListener('change',()=>renderCatalogPreview(kind));search?.addEventListener('input',updateModels);
-    updateSeries();
+    const category=kind,maker=document.getElementById(`${kind}CatalogMaker`),series=document.getElementById(`${kind}CatalogSeries`),model=document.getElementById(`${kind}CatalogModel`),search=document.getElementById(`${kind}CatalogSearch`),state=document.getElementById(`${kind}CatalogLoadState`);if(!maker||!series||!model)return;
+    const idx=catalog.index?.({category});const makerNames=idx?.makers?.map(x=>x.maker)||catalog.makersFor(category);maker.innerHTML=makerNames.map(x=>`<option>${esc(x)}</option>`).join('');let requestId=0;
+    const updateSeries=()=>{const fromIndex=idx?.makers?.find(x=>x.maker===maker.value)?.series;const values=fromIndex||catalog.seriesFor(maker.value,category);series.innerHTML=values.map(x=>`<option>${esc(x)}</option>`).join('');updateModels()};
+    const updateModels=async()=>{const id=++requestId;model.disabled=true;if(state)state.textContent='Catalogを読み込み中…';const q=search?.value||'';try{const page=await catalog.loadPage({maker:maker.value,category,series:q?undefined:series.value,query:q,limit:100,offset:0});if(id!==requestId)return;model.innerHTML=page.items.map(x=>{const meta=statusMeta(x.status);return `<option value="${esc(x.product_id)}">${esc(q?`${x.series} · ${x.model}`:x.model)}${meta.needsReview?` · ${esc(meta.label)}`:''}</option>`}).join('');if(state)state.textContent=page.total?`${page.total}件${page.hasMore?' · 絞り込み推奨':''}`:'該当モデルなし';renderCatalogPreview(kind)}catch{if(id!==requestId)return;model.innerHTML='';if(state)state.textContent='Catalogの読み込みに失敗';renderCatalogPreview(kind)}finally{if(id===requestId)model.disabled=false}};
+    maker.addEventListener('change',updateSeries);series.addEventListener('change',updateModels);model.addEventListener('change',()=>renderCatalogPreview(kind));search?.addEventListener('input',updateModels);updateSeries();
   }
 
   function selectedCatalog(kind){return catalog?.get(document.getElementById(`${kind}CatalogModel`)?.value)||null}
-  function renderCatalogPreview(kind){
-    const box=document.getElementById(`${kind}CatalogPreview`);if(!box)return;const p=selectedCatalog(kind);
-    if(!p){box.innerHTML='<small>該当モデルなし</small>';return}
-    const s=p.specs||{};
-    const bits=kind==='rod'?[s.length_ft?`${s.length_ft}ft`:'',s.power||'',s.lure_max_g?`LURE MAX ${s.lure_max_g}g`:'',s.line_pe_min&&s.line_pe_max?`PE ${s.line_pe_min}〜${s.line_pe_max}`:'']:[s.reel_size?`${s.reel_size}番`:'',s.gear_ratio?`GEAR ${s.gear_ratio}`:'',s.max_drag_kg?`DRAG ${s.max_drag_kg}kg`:''];
-    box.innerHTML=`<span>${esc(p.maker)} · SYNTHETIC</span><b>${esc(p.display_name)}</b><small>${esc(bits.filter(Boolean).join(' · ')||'仕様未設定')}</small>`;
-  }
+  function renderCatalogPreview(kind){const box=document.getElementById(`${kind}CatalogPreview`);if(!box)return;const p=selectedCatalog(kind);if(!p){box.innerHTML='<small>該当モデルなし</small>';return}const s=p.specs||{},meta=statusMeta(p.status),bits=kind==='rod'?[s.length_ft?`${s.length_ft}ft`:'',s.power||'',s.lure_max_g?`LURE MAX ${s.lure_max_g}g`:'',s.line_pe_min&&s.line_pe_max?`PE ${s.line_pe_min}〜${s.line_pe_max}`:'']:[s.reel_size?`${s.reel_size}番`:'',s.gear_ratio?`GEAR ${s.gear_ratio}`:'',s.max_drag_kg?`DRAG ${s.max_drag_kg}kg`:''];box.innerHTML=`<span>${esc(p.maker)} · SYNTHETIC · ${esc(meta.label)}</span><b>${esc(p.display_name)}</b><small>${esc(bits.filter(Boolean).join(' · ')||'仕様未設定')}</small>${meta.needsReview?`<em>旧モデル・廃番・状態不明品は、実物仕様を確認して使ってください。</em>`:''}`}
 
-  function addCatalog(kind){
-    const p=selectedCatalog(kind);if(!p){if(typeof toast==='function')toast('商品を選んで');return}
-    const opts={id:uid()};
-    if(kind==='reel'){opts.lineType=value('catalogReelLineType');opts.lineNo=+value('catalogReelLineNo')||null}
-    const item=catalog.ownedSnapshot(p,opts);if(!item)return;
-    const db=read(),key=kind==='rod'?'rods':'reels';db[key].unshift(item);db[key]=db[key].slice(0,12);write(db);refresh();
-    if(typeof toast==='function')toast(`${kind==='rod'?'ロッド':'リール'}を商品Catalogから登録した`)
-  }
-
+  function addCatalog(kind){const p=selectedCatalog(kind);if(!p){if(typeof toast==='function')toast('商品を選んで');return}const opts={id:uid()};if(kind==='reel'){opts.lineType=value('catalogReelLineType');opts.lineNo=+value('catalogReelLineNo')||null}const item=catalog.ownedSnapshot(p,opts);if(!item)return;const db=read(),key=kind==='rod'?'rods':'reels';db[key].unshift(item);db[key]=db[key].slice(0,12);write(db);refresh();if(typeof toast==='function')toast(`${kind==='rod'?'ロッド':'リール'}を商品Catalogから登録した`)}
   function openSheet(){renderOwned();document.getElementById('tackleBackdrop').hidden=false;document.getElementById('tackleSheet').hidden=false;document.body.classList.add('tackleSheetOpen')}
   function closeSheet(){document.getElementById('tackleBackdrop').hidden=true;document.getElementById('tackleSheet').hidden=true;document.body.classList.remove('tackleSheetOpen')}
   const value=id=>document.getElementById(id)?.value.trim()||'';
-
-  function addRod(){
-    const name=value('rodName');if(!name){if(typeof toast==='function')toast('ロッド名を入れて');return}
-    const db=read();db.rods.unshift({id:uid(),source:'manual',name,length:+value('rodLength')||null,power:value('rodPower'),maxLure:+value('rodMaxLure')||null});db.rods=db.rods.slice(0,12);write(db);
-    ['rodName','rodLength','rodMaxLure'].forEach(id=>document.getElementById(id).value='');document.getElementById('rodPower').value='';refresh();if(typeof toast==='function')toast('ロッドを登録した')
-  }
-  function addReel(){
-    const name=value('reelName');if(!name){if(typeof toast==='function')toast('リール名を入れて');return}
-    const db=read();db.reels.unshift({id:uid(),source:'manual',name,size:+value('reelSize')||null,lineType:value('reelLineType'),lineNo:+value('reelLineNo')||null});db.reels=db.reels.slice(0,12);write(db);
-    ['reelName','reelSize','reelLineNo'].forEach(id=>document.getElementById(id).value='');document.getElementById('reelLineType').value='';refresh();if(typeof toast==='function')toast('リールを登録した')
-  }
+  function addRod(){const name=value('rodName');if(!name){if(typeof toast==='function')toast('ロッド名を入れて');return}const db=read();db.rods.unshift({id:uid(),source:'manual',name,length:+value('rodLength')||null,power:value('rodPower'),maxLure:+value('rodMaxLure')||null});db.rods=db.rods.slice(0,12);write(db);['rodName','rodLength','rodMaxLure'].forEach(id=>document.getElementById(id).value='');document.getElementById('rodPower').value='';refresh();if(typeof toast==='function')toast('ロッドを登録した')}
+  function addReel(){const name=value('reelName');if(!name){if(typeof toast==='function')toast('リール名を入れて');return}const db=read();db.reels.unshift({id:uid(),source:'manual',name,size:+value('reelSize')||null,lineType:value('reelLineType'),lineNo:+value('reelLineNo')||null});db.reels=db.reels.slice(0,12);write(db);['reelName','reelSize','reelLineNo'].forEach(id=>document.getElementById(id).value='');document.getElementById('reelLineType').value='';refresh();if(typeof toast==='function')toast('リールを登録した')}
   function remove(type,id){const db=read();db[type]=db[type].filter(x=>x.id!==id);write(db);refresh()}
 
+  function saveOwnedEdit(type,id){const db=read(),item=db[type].find(x=>x.id===id);if(!item||item.source!=='catalog')return;const prefix=`edit-${type}-${id}`,patch={name:value(`${prefix}-name`)};if(type==='reels'){patch.lineType=value(`${prefix}-lineType`);patch.lineNo=value(`${prefix}-lineNo`)}const next=applyOwnedEdit(item,patch);db[type]=db[type].map(x=>x.id===id?next:x);write(db);refresh();if(typeof toast==='function')toast('登録内容を更新した')}
+  function toggleOwnedEdit(type,id){const panel=document.querySelector(`[data-editor="${type}:${id}"]`);if(panel)panel.hidden=!panel.hidden}
+
   function renderOwned(){
-    const box=document.getElementById('tackleOwned');if(!box)return;const db=read();
-    const rows=[...db.rods.map(x=>({type:'rods',kind:'ROD',x,meta:[x.length?`${x.length}ft`:'',x.power,x.maxLure?`MAX ${x.maxLure}g`:''].filter(Boolean).join(' · ')})),...db.reels.map(x=>({type:'reels',kind:'REEL',x,meta:[x.size?`${x.size}番`:'',x.lineType&&x.lineNo?`${x.lineType} ${x.lineNo}号`:x.lineType||''].filter(Boolean).join(' · ')}))];
-    box.innerHTML=rows.length?`<div class="ownedTitle">登録済み <span>${rows.length}点</span></div>${rows.map(r=>`<div class="ownedRow"><div><span>${r.kind} · ${r.x.source==='catalog'?'CATALOG':'MANUAL'}${r.x.license_status==='synthetic'?' · DEMO':''}</span><b>${esc(r.x.name)}</b><small>${esc(r.meta||'スペック未指定')}</small></div><button data-type="${r.type}" data-id="${r.x.id}" aria-label="削除">削除</button></div>`).join('')}`:'<div class="tackleEmpty">まだ未登録。商品Catalogから選ぶか、旧モデル・その他を手入力できます。</div>';
-    box.querySelectorAll('.ownedRow button').forEach(b=>b.onclick=()=>remove(b.dataset.type,b.dataset.id));
+    const box=document.getElementById('tackleOwned');if(!box)return;const db=read();const rows=[...db.rods.map(x=>({type:'rods',kind:'ROD',x,meta:[x.length?`${x.length}ft`:'',x.power,x.maxLure?`MAX ${x.maxLure}g`:''].filter(Boolean).join(' · ')})),...db.reels.map(x=>({type:'reels',kind:'REEL',x,meta:[x.size?`${x.size}番`:'',x.lineType&&x.lineNo?`${x.lineType} ${x.lineNo}号`:x.lineType||''].filter(Boolean).join(' · ')}))];
+    box.innerHTML=rows.length?`<div class="ownedTitle">登録済み <span>${rows.length}点</span></div>${rows.map(r=>{const status=r.x.source==='catalog'?statusMeta(statusFor(r.x)):null,prefix=`edit-${r.type}-${r.x.id}`;return `<div class="ownedRowWrap"><div class="ownedRow"><div><span>${r.kind} · ${r.x.source==='catalog'?'CATALOG':'MANUAL'}${r.x.license_status==='synthetic'?' · DEMO':''}${status?` · ${esc(status.label)}`:''}</span><b>${esc(r.x.name)}</b><small>${esc(r.meta||'スペック未指定')}</small></div><div class="ownedActions">${r.x.source==='catalog'?`<button data-edit="${r.type}:${r.x.id}">編集</button>`:''}<button data-remove="${r.type}:${r.x.id}">削除</button></div></div>${r.x.source==='catalog'?`<div class="ownedEditor" data-editor="${r.type}:${r.x.id}" hidden><label>呼び名<input id="${prefix}-name" value="${esc(r.x.name)}"></label>${r.type==='reels'?`<div class="ownedEditorGrid"><label>現在のライン<select id="${prefix}-lineType"><option value="">未指定</option>${['PE','ナイロン','フロロ'].map(v=>`<option ${r.x.lineType===v?'selected':''}>${v}</option>`).join('')}</select></label><label>号数<input id="${prefix}-lineNo" inputmode="decimal" value="${esc(r.x.lineNo??'')}"></label></div>`:''}<small>商品スペック自体はCatalog由来のまま保持し、ユーザー固有情報だけ上書きします。</small><button class="ownedSave" data-save="${r.type}:${r.x.id}">保存</button></div>`:''}</div>`}).join('')}`:'<div class="tackleEmpty">まだ未登録。商品Catalogから選ぶか、旧モデル・その他を手入力できます。</div>';
+    box.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{const [type,id]=b.dataset.remove.split(':');remove(type,id)});box.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const [type,id]=b.dataset.edit.split(':');toggleOwnedEdit(type,id)});box.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{const [type,id]=b.dataset.save.split(':');saveOwnedEdit(type,id)});
   }
 
-  function renderHomeSummary(){
-    const box=document.getElementById('tackleSummary');if(!box)return;const db=read();
-    if(!db.rods.length&&!db.reels.length){box.innerHTML='<button class="tackleEmptyCta" id="tackleEmptyCta" type="button"><b>手持ちタックルを登録</b><span>商品から選択 / 旧モデルは手入力。魚ごとに適合を自動判定 ›</span></button>';document.getElementById('tackleEmptyCta').onclick=openSheet;return}
-    box.innerHTML=`<div class="tackleCount"><div><span>ROD</span><b>${db.rods.length}</b></div><div><span>REEL</span><b>${db.reels.length}</b></div><p>登録済みタックルから、魚ごとに近い組み合わせを自動表示。</p></div>`;
-  }
-
-  function renderFit(){
-    const body=document.getElementById('tackleFitBody');if(!body||typeof cur==='undefined'||!cur)return;const db=read();const p=typeof basePlan==='function'?basePlan():cur;const r=typeof currentRotation==='function'?currentRotation(p):null;
-    if(!db.rods.length&&!db.reels.length){body.innerHTML='<div class="fitEmpty"><b>MY TACKLE未登録</b><span>ロッドとリールを登録すると、このプランに使えるか照合する。</span><button id="fitEmptyAdd">登録する</button></div>';document.getElementById('fitEmptyAdd').onclick=openSheet;return}
-    const rod=best(db.rods,x=>rodFit(x,p,r)),reel=best(db.reels,x=>reelFit(x,p));
-    const item=(kind,x,target)=>x?`<div class="fitItem level${x.fit.level}"><div class="fitKind">${kind}</div><div><b>${esc(x.name)}</b><span>${esc(x.fit.label)}</span></div><small>推奨 ${esc(target)}</small></div>`:`<div class="fitItem level1"><div class="fitKind">${kind}</div><div><b>未登録</b><span>判定できません</span></div><small>推奨 ${esc(target)}</small></div>`;
-    const worst=Math.max(rod?.fit.level??1,reel?.fit.level??1);const summary=worst===0?'手持ちで組みやすい':worst===1?'一部条件を確認':'買い足し候補あり';
-    body.innerHTML=`<div class="fitSummary level${worst}"><span>判定</span><b>${summary}</b></div><div class="fitItems">${item('ROD',rod,p.rod||cur.rod)}${item('REEL',reel,p.reel||cur.reel)}</div><p class="fitNote">入力済みの長さ・パワー・重量上限、番手・ライン規格だけを簡易照合。cm/inch/エギ号数をgへ誤変換せず、lb表記は自動判定しない。</p>`;
-  }
-
+  function renderHomeSummary(){const box=document.getElementById('tackleSummary');if(!box)return;const db=read();if(!db.rods.length&&!db.reels.length){box.innerHTML='<button class="tackleEmptyCta" id="tackleEmptyCta" type="button"><b>手持ちタックルを登録</b><span>商品から選択 / 旧モデルは手入力。魚ごとに適合を自動判定 ›</span></button>';document.getElementById('tackleEmptyCta').onclick=openSheet;return}box.innerHTML=`<div class="tackleCount"><div><span>ROD</span><b>${db.rods.length}</b></div><div><span>REEL</span><b>${db.reels.length}</b></div><p>登録済みタックルから、魚ごとに近い組み合わせを自動表示。</p></div>`}
+  function renderFit(){const body=document.getElementById('tackleFitBody');if(!body||typeof cur==='undefined'||!cur)return;const db=read(),p=typeof basePlan==='function'?basePlan():cur,r=typeof currentRotation==='function'?currentRotation(p):null;if(!db.rods.length&&!db.reels.length){body.innerHTML='<div class="fitEmpty"><b>MY TACKLE未登録</b><span>ロッドとリールを登録すると、このプランに使えるか照合する。</span><button id="fitEmptyAdd">登録する</button></div>';document.getElementById('fitEmptyAdd').onclick=openSheet;return}const rod=best(db.rods,x=>rodFit(x,p,r)),reel=best(db.reels,x=>reelFit(x,p));const item=(kind,x,target)=>x?`<div class="fitItem level${x.fit.level}"><div class="fitKind">${kind}</div><div><b>${esc(x.name)}</b><span>${esc(x.fit.label)}</span></div><small>推奨 ${esc(target)}</small></div>`:`<div class="fitItem level1"><div class="fitKind">${kind}</div><div><b>未登録</b><span>判定できません</span></div><small>推奨 ${esc(target)}</small></div>`;const worst=Math.max(rod?.fit.level??1,reel?.fit.level??1),summary=worst===0?'手持ちで組みやすい':worst===1?'一部条件を確認':'買い足し候補あり';body.innerHTML=`<div class="fitSummary level${worst}"><span>判定</span><b>${summary}</b></div><div class="fitItems">${item('ROD',rod,p.rod||cur.rod)}${item('REEL',reel,p.reel||cur.reel)}</div><p class="fitNote">入力済みの長さ・パワー・重量上限、番手・ライン規格だけを簡易照合。cm/inch/エギ号数をgへ誤変換せず、lb表記は自動判定しない。</p>`}
   function refresh(){renderOwned();renderHomeSummary();renderFit()}
-  ensureUI();refresh();
-  if(typeof renderResult==='function'){
-    const prev=renderResult;
-    renderResult=function(...args){const out=prev.apply(this,args);renderFit();return out};
-  }
+  ensureUI();refresh();if(typeof renderResult==='function'){const prev=renderResult;renderResult=function(...args){const out=prev.apply(this,args);renderFit();return out}}
 })();
