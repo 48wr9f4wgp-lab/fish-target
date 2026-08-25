@@ -5,6 +5,6 @@
     "build": "node scripts/build.mjs",
     "serve": "node scripts/serve.mjs",
     "test": "npm run build && node --test",
-    "test:syntax": "node --check data.js && node --check products.js && node --check app.js && node --check catalog-providers.js && node --check catalog-fixtures.js && node --check catalog.js && node --check tackle.js && node --check pwa.js && node --check sw.js && node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check scripts/version-contract.mjs"
+    "test:syntax": "node --check data.js && node --check products.js && node --check app.js && node --check catalog-providers.js && node --check catalog-adapters.js && node --check catalog-fixtures.js && node --check catalog.js && node --check tackle.js && node --check pwa.js && node --check sw.js && node --check scripts/build.mjs && node --check scripts/serve.mjs && node --check scripts/version-contract.mjs"
   }
 }
