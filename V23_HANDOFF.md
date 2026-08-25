@@ -50,7 +50,7 @@
 - Maker/series index metadata.
 - Discontinued/unknown lifecycle search and status metadata.
 - Public artifact version regression reads `build.config.json` instead of hardcoding V22-RC1.
-- GitHub Actions `rc-qa` run #44: SUCCESS on head `6f7e188174875c5f626daabb2fe91147fc45ecec` before this documentation-only update.
+- GitHub Actions `rc-qa` run #44: SUCCESS on code head `6f7e188174875c5f626daabb2fe91147fc45ecec` before this documentation-only update.
 
 ## Still to do
 - Wire MY TACKLE selector UI to `loadPage()` rather than direct `list()` before catalog volume scales.
