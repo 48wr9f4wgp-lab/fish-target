@@ -8,7 +8,8 @@
 
 ## Scope implemented through DEV2
 - `catalog-providers.js`: explicit provider boundary. DAIWA is PoC-only; SHIMANO is fixture-only. Both are production-disabled.
-- `catalog-fixtures.js`: development-only synthetic DAIWA/SHIMANO fixture rows isolated from the catalog core, including discontinued/unknown lifecycle fixtures.
+- `catalog-adapters.js`: manufacturer adapter contract. Raw maker rows are normalized into canonical rod/reel shapes without enabling production publication.
+- `catalog-fixtures.js`: development-only synthetic DAIWA/SHIMANO rows flow through the manufacturer adapters, including discontinued/unknown lifecycle fixtures.
 - `catalog.js`: provider-agnostic catalog core, schema validation, source/license gates, Unicode-safe stable product IDs, ownership snapshots, lifecycle metadata, index metadata and paged query contract.
 - `catalog.search(...)`: bounded `{items,total,offset,limit,hasMore}` result.
 - `catalog.loadPage(...)`: async selector contract so future chunk/provider loading can replace the current in-memory fixture backing without changing MY TACKLE selector semantics.
@@ -23,6 +24,7 @@
 - Existing records without `source` are interpreted as `manual`; the storage key remains `fish_target_v17_tackle` and no destructive migration is performed.
 - Catalog-backed ownership snapshots retain `catalog_status`, provenance/license state and isolated `user_overrides`.
 - Responsive CSS includes dedicated ownership edit layout and <=390px fallback.
+- `pwa.js` loads providers → adapters → fixtures → catalog → tackle in order and the build/offline shell includes the adapter asset.
 - Build identifier is `V23-DEV2`; FIELD LIVE remains off.
 
 ## Data policy
@@ -41,11 +43,13 @@
 - Catalog reel model does not imply the user's current line type/size.
 - Discontinued/legacy/unknown products are not silently removed from ownership or search; lifecycle state is separate from compatibility specs.
 - Catalog edit cannot rewrite maker/series/model/product_id/spec snapshots through the UI.
+- Manufacturer adapters normalize input but cannot bypass provider/license production gates.
 
 ## Tests added / updated
 - Development catalog schema validation.
 - Production gate rejects synthetic data.
 - Provider gates remain production-disabled.
+- Manufacturer adapter normalization and maker-mismatch rejection.
 - Unicode/Japanese stable product ID collision regression.
 - Rod ownership snapshot mapping.
 - Reel line non-inference regression.
@@ -56,12 +60,12 @@
 - Discontinued/unknown lifecycle search and status metadata.
 - Catalog ownership edit isolation.
 - Invalid reel line edits become unspecified instead of creating a false numeric fit.
-- GitHub Actions `rc-qa` run #50: SUCCESS on head `edb054eacf85113bd3ffb335f8da84ac3094d4f4` before the version-bump/doc-only commits.
+- GitHub Actions `rc-qa` run #58: SUCCESS on code head `ffa5fb836dff36c8f335d000578faa7b5bb957dc` before this documentation-only update.
 
 ## Still to do
 - Browser interaction regression for the bottom-sheet selector and ownership editor at 375/390/430 widths.
 - Split real permitted/licensed catalog data into index + chunks once a lawful source exists.
-- Add importer PoC/fixture adapters behind the existing provider boundary without production publishing.
+- Replace synthetic-only raw inputs with a lawful permitted/licensed data source when available; do not scrape/publish restricted manufacturer data.
 - Codex final E2E/performance review after Codex limits reset.
 
 ## Codex rejoin procedure
