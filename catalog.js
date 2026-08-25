@@ -4,6 +4,8 @@
   const STATUSES=['current','discontinued','legacy','unknown'];
   const LICENSES=['synthetic','internal','permitted','licensed','restricted','unknown'];
   const PROD_LICENSES=new Set(['internal','permitted','licensed']);
+  const providers=globalThis.FISH_TARGET_CATALOG_PROVIDERS||null;
+  const fixtures=Array.isArray(globalThis.FISH_TARGET_CATALOG_FIXTURES)?globalThis.FISH_TARGET_CATALOG_FIXTURES:[];
   const text=v=>String(v??'').trim();
   const hashToken=value=>{let h=2166136261;for(const ch of value){h^=ch.codePointAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
   const slug=v=>{const raw=text(v).normalize('NFKC').toLowerCase().replace(/[’'"`]/g,'');const ascii=raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');return /^[\x00-\x7F]*$/.test(raw)?(ascii||'unknown'):`${ascii||'u'}-${hashToken(raw)}`};
@@ -11,6 +13,11 @@
 
   function productId({maker,category,series,generation='unknown',model}){
     return [maker,category,series,generation,model].map(slug).join(':');
+  }
+
+  function providerPublishable(product){
+    const provider=providers?.byMaker?.(product?.maker)||null;
+    return Boolean(provider&&providers.canPublish(provider,product?.source?.license_status));
   }
 
   function validateProduct(product,{production=false}={}){
@@ -27,6 +34,7 @@
     const license=product.source?.license_status;
     if(!LICENSES.includes(license))errors.push('invalid license_status');
     if(production&&!PROD_LICENSES.has(license))errors.push('source not eligible for production');
+    if(production&&!providerPublishable(product))errors.push('provider not production-enabled');
     if(product.source?.source_type!=='synthetic'&&!text(product.source?.source_provider))errors.push('source_provider required');
     const specs=product.specs||{};
     const numeric=['length_ft','weight_g','lure_min_g','lure_max_g','jig_max_g','line_pe_min','line_pe_max','reel_size','gear_ratio','retrieve_cm','max_drag_kg'];
@@ -53,39 +61,8 @@
     return errors;
   }
 
-  const source=()=>({
-    source_type:'synthetic',
-    source_provider:'FISH TARGET synthetic fixture',
-    source_url:null,
-    retrieved_at:'2026-08-25',
-    last_verified:'2026-08-25',
-    license_status:'synthetic'
-  });
-
-  const rod=(maker,series,generation,model,specs)=>({
-    product_id:productId({maker,category:'rod',series,generation,model}),maker,category:'rod',series,generation,model,
-    display_name:`${series} ${model}`,status:'current',specs,source:source()
-  });
-  const reel=(maker,series,generation,model,specs)=>({
-    product_id:productId({maker,category:'reel',series,generation,model}),maker,category:'reel',series,generation,model,
-    display_name:`${series} ${model}`,status:'current',specs,source:source()
-  });
-
-  // Development-only fixtures. Specs are synthetic and are not copied from manufacturer catalogs.
-  const PRODUCTS=[
-    rod('DAIWA','DEMO SHORE','v23-demo','96M',{length_ft:9.6,power:'M',lure_min_g:10,lure_max_g:50,line_pe_min:0.8,line_pe_max:2}),
-    rod('DAIWA','DEMO SHORE','v23-demo','100MH',{length_ft:10,power:'MH',lure_min_g:20,lure_max_g:80,jig_max_g:100,line_pe_min:1.5,line_pe_max:3}),
-    rod('DAIWA','DEMO LIGHT','v23-demo','76L',{length_ft:7.6,power:'L',lure_min_g:1,lure_max_g:12,line_pe_min:0.3,line_pe_max:0.8}),
-    reel('DAIWA','DEMO SPIN','v23-demo','3000',{reel_size:3000,gear_ratio:5.2,max_drag_kg:10}),
-    reel('DAIWA','DEMO SPIN','v23-demo','4000XH',{reel_size:4000,gear_ratio:6.2,max_drag_kg:12}),
-    reel('DAIWA','DEMO SW','v23-demo','6000H',{reel_size:6000,gear_ratio:5.7,max_drag_kg:15}),
-    rod('SHIMANO','DEMO SEABASS','v23-demo','90ML',{length_ft:9,power:'ML',lure_min_g:6,lure_max_g:36,line_pe_min:0.6,line_pe_max:1.5}),
-    rod('SHIMANO','DEMO SHORE','v23-demo','100M',{length_ft:10,power:'M',lure_min_g:10,lure_max_g:60,jig_max_g:70,line_pe_min:1,line_pe_max:2.5}),
-    rod('SHIMANO','DEMO EGING','v23-demo','86M',{length_ft:8.6,power:'M',line_pe_min:0.5,line_pe_max:1}),
-    reel('SHIMANO','DEMO SPIN','v23-demo','C3000HG',{reel_size:3000,gear_ratio:6,max_drag_kg:9}),
-    reel('SHIMANO','DEMO SPIN','v23-demo','4000XG',{reel_size:4000,gear_ratio:6.2,max_drag_kg:11}),
-    reel('SHIMANO','DEMO SW','v23-demo','6000HG',{reel_size:6000,gear_ratio:5.7,max_drag_kg:14})
-  ];
+  // DEV1 consumes only explicitly supplied fixtures. Future provider output plugs into this same canonical boundary.
+  const PRODUCTS=fixtures.map(raw=>Object.freeze({...raw,product_id:raw.product_id||productId(raw),specs:Object.freeze({...raw.specs}),source:Object.freeze({...raw.source})}));
 
   function list({maker,category,series,query}={}){
     const q=text(query).toLowerCase();
@@ -103,11 +80,11 @@
   }
 
   const validation=validateCatalog(PRODUCTS);
-  if(validation.length)console.warn('Synthetic catalog validation failed',validation);
+  if(validation.length)console.warn('Development catalog validation failed',validation);
 
   globalThis.FISH_TARGET_CATALOG=Object.freeze({
     mode:'development',makers:MAKERS.slice(),categories:CATEGORIES.slice(),statuses:STATUSES.slice(),licenseStatuses:LICENSES.slice(),
     products:PRODUCTS.slice(),productId,validateProduct,validateCatalog,list,makersFor:makers,seriesFor:series,get,ownedSnapshot,
-    productionEligible:p=>PROD_LICENSES.has(p?.source?.license_status)
+    providerFor:maker=>providers?.byMaker?.(maker)||null,productionEligible:p=>PROD_LICENSES.has(p?.source?.license_status)&&providerPublishable(p)
   });
 })();
