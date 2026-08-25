@@ -8,6 +8,7 @@ const read=file=>readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 function catalogContext(){
   const context=vm.createContext({console});
   vm.runInContext(read('catalog-providers.js'),context,{filename:'catalog-providers.js'});
+  vm.runInContext(read('catalog-adapters.js'),context,{filename:'catalog-adapters.js'});
   vm.runInContext(read('catalog-fixtures.js'),context,{filename:'catalog-fixtures.js'});
   vm.runInContext(read('catalog.js'),context,{filename:'catalog.js'});
   return context;
@@ -36,6 +37,19 @@ test('DAIWA and SHIMANO provider gates remain disabled for production',()=>{
   assert.equal(providers.canPublish(daiwa,'licensed'),false);
   assert.equal(providers.canPublish(shimano,'licensed'),false);
   assert.throws(()=>providers.assertPublishable(shimano,'licensed'));
+});
+
+test('manufacturer adapters normalize raw rows without enabling production',()=>{
+  const context=catalogContext();
+  const adapters=context.FISH_TARGET_CATALOG_ADAPTERS;
+  const daiwa=adapters.byMaker('DAIWA');
+  const normalized=daiwa.normalize({category:'rod',series:'月下美人',generation:'demo',model:'76L',status:'current',specs:{length_ft:'7.6',power:'l',lure_max_g:'12'},source:{source_type:'synthetic',license_status:'synthetic'}});
+  assert.equal(normalized.maker,'DAIWA');
+  assert.equal(normalized.specs.length_ft,7.6);
+  assert.equal(normalized.specs.power,'L');
+  assert.equal(normalized.source.license_status,'synthetic');
+  assert.equal(daiwa.productionEnabled,false);
+  assert.throws(()=>daiwa.normalize({maker:'SHIMANO',category:'rod',series:'X',model:'Y'}));
 });
 
 test('stable product IDs support Japanese series names without collisions',()=>{
