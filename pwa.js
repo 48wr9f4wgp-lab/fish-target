@@ -38,6 +38,8 @@
   loadCss('./simplify.css','simplify-css');
   (async()=>{
     await loadScript('./continuity.js','continuity-js');
+    await loadScript('./catalog-providers.js','catalog-providers-js');
+    await loadScript('./catalog-fixtures.js','catalog-fixtures-js');
     await loadScript('./catalog.js','catalog-js');
     await loadScript('./tackle.js','tackle-js');
     await loadScript('./fit-explain.js','fit-explain-js');
