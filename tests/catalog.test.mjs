@@ -7,6 +7,8 @@ const read=file=>readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 
 function catalogContext(){
   const context=vm.createContext({console});
+  vm.runInContext(read('catalog-providers.js'),context,{filename:'catalog-providers.js'});
+  vm.runInContext(read('catalog-fixtures.js'),context,{filename:'catalog-fixtures.js'});
   vm.runInContext(read('catalog.js'),context,{filename:'catalog.js'});
   return context;
 }
@@ -18,7 +20,22 @@ test('V23 synthetic catalog is valid for development but blocked from production
   const production=[...catalog.validateCatalog(catalog.products,{production:true})];
   assert.equal(production.length,catalog.products.length);
   assert.ok(production.every(x=>x.errors.includes('source not eligible for production')));
+  assert.ok(production.every(x=>x.errors.includes('provider not production-enabled')));
   assert.ok(catalog.products.every(x=>x.source.license_status==='synthetic'));
+});
+
+test('DAIWA and SHIMANO provider gates remain disabled for production',()=>{
+  const context=catalogContext();
+  const providers=context.FISH_TARGET_CATALOG_PROVIDERS;
+  const daiwa=providers.byMaker('DAIWA');
+  const shimano=providers.byMaker('SHIMANO');
+  assert.equal(daiwa.mode,'poc');
+  assert.equal(shimano.mode,'fixture-only');
+  assert.equal(daiwa.productionEnabled,false);
+  assert.equal(shimano.productionEnabled,false);
+  assert.equal(providers.canPublish(daiwa,'licensed'),false);
+  assert.equal(providers.canPublish(shimano,'licensed'),false);
+  assert.throws(()=>providers.assertPublishable(shimano,'licensed'));
 });
 
 test('stable product IDs support Japanese series names without collisions',()=>{
