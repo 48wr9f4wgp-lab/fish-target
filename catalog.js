@@ -5,7 +5,8 @@
   const LICENSES=['synthetic','internal','permitted','licensed','restricted','unknown'];
   const PROD_LICENSES=new Set(['internal','permitted','licensed']);
   const text=v=>String(v??'').trim();
-  const slug=v=>text(v).normalize('NFKC').toLowerCase().replace(/[’'"`]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'unknown';
+  const hashToken=value=>{let h=2166136261;for(const ch of value){h^=ch.codePointAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
+  const slug=v=>{const raw=text(v).normalize('NFKC').toLowerCase().replace(/[’'"`]/g,'');const ascii=raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');return /^[\x00-\x7F]*$/.test(raw)?(ascii||'unknown'):`${ascii||'u'}-${hashToken(raw)}`};
   const finite=v=>v===null||v===undefined||v===''?null:Number.isFinite(Number(v))?Number(v):null;
 
   function productId({maker,category,series,generation='unknown',model}){
