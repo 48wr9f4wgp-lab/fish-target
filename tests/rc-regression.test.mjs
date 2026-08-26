@@ -78,9 +78,10 @@ test('save/restore data falls back safely when localStorage is unavailable',()=>
   assert.equal(result.restored[0].rotationManual,true);
 });
 
-test('RC public artifact has no unresolved or old recommendation build markers',()=>{
+test('public artifact uses the canonical build version and no stale recommendation markers',()=>{
   const html=read('dist/index.html');
-  assert.match(html,/FISH TARGET V22-RC1/);
+  const config=JSON.parse(read('build.config.json'));
+  assert.match(html,new RegExp(`FISH TARGET ${config.version.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}`));
   assert.doesNotMatch(html,/FISH TARGET V(?:15|19)\b/i);
   assert.doesNotMatch(html,/__(?:BUILD_VERSION|BUILD_ID|FIELD_LIVE_STATE|SHELL_MANIFEST)__/);
 });
