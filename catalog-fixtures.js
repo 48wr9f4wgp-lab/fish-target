@@ -19,5 +19,7 @@
     row('SHIMANO','reel','DEMO SW','v23-demo','6000HG',{reel_size:6000,gear_ratio:5.7,max_drag_kg:14}),
     row('SHIMANO','reel','DEMO UNKNOWN','v23-demo','5000X',{reel_size:5000,gear_ratio:5.8,max_drag_kg:12},'unknown')
   ];
-  globalThis.FISH_TARGET_CATALOG_FIXTURES=Object.freeze(raw.map(x=>adapters.byMaker(x.maker).normalize(x)));
+  const daiwaPoc=Array.isArray(globalThis.FISH_TARGET_DAIWA_POC_ROWS)?globalThis.FISH_TARGET_DAIWA_POC_ROWS:[];
+  const combined=[...raw,...daiwaPoc];
+  globalThis.FISH_TARGET_CATALOG_FIXTURES=Object.freeze(combined.map(x=>adapters.byMaker(x.maker).normalize(x)));
 })();
