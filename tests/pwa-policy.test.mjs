@@ -4,11 +4,12 @@ import test from 'node:test';
 
 const root=file=>readFileSync(new URL(`../${file}`,import.meta.url));
 const text=file=>root(file).toString('utf8');
-const dist=file=>readFileSync(new URL(`../dist/${file}`,import.meta.url),'utf8');
+const distBuffer=file=>readFileSync(new URL(`../dist/${file}`,import.meta.url));
+const dist=file=>distBuffer(file).toString('utf8');
 const config=JSON.parse(text('build.config.json'));
 
 function pngDimensions(file){
-  const png=root(file);
+  const png=distBuffer(file);
   assert.equal(png.subarray(1,4).toString(),'PNG',`${file}: PNG signature`);
   return {width:png.readUInt32BE(16),height:png.readUInt32BE(20)};
 }
