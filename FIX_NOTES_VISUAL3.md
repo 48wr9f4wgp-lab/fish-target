@@ -1,0 +1,1 @@
+VISUAL3 device QA found that the realistic fish layer did not activate on iPhone Safari. Root cause under investigation; current screenshot showed SVG fallback only. Do not treat VISUAL3 fish art as passed until repaired and rechecked.
