@@ -24,6 +24,14 @@ async function openTarget(page,name){
   assert.equal((await page.locator('#rname').textContent()||'').trim(),name);
 }
 
+async function openFilters(page){
+  const details=page.locator('#v19FilterDetails');
+  if(await details.count()){
+    if(!(await details.evaluate(el=>el.open)))await details.locator('summary').click();
+    await page.locator('#styleFilters').waitFor({state:'visible'});
+  }
+}
+
 async function runViewport(browser,{width,height}){
   const context=await browser.newContext({viewport:{width,height},serviceWorkers:'allow'});
   const page=await context.newPage();
@@ -38,6 +46,7 @@ async function runViewport(browser,{width,height}){
   await noOverflow(page,width,`${width} home`);
 
   // Multi-style filtering: サバ defaults to bait but must remain discoverable under lure.
+  await openFilters(page);
   await page.locator('#styleFilters button[data-v="lure"]').click();
   assert.equal(await page.locator('button.fish[data-fish="サバ"]').count(),1,`${width}: multi-style target remains in lure filter`);
   await page.locator('#styleFilters button[data-v="all"]').click();
