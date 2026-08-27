@@ -49,7 +49,7 @@
       }));
       rows=await Promise.all(encoded.map(loadImage));
       ready=true;
-      document.documentElement.classList.add('realFishReady','realFishV6');
+      document.documentElement.classList.add('realFishReady','realFishV6A');
       schedule();
     }catch(error){
       console.warn('real fish rows unavailable; keeping SVG fallback',error);
@@ -104,14 +104,17 @@
     context.clearRect(0,0,width,height);
     context.imageSmoothingEnabled=true;
     context.imageSmoothingQuality='high';
-    const maxWidth=width*.94;
-    const maxHeight=height*.86;
+    context.filter='contrast(1.07) saturate(1.08)';
+    const detail=host.id==='tart'||Boolean(host.closest('#result'));
+    const maxWidth=width*(detail?.92:.88);
+    const maxHeight=height*(detail?.86:.80);
     const scale=Math.min(maxWidth/crop.sw,maxHeight/crop.sh);
     const drawWidth=crop.sw*scale;
     const drawHeight=crop.sh*scale;
     const dx=(width-drawWidth)/2;
     const dy=(height-drawHeight)/2;
     context.drawImage(crop.image,crop.sx,crop.sy,crop.sw,crop.sh,dx,dy,drawWidth,drawHeight);
+    context.filter='none';
     host.classList.add('realFishMounted');
   }
 
@@ -167,5 +170,5 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_REAL_FISH=Object.freeze({version:'V23-REAL6',renderer:'dpr-canvas-crop',parts:ROW_PARTS,species:Object.freeze(Object.keys(ORDER))});
+  globalThis.FISH_TARGET_REAL_FISH=Object.freeze({version:'V23-REAL6A',renderer:'dpr-canvas-safe-fit',parts:ROW_PARTS,species:Object.freeze(Object.keys(ORDER))});
 })();

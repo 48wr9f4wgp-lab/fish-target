@@ -19,17 +19,19 @@ const rows=[
 
 const assembled=row=>row.parts.map(name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8').trim()).join('');
 
-test('REAL6 maps all 19 targets and uses a decoded DPR-aware canvas renderer',()=>{
-  assert.match(js,/version:'V23-REAL6'/);
-  assert.match(js,/renderer:'dpr-canvas-crop'/);
+test('REAL6A maps all 19 targets and uses a decoded DPR-aware safe-fit canvas renderer',()=>{
+  assert.match(js,/version:'V23-REAL6A'/);
+  assert.match(js,/renderer:'dpr-canvas-safe-fit'/);
   for(const name of species)assert.ok(js.includes(`'${name}'`),`missing real fish mapping: ${name}`);
   assert.match(js,/rows=await Promise\.all\(encoded\.map\(loadImage\)\)/);
   assert.match(js,/getImageData\(0,0,cellWidth,cellHeight\)/);
   assert.match(js,/devicePixelRatio/);
   assert.match(js,/imageSmoothingQuality='high'/);
+  assert.match(js,/context\.filter='contrast\(1\.07\) saturate\(1\.08\)'/);
+  assert.match(js,/detail\?\.92:\.88/);
+  assert.match(js,/detail\?\.86:\.80/);
   assert.match(js,/ResizeObserver/);
   assert.match(js,/createElement\('canvas'\)/);
-  assert.match(js,/querySelectorAll\(':scope > \.realFishSprite'\)/);
   assert.match(js,/realFishReady/);
   assert.match(js,/keeping SVG fallback/);
 });
@@ -49,10 +51,10 @@ test('real fish row payloads exactly match the verified local WebP assets',()=>{
   assert.ok(!build.includes("'fish-real-row3.b64'"),'known-bad unchunked row3 must not ship');
 });
 
-test('VISUAL6 enlarges canvas art while preserving SVG fallback and reduced-motion behavior',()=>{
+test('VISUAL6A keeps fish inside the art frame while preserving SVG fallback and reduced-motion behavior',()=>{
   assert.match(css,/\.realFishCanvas\{/);
-  assert.match(css,/width:112%/);
-  assert.match(css,/#result \.tart \.realFishCanvas\{width:120%;height:120%\}/);
+  assert.match(css,/width:100%/);
+  assert.match(css,/#result \.tart \.realFishCanvas\{width:104%;height:104%\}/);
   assert.match(css,/\.realFishReady \.realFishMounted>\.realFishCanvas\{opacity:1\}/);
   assert.match(css,/\.realFishReady \.realFishMounted>\.speciesSvg\{opacity:0\}/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.realFishCanvas\{transition:none\}\}/);
