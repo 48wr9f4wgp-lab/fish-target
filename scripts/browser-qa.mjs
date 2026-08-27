@@ -155,6 +155,13 @@ async function runLegacyMigration(browser){
   await context.close();
 }
 
+async function openTackleSheetFromHome(page){
+  const shortcut=page.locator('.v19TackleShortcut');
+  await shortcut.waitFor({state:'visible'});
+  await shortcut.click();
+  await page.locator('#tackleSheet').waitFor({state:'visible'});
+}
+
 async function runTackleFlow(browser){
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});
   await context.addInitScript(()=>localStorage.removeItem('fish_target_v17_tackle'));
@@ -166,8 +173,8 @@ async function runTackleFlow(browser){
   await page.goto(BASE,{waitUntil:'networkidle'});
   await waitApp(page);
   assert.ok((await page.locator('#tackleSummary').textContent()||'').includes('手持ちタックルを登録'),'MY TACKLE empty state');
-  await page.locator('#tackleManage').click();
-  await page.locator('#tackleSheet').waitFor({state:'visible'});
+  assert.equal(await page.locator('#myTackleHome.v19HomeTackleHidden').count(),1,'legacy MY TACKLE home card is intentionally compacted');
+  await openTackleSheetFromHome(page);
   await assertLayout(page,390,'390 MY TACKLE catalog sheet');
 
   await page.locator('.tackleEntryModes[data-kind="rod"] button[data-mode="manual"]').click();
@@ -198,8 +205,7 @@ async function runTackleFlow(browser){
   tackle=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v17_tackle')||'{}'));
   assert.equal(tackle.rods?.length,1,'manual rod survives reload');
   assert.equal(tackle.reels?.length,1,'manual reel survives reload');
-  await page.locator('#tackleManage').click();
-  await page.locator('#tackleSheet').waitFor({state:'visible'});
+  await openTackleSheetFromHome(page);
   await page.waitForFunction(()=>{
     const select=document.getElementById('reelCatalogModel');
     return select&&!select.disabled&&select.options.length>0;
@@ -215,7 +221,7 @@ async function runTackleFlow(browser){
   await assertLayout(page,390,'390 MY TACKLE populated sheet');
   assert.equal(pageErrors.length,0,`MY TACKLE page errors\n${pageErrors.join('\n')}`);
   assert.equal(consoleErrors.length,0,`MY TACKLE console errors\n${consoleErrors.join('\n')}`);
-  console.log('PASS MY TACKLE UI · empty/manual/partial-fit/catalog-line invariant/reload');
+  console.log('PASS MY TACKLE UI · shortcut/empty/manual/partial-fit/catalog-line invariant/reload');
   await context.close();
 }
 
