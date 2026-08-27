@@ -10,8 +10,8 @@ These checks require a physical iPhone and are not certified by desktop/browser 
 - [x] Existing installation upgrade: the installed app updated to `V23-DEV2-DAIWA-RC0` while prior saved/recent plan state remained present.
 - [x] Real airplane-mode + Wi-Fi-off cold launch: current RC shell, 19-target home UI, fish art, and saved `ブリ・ワラサ` plan state load successfully; `OFFLINE・基本診断は利用可` is shown.
 - [x] Offline FIELD MODE: opened successfully from the real offline cold-launch state, remained readable, and the physical-device back control returned correctly.
-- [ ] Safari private/storage-restricted mode: search and recommendations work; save failure does not break the page.
-- [~] Real touch QA: target selection, FIRST CAST, required tackle, MY TACKLE CHECK, scrolling, bottom navigation, FIELD MODE open/back were observed working; search keyboard/filters remain.
+- [~] Safari private/storage-restricted mode: private Safari search for `ヒラメ`, recommendation detail, and plan save completed without page failure; normal-profile MY TACKLE data was not exposed in the private session. A forced storage-denial/failure case has not been directly reproduced on-device.
+- [~] Real touch QA: target selection, search keyboard, FIRST CAST, required tackle, MY TACKLE CHECK, scrolling, bottom navigation, FIELD MODE open/back were observed working; filter controls remain for explicit physical-device confirmation.
 - [ ] Home-screen icon masks: 192/512 standard and 512 maskable artwork remains recognizable under iOS icon treatment.
 - [x] Background return: while in `ブリ・ワラサ` FIELD MODE, backgrounding the Home Screen app and returning after a short wait preserved the same active plan and FIELD MODE state.
 - [ ] Orientation rotation: portrait-primary behavior through an actual orientation change still needs explicit confirmation if rotation is allowed by the installed shell.
