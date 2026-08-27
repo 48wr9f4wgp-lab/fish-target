@@ -1,6 +1,11 @@
 (()=>{
   const BUILD=document.documentElement.dataset.build||'dev';
-  const ROW_URLS=Object.freeze([0,1,2,3].map(row=>`./fish-real-row${row}.b64?v=${BUILD}`));
+  const ROW_PARTS=Object.freeze([
+    Object.freeze(['fish-real-row0.b64']),
+    Object.freeze(['fish-real-row1.b64']),
+    Object.freeze(['fish-real-row2a.b64','fish-real-row2b.b64']),
+    Object.freeze(['fish-real-row3a.b64','fish-real-row3b.b64'])
+  ]);
   const ORDER=Object.freeze({
     'ブリ・ワラサ':0,'カンパチ':1,'サワラ':2,'シーバス':3,'ヒラメ':4,
     'マゴチ':5,'アジ':6,'メバル':7,'アオリイカ':8,'タチウオ':9,
@@ -25,13 +30,19 @@
     image.src=dataUrl;
   });
 
+  async function loadPart(file){
+    const response=await fetch(`./${file}?v=${BUILD}`);
+    if(!response.ok)throw new Error(`fish row request failed: ${file} ${response.status}`);
+    const text=(await response.text()).trim();
+    if(!text||text.length<1000)throw new Error(`fish row payload is invalid or truncated: ${file}`);
+    return text;
+  }
+
   async function loadRows(){
     try{
-      const encoded=await Promise.all(ROW_URLS.map(async url=>{
-        const response=await fetch(url);
-        if(!response.ok)throw new Error(`fish row request failed: ${response.status}`);
-        const text=(await response.text()).trim();
-        if(!text.startsWith('UklG')||text.length<1000)throw new Error('fish row payload is invalid or truncated');
+      const encoded=await Promise.all(ROW_PARTS.map(async parts=>{
+        const text=(await Promise.all(parts.map(loadPart))).join('');
+        if(!text.startsWith('UklG')||text.length<5000)throw new Error('assembled fish row payload is invalid or truncated');
         return `data:image/webp;base64,${text}`;
       }));
       await Promise.all(encoded.map(probe));
@@ -86,5 +97,5 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_REAL_FISH=Object.freeze({version:'V23-REAL2',rows:ROW_URLS,species:Object.freeze(Object.keys(ORDER))});
+  globalThis.FISH_TARGET_REAL_FISH=Object.freeze({version:'V23-REAL3',parts:ROW_PARTS,species:Object.freeze(Object.keys(ORDER))});
 })();
