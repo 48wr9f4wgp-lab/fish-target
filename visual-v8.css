@@ -1,0 +1,14 @@
+/* VISUAL8: copy compression, CTA hierarchy and disclosure affordance */
+#result .fieldModeLaunch.v8PrimaryCta{min-height:60px!important;font-size:17px!important;font-weight:900!important;letter-spacing:.01em;box-shadow:0 10px 24px rgba(16,86,82,.16)}
+#result .actions{grid-template-columns:.78fr 1.22fr!important;gap:10px!important}
+#result .actions .v8SecondaryCta{min-height:50px;font-size:13px!important;font-weight:900!important}
+#result .actions .v8TertiaryCta{min-height:50px;font-size:10.5px!important;font-weight:800!important;color:#60777a!important;background:#fff!important;border:1px solid var(--line)!important}
+#result .v19Group>summary em{min-width:58px;padding:7px 9px;border-radius:999px;background:#eef7f6;text-align:center;font-size:10px;font-weight:900}
+#result .v19FitWhy{padding-top:8px}
+#result .v19FitWhy>summary{min-height:54px;padding:9px 10px;border:1px solid #e2eceb;border-radius:13px;background:#f8fbfa;color:var(--ink)}
+#result .v19FitWhy>summary span{display:grid;gap:2px}
+#result .v19FitWhy>summary b{font-size:12px}
+#result .v19FitWhy>summary small{font-size:9px;color:var(--muted);font-weight:700}
+#result .v19FitWhy>summary em{min-width:58px;padding:6px 8px;border-radius:999px;background:#eef7f6;text-align:center;font-size:9px;font-weight:900;color:#087f75}
+@media(max-width:390px){#result .actions{gap:8px!important}#result .fieldModeLaunch.v8PrimaryCta{min-height:58px!important;font-size:16px!important}}
+@media(prefers-reduced-motion:reduce){#result .fieldModeLaunch.v8PrimaryCta{transition:none!important}}
