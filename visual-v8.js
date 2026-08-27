@@ -27,10 +27,11 @@
   }
 
   function improveAccessibility(){
-    const search=document.getElementById('q');
-    const spotSearch=document.getElementById('spotQuery');
-    if(search&&!search.getAttribute('aria-label'))search.setAttribute('aria-label','魚を検索');
-    if(spotSearch&&!spotSearch.getAttribute('aria-label'))spotSearch.setAttribute('aria-label','釣行地を検索');
+    const labels={q:'魚を検索',spotQuery:'釣行地を検索',rodCatalogSearch:'ロッド商品を検索',reelCatalogSearch:'リール商品を検索'};
+    Object.entries(labels).forEach(([id,label])=>{
+      const el=document.getElementById(id);
+      if(el&&!el.getAttribute('aria-label'))el.setAttribute('aria-label',label);
+    });
   }
 
   function bindToggle(details,openLabel='閉じる',closedLabel='開く ›'){
