@@ -5,13 +5,14 @@
 
   function normalizeSpecs(category,specs={}){
     if(category==='rod')return {
-      length_ft:finite(specs.length_ft),weight_g:finite(specs.weight_g),power:text(specs.power).toUpperCase(),
+      length_ft:finite(specs.length_ft),length_m:finite(specs.length_m),pieces:finite(specs.pieces),
+      weight_g:finite(specs.weight_g),power:text(specs.power).toUpperCase(),
       lure_min_g:finite(specs.lure_min_g),lure_max_g:finite(specs.lure_max_g),jig_max_g:finite(specs.jig_max_g),
       line_pe_min:finite(specs.line_pe_min),line_pe_max:finite(specs.line_pe_max)
     };
     return {
       reel_size:finite(specs.reel_size),weight_g:finite(specs.weight_g),gear_ratio:finite(specs.gear_ratio),
-      retrieve_cm:finite(specs.retrieve_cm),max_drag_kg:finite(specs.max_drag_kg)
+      retrieve_cm:finite(specs.retrieve_cm),max_drag_kg:finite(specs.max_drag_kg),pe_capacity_raw:text(specs.pe_capacity_raw)
     };
   }
 
@@ -26,6 +27,11 @@
       last_verified:text(input.last_verified)||null,
       license_status:text(input.license_status)||fallbackLicense
     };
+  }
+
+  function normalizeIdentifiers(input={}){
+    const jan=text(input.jan);
+    return jan?{jan}:{};
   }
 
   function createAdapter(maker){
@@ -44,7 +50,8 @@
           display_name:text(raw.display_name)||`${series} ${model}`,
           status:text(raw.status)||'unknown',
           specs:normalizeSpecs(category,raw.specs),
-          source:normalizeSource(provider,raw.source)
+          source:normalizeSource(provider,raw.source),
+          identifiers:normalizeIdentifiers(raw.identifiers||{})
         };
       },
       normalizeMany(rows=[]){return rows.map(row=>this.normalize(row))}
@@ -53,5 +60,5 @@
 
   const ADAPTERS=Object.freeze({DAIWA:createAdapter('DAIWA'),SHIMANO:createAdapter('SHIMANO')});
   const byMaker=maker=>ADAPTERS[maker]||null;
-  globalThis.FISH_TARGET_CATALOG_ADAPTERS=Object.freeze({byMaker,adapters:Object.values(ADAPTERS),normalizeSpecs});
+  globalThis.FISH_TARGET_CATALOG_ADAPTERS=Object.freeze({byMaker,adapters:Object.values(ADAPTERS),normalizeSpecs,normalizeIdentifiers});
 })();
