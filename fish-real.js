@@ -1,5 +1,6 @@
 (()=>{
   const BUILD=document.documentElement.dataset.build||'dev';
+  const HQ_FILE='fish-real-v7.avif';
   const ROW_PARTS=Object.freeze([
     Object.freeze(['fish-real-row0.b64']),
     Object.freeze(['fish-real-row1.b64']),
@@ -14,7 +15,9 @@
   });
   const cropCache=new Map();
   const observedHosts=new WeakSet();
+  let hqSheet=null;
   let rows=null;
+  let source='none';
   let ready=false;
   let scheduled=false;
   let started=false;
@@ -25,11 +28,11 @@
     return {index,row:Math.floor(index/5),col:index%5};
   };
 
-  const loadImage=dataUrl=>new Promise((resolve,reject)=>{
+  const loadImage=url=>new Promise((resolve,reject)=>{
     const image=new Image();
     image.onload=()=>resolve(image);
-    image.onerror=()=>reject(new Error('decoded WebP row failed image probe'));
-    image.src=dataUrl;
+    image.onerror=()=>reject(new Error(`fish image failed: ${url}`));
+    image.src=url;
   });
 
   async function loadPart(file){
@@ -40,52 +43,85 @@
     return text;
   }
 
-  async function loadRows(){
-    try{
-      const encoded=await Promise.all(ROW_PARTS.map(async parts=>{
-        const text=(await Promise.all(parts.map(loadPart))).join('');
-        if(!text.startsWith('UklG')||text.length<5000)throw new Error('assembled fish row payload is invalid or truncated');
-        return `data:image/webp;base64,${text}`;
-      }));
-      rows=await Promise.all(encoded.map(loadImage));
-      ready=true;
-      document.documentElement.classList.add('realFishReady','realFishV6A');
-      schedule();
-    }catch(error){
-      console.warn('real fish rows unavailable; keeping SVG fallback',error);
-    }
+  async function loadFallbackRows(){
+    const encoded=await Promise.all(ROW_PARTS.map(async parts=>{
+      const text=(await Promise.all(parts.map(loadPart))).join('');
+      if(!text.startsWith('UklG')||text.length<5000)throw new Error('assembled fish row payload is invalid or truncated');
+      return `data:image/webp;base64,${text}`;
+    }));
+    rows=await Promise.all(encoded.map(loadImage));
+    source='webp-row-fallback';
   }
 
-  function cropFor(name){
-    if(cropCache.has(name))return cropCache.get(name);
+  async function loadSource(){
+    try{
+      const image=await loadImage(`./${HQ_FILE}?v=${BUILD}`);
+      if(image.naturalWidth<1000||image.naturalHeight<700)throw new Error(`high-resolution fish sheet is unexpectedly small: ${image.naturalWidth}x${image.naturalHeight}`);
+      hqSheet=image;
+      source='avif-grid';
+    }catch(error){
+      console.warn('high-resolution fish sheet unavailable; trying verified WebP fallback',error);
+      try{
+        await loadFallbackRows();
+      }catch(fallbackError){
+        console.warn('real fish assets unavailable; keeping SVG fallback',fallbackError);
+        return;
+      }
+    }
+    ready=true;
+    document.documentElement.classList.add('realFishReady','realFishV7');
+    schedule();
+  }
+
+  function cellFor(name){
     const position=slot(name);
-    const image=position&&rows?.[position.row];
+    if(!position)return null;
+    if(source==='avif-grid'&&hqSheet){
+      const cellWidth=Math.floor(hqSheet.naturalWidth/5);
+      const cellHeight=Math.floor(hqSheet.naturalHeight/4);
+      return {image:hqSheet,sx:position.col*cellWidth,sy:position.row*cellHeight,cellWidth,cellHeight};
+    }
+    const image=rows?.[position.row];
     if(!image)return null;
     const cellWidth=Math.floor(image.naturalWidth/5);
     const cellHeight=image.naturalHeight;
-    const sx=position.col*cellWidth;
+    return {image,sx:position.col*cellWidth,sy:0,cellWidth,cellHeight};
+  }
+
+  function cropFor(name){
+    const key=`${source}:${name}`;
+    if(cropCache.has(key))return cropCache.get(key);
+    const cell=cellFor(name);
+    if(!cell)return null;
+    const {image,sx,sy,cellWidth,cellHeight}=cell;
     const probe=document.createElement('canvas');
     probe.width=cellWidth;
     probe.height=cellHeight;
     const context=probe.getContext('2d',{willReadFrequently:true});
     if(!context)return null;
-    context.drawImage(image,sx,0,cellWidth,cellHeight,0,0,cellWidth,cellHeight);
+    context.drawImage(image,sx,sy,cellWidth,cellHeight,0,0,cellWidth,cellHeight);
     const pixels=context.getImageData(0,0,cellWidth,cellHeight).data;
     let left=cellWidth,top=cellHeight,right=-1,bottom=-1;
     for(let y=0;y<cellHeight;y++){
       for(let x=0;x<cellWidth;x++){
-        if(pixels[(y*cellWidth+x)*4+3]<24)continue;
+        if(pixels[(y*cellWidth+x)*4+3]<18)continue;
         if(x<left)left=x;
         if(x>right)right=x;
         if(y<top)top=y;
         if(y>bottom)bottom=y;
       }
     }
-    const pad=2;
+    const pad=source==='avif-grid'?6:2;
     const crop=right>=left&&bottom>=top
-      ? {image,sx:sx+Math.max(0,left-pad),sy:Math.max(0,top-pad),sw:Math.min(cellWidth-1,right+pad)-Math.max(0,left-pad)+1,sh:Math.min(cellHeight-1,bottom+pad)-Math.max(0,top-pad)+1}
-      : {image,sx,sy:0,sw:cellWidth,sh:cellHeight};
-    cropCache.set(name,crop);
+      ? {
+          image,
+          sx:sx+Math.max(0,left-pad),
+          sy:sy+Math.max(0,top-pad),
+          sw:Math.min(cellWidth-1,right+pad)-Math.max(0,left-pad)+1,
+          sh:Math.min(cellHeight-1,bottom+pad)-Math.max(0,top-pad)+1
+        }
+      : {image,sx,sy,sw:cellWidth,sh:cellHeight};
+    cropCache.set(key,crop);
     return crop;
   }
 
@@ -104,18 +140,17 @@
     context.clearRect(0,0,width,height);
     context.imageSmoothingEnabled=true;
     context.imageSmoothingQuality='high';
-    context.filter='contrast(1.07) saturate(1.08)';
     const detail=host.id==='tart'||Boolean(host.closest('#result'));
-    const maxWidth=width*(detail?.92:.88);
-    const maxHeight=height*(detail?.86:.80);
+    const maxWidth=width*(detail?.92:.90);
+    const maxHeight=height*(detail?.86:.82);
     const scale=Math.min(maxWidth/crop.sw,maxHeight/crop.sh);
     const drawWidth=crop.sw*scale;
     const drawHeight=crop.sh*scale;
     const dx=(width-drawWidth)/2;
     const dy=(height-drawHeight)/2;
     context.drawImage(crop.image,crop.sx,crop.sy,crop.sw,crop.sh,dx,dy,drawWidth,drawHeight);
-    context.filter='none';
     host.classList.add('realFishMounted');
+    host.dataset.fishAsset=source;
   }
 
   const resizeObserver='ResizeObserver' in window?new ResizeObserver(schedule):null;
@@ -160,7 +195,7 @@
     if(started)return;
     started=true;
     sync();
-    loadRows();
+    loadSource();
     const observer=new MutationObserver(schedule);
     [document.getElementById('grid'),document.getElementById('result')]
       .filter(Boolean)
@@ -170,5 +205,11 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_REAL_FISH=Object.freeze({version:'V23-REAL6A',renderer:'dpr-canvas-safe-fit',parts:ROW_PARTS,species:Object.freeze(Object.keys(ORDER))});
+  globalThis.FISH_TARGET_REAL_FISH=Object.freeze({
+    version:'V23-REAL7',
+    renderer:'hq-avif-grid-with-webp-fallback',
+    primary:HQ_FILE,
+    fallback:ROW_PARTS,
+    species:Object.freeze(Object.keys(ORDER))
+  });
 })();

@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 import test from 'node:test';
 
 const js=readFileSync(new URL('../fish-real.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../fish-real.css',import.meta.url),'utf8');
 const build=readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
+const hq=readFileSync(new URL('../fish-real-v7.avif',import.meta.url));
 const species=[
   'ブリ・ワラサ','カンパチ','サワラ','シーバス','ヒラメ','マゴチ','アジ','メバル','アオリイカ','タチウオ',
   'クロダイ','マダイ','シロギス','カワハギ','ブラックバス','ニジマス','アユ','コイ','ヤマメ・イワナ'
@@ -19,24 +20,30 @@ const rows=[
 
 const assembled=row=>row.parts.map(name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8').trim()).join('');
 
-test('REAL6A maps all 19 targets and uses a decoded DPR-aware safe-fit canvas renderer',()=>{
-  assert.match(js,/version:'V23-REAL6A'/);
-  assert.match(js,/renderer:'dpr-canvas-safe-fit'/);
+test('REAL7 maps all 19 targets and prefers the high-resolution AVIF grid',()=>{
+  assert.match(js,/version:'V23-REAL7'/);
+  assert.match(js,/renderer:'hq-avif-grid-with-webp-fallback'/);
+  assert.match(js,/const HQ_FILE='fish-real-v7\.avif'/);
   for(const name of species)assert.ok(js.includes(`'${name}'`),`missing real fish mapping: ${name}`);
-  assert.match(js,/rows=await Promise\.all\(encoded\.map\(loadImage\)\)/);
+  assert.match(js,/image\.naturalWidth<1000\|\|image\.naturalHeight<700/);
+  assert.match(js,/source='avif-grid'/);
+  assert.match(js,/cellHeight=Math\.floor\(hqSheet\.naturalHeight\/4\)/);
+  assert.match(js,/cellWidth=Math\.floor\(hqSheet\.naturalWidth\/5\)/);
   assert.match(js,/getImageData\(0,0,cellWidth,cellHeight\)/);
   assert.match(js,/devicePixelRatio/);
   assert.match(js,/imageSmoothingQuality='high'/);
-  assert.match(js,/context\.filter='contrast\(1\.07\) saturate\(1\.08\)'/);
-  assert.match(js,/detail\?\.92:\.88/);
-  assert.match(js,/detail\?\.86:\.80/);
+  assert.match(js,/detail\?\.92:\.90/);
+  assert.match(js,/detail\?\.86:\.82/);
   assert.match(js,/ResizeObserver/);
-  assert.match(js,/createElement\('canvas'\)/);
-  assert.match(js,/realFishReady/);
-  assert.match(js,/keeping SVG fallback/);
+  assert.match(js,/host\.dataset\.fishAsset=source/);
 });
 
-test('real fish row payloads exactly match the verified local WebP assets',()=>{
+test('VISUAL7 ships a real AVIF asset and keeps verified WebP rows as fallback',()=>{
+  assert.ok(hq.length>20000,'high-resolution AVIF is unexpectedly small');
+  assert.equal(hq.subarray(4,12).toString('ascii'),'ftypavif','high-resolution asset is not AVIF');
+  assert.ok(build.includes("'fish-real-v7.avif'"),'high-resolution AVIF missing from build assets');
+  assert.match(js,/loadFallbackRows/);
+  assert.match(js,/high-resolution fish sheet unavailable; trying verified WebP fallback/);
   for(const row of rows){
     const payload=assembled(row);
     const bytes=Buffer.from(payload,'base64');
@@ -46,12 +53,11 @@ test('real fish row payloads exactly match the verified local WebP assets',()=>{
     assert.equal(createHash('sha256').update(bytes).digest('hex'),row.sha,'fish row hash mismatch');
     for(const name of row.parts)assert.ok(build.includes(`'${name}'`),`${name} missing from build assets`);
   }
-  assert.ok(!build.includes("'fish-real-sprite.webp'"),'corrupt binary sprite must not ship');
-  assert.ok(!build.includes("'fish-real-row2.b64'"),'known-bad unchunked row2 must not ship');
-  assert.ok(!build.includes("'fish-real-row3.b64'"),'known-bad unchunked row3 must not ship');
 });
 
-test('VISUAL6A keeps fish inside the art frame while preserving SVG fallback and reduced-motion behavior',()=>{
+test('VISUAL7 removes abandoned partial HQ chunks and preserves safe-frame fallback behavior',()=>{
+  assert.equal(existsSync(new URL('../fish-real-v7-00.b64',import.meta.url)),false);
+  assert.equal(existsSync(new URL('../fish-real-v7-01.b64',import.meta.url)),false);
   assert.match(css,/\.realFishCanvas\{/);
   assert.match(css,/width:100%/);
   assert.match(css,/#result \.tart \.realFishCanvas\{width:104%;height:104%\}/);
