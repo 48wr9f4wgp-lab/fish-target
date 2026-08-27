@@ -20,7 +20,7 @@ test('research catalog contains 139 official factual rows plus 14 synthetic fixt
   assert.equal(synthetic.length,14);
   assert.equal(official.filter(p=>p.maker==='DAIWA').length,105);
   assert.equal(official.filter(p=>p.maker==='SHIMANO').length,34);
-  assert.deepEqual(catalog.validateCatalog(catalog.products),[]);
+  assert.equal(catalog.validateCatalog(catalog.products).length,0);
 });
 
 test('SHIMANO official research rows preserve JAN/source facts but remain production-blocked',()=>{
