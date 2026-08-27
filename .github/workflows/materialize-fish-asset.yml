@@ -1,0 +1,41 @@
+name: materialize-fish-asset
+
+on:
+  push:
+    branches:
+      - chatgpt/v23-visual-pass1
+    paths:
+      - '.github/workflows/materialize-fish-asset.yml'
+      - 'fish-real-v7-q25-00.b64'
+      - 'fish-real-v7-q25-01.b64'
+      - 'fish-real-v7-q25-02.b64'
+      - 'fish-real-v7-q25-03.b64'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chatgpt/v23-visual-pass1
+          fetch-depth: 1
+      - name: Materialize verified AVIF
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f fish-real-v7.avif ]; then
+            echo 'fish-real-v7.avif already exists; nothing to do.'
+            exit 0
+          fi
+          cat fish-real-v7-q25-00.b64 fish-real-v7-q25-01.b64 fish-real-v7-q25-02.b64 fish-real-v7-q25-03.b64 | tr -d '\n\r ' | base64 --decode > fish-real-v7.avif
+          test "$(stat -c%s fish-real-v7.avif)" = "28472"
+          test "$(sha256sum fish-real-v7.avif | awk '{print $1}')" = "446ac81286e0e107205957dbb87ed74de78a5d0e48102aed98b2f668e53c2559"
+          test "$(dd if=fish-real-v7.avif bs=1 skip=4 count=8 status=none)" = "ftypavif"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add fish-real-v7.avif
+          git commit -m 'chore: materialize verified fish AVIF'
+          git push origin HEAD:chatgpt/v23-visual-pass1
