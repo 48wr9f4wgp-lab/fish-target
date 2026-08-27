@@ -9,12 +9,12 @@
       description:'Official-site adapter research only. No production redistribution until rights are confirmed.'
     }),
     Object.freeze({
-      id:'shimano-fixture-only',
+      id:'shimano-official-research',
       maker:'SHIMANO',
-      mode:'fixture-only',
+      mode:'research',
       productionEnabled:false,
       defaultLicenseStatus:'restricted',
-      description:'Production official-site data disabled. Synthetic fixtures only until permitted/licensed source exists.'
+      description:'Official-site factual-spec research only. Production publication remains disabled until rights and source policy are approved.'
     })
   ];
   const PRODUCTION_LICENSES=new Set(['internal','permitted','licensed']);
