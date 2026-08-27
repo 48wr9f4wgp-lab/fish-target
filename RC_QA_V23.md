@@ -10,7 +10,7 @@ FIELD LIVE: OFF
 
 Automated RC QA: **PASS** for the covered browser, persistence, offline, catalog, scale, privacy/network, version-contract, and regression scopes.
 
-Physical iPhone RC QA: **PARTIAL PASS** for the directly observed standalone/update/core-flow states below.
+Physical iPhone RC QA: **PARTIAL PASS** for the directly observed standalone/update/core-flow/offline/FIELD MODE states below.
 
 Release certification: **NOT COMPLETE**. Remaining physical iPhone/Safari checks in `DEVICE_QA_RC1.md` are still required. No merge to `main`, Store submission, or production catalog enablement is authorized by this document.
 
@@ -151,6 +151,13 @@ Observed on a physical iPhone using the existing Home Screen installation after 
 - the NEXT BUY / confirmation guidance is visible and consistent with the partial-fit result
 - `現場でやること 3つ` renders and remains readable in the installed app
 - fixed bottom navigation remains reachable while scrolling through the tested detail states
+- airplane mode with Wi-Fi off successfully cold-launches the Home Screen app
+- offline launch explicitly shows the `OFFLINE・基本診断は利用可` state
+- saved `ブリ・ワラサ` plan survives the real offline cold launch
+- the 19-target home UI and fish art remain available during the real offline cold launch
+- from that offline state, `ブリ・ワラサ` detail remains usable and FIELD MODE opens successfully
+- FIELD MODE remains fully readable offline with FIRST CAST, required tackle, and all 3 field steps visible
+- FIELD MODE back control is visible/reachable in the tested offline state
 
 Observed non-blocking polish notes:
 
@@ -161,9 +168,7 @@ Observed non-blocking polish notes:
 
 Still **not certified** on physical iPhone and required before release certification:
 
-- FIELD MODE open/back behavior on the physical device
-- airplane-mode cold launch after one successful online RC launch
-- saved plan / FIRST CAST / FIELD MODE availability during the real airplane-mode cold launch
+- physical-device FIELD MODE back action after opening FIELD MODE
 - Safari private/storage-restricted behavior
 - real search keyboard/filter interaction beyond the already observed core detail flow
 - Add to Home Screen icon/name check if the current installation predates the latest icon/name assets
@@ -185,4 +190,4 @@ Still **not certified** on physical iPhone and required before release certifica
 
 **Physical iPhone release gate: PARTIAL PASS / PENDING remaining device checks**
 
-The next release-candidate action is physical iPhone FIELD MODE and real airplane-mode cold-launch QA, followed by regression only if a device-specific defect is reproduced.
+The next release-candidate action is physical iPhone FIELD MODE back-action QA and background-return retention, followed by Safari private/storage-restricted and icon/name checks before release certification.
