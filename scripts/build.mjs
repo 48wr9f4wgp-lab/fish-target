@@ -13,9 +13,10 @@ const buildId=config.version.toLowerCase();
 
 const assets=[
   'style.css','quick-plan.css','field-mode.css','pwa.css',
-  'continuity.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css',
+  'continuity.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css',
   'data.js','products.js','app.js','field-mode.js','pwa.js',
-  'continuity.js','catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-fixtures.js','catalog.js','tackle.js','fit-explain.js','simplify.js','visual-pass.js',
+  'continuity.js','catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-fixtures.js','catalog.js','tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js',
+  'fish-real-sprite.webp',
   'manifest.webmanifest','icon.svg','apple-touch-icon.png','icon-192.png','icon-512.png','icon-maskable-512.png'
 ];
 const shell=['./','./index.html',...assets.map(file=>`./${file}`)];
