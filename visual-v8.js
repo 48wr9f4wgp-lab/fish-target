@@ -26,6 +26,13 @@
     if(copy)copy.textContent='プランをコピー';
   }
 
+  function improveAccessibility(){
+    const search=document.getElementById('q');
+    const spotSearch=document.getElementById('spotQuery');
+    if(search&&!search.getAttribute('aria-label'))search.setAttribute('aria-label','魚を検索');
+    if(spotSearch&&!spotSearch.getAttribute('aria-label'))spotSearch.setAttribute('aria-label','釣行地を検索');
+  }
+
   function bindToggle(details,openLabel='閉じる',closedLabel='開く ›'){
     if(!details||details.dataset.v8Toggle==='1')return;
     details.dataset.v8Toggle='1';
@@ -52,6 +59,7 @@
     scheduled=false;
     updateCopy();
     prioritizeActions();
+    improveAccessibility();
     enhanceGroups();
   }
   function schedule(){
@@ -72,5 +80,5 @@
     window.addEventListener('pageshow',schedule);
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_VISUAL_V8=Object.freeze({version:'V23-VISUAL8',focus:'copy-cta-disclosure'});
+  globalThis.FISH_TARGET_VISUAL_V8=Object.freeze({version:'V23-VISUAL8',focus:'copy-cta-disclosure-a11y'});
 })();
