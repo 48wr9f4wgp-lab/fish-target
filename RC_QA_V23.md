@@ -1,7 +1,7 @@
 # FISH TARGET V23 — RC QA EVIDENCE
 
 Date: 2026-08-27
-QA evidence SHA: `3d4fae50c78fc1d30c51fe5d8cbe31b735450895`
+Automated QA evidence SHA: `3d4fae50c78fc1d30c51fe5d8cbe31b735450895`
 Branch: `chatgpt/rc-v23-v8`
 Build: `V23-DEV2-DAIWA-RC0`
 FIELD LIVE: OFF
@@ -10,7 +10,9 @@ FIELD LIVE: OFF
 
 Automated RC QA: **PASS** for the covered browser, persistence, offline, catalog, scale, privacy/network, version-contract, and regression scopes.
 
-Release certification: **NOT COMPLETE**. Physical iPhone/Safari checks in `DEVICE_QA_RC1.md` remain required. No merge to `main`, Store submission, or production catalog enablement is authorized by this document.
+Physical iPhone RC QA: **PARTIAL PASS** for the directly observed standalone/update/core-flow states below.
+
+Release certification: **NOT COMPLETE**. Remaining physical iPhone/Safari checks in `DEVICE_QA_RC1.md` are still required. No merge to `main`, Store submission, or production catalog enablement is authorized by this document.
 
 ## GitHub Actions evidence
 
@@ -19,6 +21,8 @@ All three workflows completed successfully on the same QA evidence SHA:
 - `rc-browser-qa` run `33065251466` — success
 - `rc-qa` run `33065251508` — success
 - `deploy-pages` run `33065251482` — success
+
+The later documentation-only HEAD also reran all three workflows successfully before physical-device QA continued.
 
 ## Automated regression
 
@@ -128,19 +132,44 @@ A Browser QA failure was traced to the test harness, not application persistence
 
 `package.json` contains no product dependencies. Browser CI temporarily installs Playwright with `npm install --no-save`; the install log reports one high-severity audit item in that temporary QA runtime. This has not been established as a shipped product dependency vulnerability and must not be represented as one without separate evidence.
 
+## Physical iPhone QA — observed PASS states
+
+Observed on a physical iPhone using the existing Home Screen installation after the RC deployment:
+
+- standalone launch shows no Safari address bar or bottom browser toolbar
+- status bar / Dynamic Island safe area is not clipped at initial launch
+- current build marker `V23-DEV2-DAIWA-RC0` is visible, confirming the installed app updated to the current RC shell
+- previously saved/recent plan data remains present after the update (`シーバス` resume/history state observed)
+- home screen layout has no observed fatal clipping or horizontal overflow
+- high-resolution fish art loads in the installed app
+- target selection → recommendation detail opens correctly
+- `ブリ・ワラサ` detail header and fish art render without observed clipping
+- FIRST CAST renders with metal jig, weight, color, range, action, alternates, and fallback guidance
+- required tackle renders as four readable cards
+- existing MY TACKLE data is present on-device (`ジグキャスター`, `bg3500` observed)
+- MY TACKLE CHECK executes on-device and returns the non-green `一部条件を確認` state rather than a false green fit
+- the NEXT BUY / confirmation guidance is visible and consistent with the partial-fit result
+- `現場でやること 3つ` renders and remains readable in the installed app
+- fixed bottom navigation remains reachable while scrolling through the tested detail states
+
+Observed non-blocking polish notes:
+
+- the internal RC/build label is intentionally visible during QA and should not remain prominent in a public release
+- the compact top brand/build line can wrap at phone width; this is a release-polish item, not a reproduced functional blocker
+
 ## Remaining physical-device hard gates
 
-The following are still **not certified by desktop Chromium emulation** and remain required on physical iPhone/Safari per `DEVICE_QA_RC1.md`:
+Still **not certified** on physical iPhone and required before release certification:
 
-- Safari safe-area/status-bar/clipping check
-- Add to Home Screen icon and app name
-- standalone launch/scope and blank-transition check
-- upgrade behavior from an older installed/cache version
-- real iPhone airplane-mode cold launch
+- FIELD MODE open/back behavior on the physical device
+- airplane-mode cold launch after one successful online RC launch
+- saved plan / FIRST CAST / FIELD MODE availability during the real airplane-mode cold launch
 - Safari private/storage-restricted behavior
-- real touch + keyboard behavior at representative phone widths
-- actual iOS icon masking
+- real search keyboard/filter interaction beyond the already observed core detail flow
+- Add to Home Screen icon/name check if the current installation predates the latest icon/name assets
+- actual iOS icon masking check
 - orientation/background-return state retention
+- final public-release polish decision for the visible RC/build label and wrapped brand/build line
 
 ## Restrictions still in force
 
@@ -154,6 +183,6 @@ The following are still **not certified by desktop Chromium emulation** and rema
 
 **Automated QA: PASS**
 
-**Physical iPhone release gate: PENDING**
+**Physical iPhone release gate: PARTIAL PASS / PENDING remaining device checks**
 
-The next release-candidate action is physical iPhone Safari / Home Screen QA against the current deployed preview, followed by regression only if a device-specific defect is reproduced.
+The next release-candidate action is physical iPhone FIELD MODE and real airplane-mode cold-launch QA, followed by regression only if a device-specific defect is reproduced.
