@@ -52,3 +52,13 @@ test('current deployment policy names GitHub Pages only',()=>{
   assert.doesNotMatch(currentDocs,/Vercel/i);
   assert.match(currentDocs,/GitHub Pages/);
 });
+
+test('release build complies with direct-asset deployment policy',()=>{
+  const policy=text('docs/DEPLOYMENT_POLICY.md');
+  const fish=text('fish-real.js');
+  const build=text('scripts/build.mjs');
+  assert.match(policy,/Do not use Base64\/gzip reconstruction/);
+  assert.doesNotMatch(fish,/\.b64|data:image|base64|loadTextPart/);
+  assert.doesNotMatch(build,/\.b64/);
+  assert.match(build,/fish-real-v7\.avif/);
+});

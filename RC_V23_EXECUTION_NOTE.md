@@ -1,1 +1,0 @@
-RC execution rule: no feature expansion while release gates are being closed. Changes are limited to validated blockers/regressions, deployment-policy compliance, accessibility, correctness, persistence/PWA, performance, and release/legal readiness. This note does not authorize merge to main or formal release.
