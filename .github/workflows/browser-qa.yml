@@ -2,7 +2,7 @@ name: rc-browser-qa
 
 on:
   push:
-    branches: [chatgpt/rc-v23-v8]
+    branches: [chatgpt/rc-v23-v8, chatgpt/catalog-production-v1]
   pull_request:
 
 permissions:
