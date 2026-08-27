@@ -18,6 +18,7 @@ async function waitApp(page){
   await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===19,{timeout:15000});
   await page.waitForFunction(()=>document.documentElement.classList.contains('realFishReady'),{timeout:15000});
   await page.waitForFunction(()=>document.querySelectorAll('#grid .realFishMounted').length===19,{timeout:15000});
+  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_VISUAL_V8&&document.getElementById('tackleManage')),{timeout:15000});
 }
 
 async function assertLayout(page,width,label){
@@ -44,17 +45,20 @@ async function assertLayout(page,width,label){
       if(s.display==='none'||s.visibility==='hidden'||r.width===0||r.height===0)return false;
       return !accessibleName(el);
     }).map(el=>({tag:el.tagName,id:el.id,klass:el.className,type:el.getAttribute('type'),html:el.outerHTML.slice(0,180)}));
-    return {
-      doc:document.documentElement.scrollWidth,
-      body:document.body.scrollWidth,
-      viewport:window.innerWidth,
-      unnamed
-    };
+    return {doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:window.innerWidth,unnamed};
   });
   assert.ok(layout.doc<=width+1,`${label}: document overflow ${layout.doc}>${width}`);
   assert.ok(layout.body<=width+1,`${label}: body overflow ${layout.body}>${width}`);
   assert.equal(layout.viewport,width,`${label}: viewport width`);
   assert.equal(layout.unnamed.length,0,`${label}: visible interactive controls need an accessible name\n${JSON.stringify(layout.unnamed,null,2)}`);
+}
+
+async function resourceMetrics(page){
+  return page.evaluate(()=>{
+    const resources=performance.getEntriesByType('resource');
+    const sizes=resources.map(r=>r.encodedBodySize||r.transferSize||0);
+    return {count:resources.length,total:sizes.reduce((n,v)=>n+v,0),largest:Math.max(0,...sizes)};
+  });
 }
 
 async function runViewport(browser,vp){
@@ -69,6 +73,10 @@ async function runViewport(browser,vp){
 
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
   await waitApp(page);
+  const perf=await resourceMetrics(page);
+  assert.ok(perf.total>0,`${vp.name}: initial encoded resource bytes must be measurable`);
+  assert.ok(perf.total<2_000_000,`${vp.name}: encoded resource budget ${perf.total}`);
+  assert.ok(perf.largest<600_000,`${vp.name}: largest encoded resource budget ${perf.largest}`);
   assert.equal(await page.getAttribute('html','data-field-live'),'off',`${vp.name}: FIELD LIVE flag`);
   assert.equal(await page.locator('#grid .fish').count(),19,`${vp.name}: 19 targets`);
   assert.equal(await page.locator('#grid .realFishMounted[data-fish-asset="direct-avif-grid"]').count(),19,`${vp.name}: all fish use direct AVIF renderer`);
@@ -122,16 +130,10 @@ async function runViewport(browser,vp){
     await context.setOffline(false);
   }
 
-  const perf=await page.evaluate(()=>{
-    const resources=performance.getEntriesByType('resource');
-    return {count:resources.length,total:resources.reduce((n,r)=>n+(r.transferSize||0),0),largest:Math.max(0,...resources.map(r=>r.transferSize||0))};
-  });
-  assert.ok(perf.total<2_000_000,`${vp.name}: transfer budget ${perf.total}`);
-  assert.ok(perf.largest<600_000,`${vp.name}: single resource budget ${perf.largest}`);
   assert.equal(pageErrors.length,0,`${vp.name}: page errors\n${pageErrors.join('\n')}`);
   assert.equal(consoleErrors.length,0,`${vp.name}: console errors\n${consoleErrors.join('\n')}`);
   assert.equal(externalRequests.length,0,`${vp.name}: RC0 must not make third-party requests with FIELD LIVE off\n${externalRequests.join('\n')}`);
-  console.log(`PASS browser ${vp.name}px · resources=${perf.count} transfer=${perf.total}`);
+  console.log(`PASS browser ${vp.name}px · resources=${perf.count} encoded=${perf.total} largest=${perf.largest}`);
   await context.close();
 }
 
@@ -153,10 +155,75 @@ async function runLegacyMigration(browser){
   await context.close();
 }
 
+async function runTackleFlow(browser){
+  const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});
+  await context.addInitScript(()=>localStorage.removeItem('fish_target_v17_tackle'));
+  const page=await context.newPage();
+  const consoleErrors=[];
+  const pageErrors=[];
+  page.on('console',msg=>{if(msg.type()==='error')consoleErrors.push(msg.text())});
+  page.on('pageerror',err=>pageErrors.push(String(err)));
+  await page.goto(BASE,{waitUntil:'networkidle'});
+  await waitApp(page);
+  assert.ok((await page.locator('#tackleSummary').textContent()||'').includes('手持ちタックルを登録'),'MY TACKLE empty state');
+  await page.locator('#tackleManage').click();
+  await page.locator('#tackleSheet').waitFor({state:'visible'});
+  await assertLayout(page,390,'390 MY TACKLE catalog sheet');
+
+  await page.locator('.tackleEntryModes[data-kind="rod"] button[data-mode="manual"]').click();
+  await page.locator('.tackleEntryModes[data-kind="reel"] button[data-mode="manual"]').click();
+  await page.locator('#rodManualPanel').waitFor({state:'visible'});
+  await page.locator('#reelManualPanel').waitFor({state:'visible'});
+  await assertLayout(page,390,'390 MY TACKLE manual sheet');
+  await page.locator('#rodName').fill('部分入力ロッド');
+  await page.locator('#addRod').click();
+  await page.locator('#reelName').fill('部分入力リール');
+  await page.locator('#addReel').click();
+  let tackle=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v17_tackle')||'{}'));
+  assert.equal(tackle.rods?.length,1,'manual rod persisted');
+  assert.equal(tackle.reels?.length,1,'manual reel persisted');
+  assert.equal(tackle.rods[0].source,'manual','manual rod source');
+  assert.equal(tackle.reels[0].source,'manual','manual reel source');
+  assert.equal(tackle.rods[0].maxLure,null,'missing rod spec stays null');
+  assert.equal(tackle.reels[0].lineNo,null,'missing reel line stays null');
+  await page.locator('#tackleClose').click();
+
+  await page.locator('button.fish[data-fish="ヒラメ"]').click();
+  await page.locator('#result.on').waitFor({state:'visible'});
+  assert.equal(await page.locator('#tackleFitBody .fitSummary.level0').count(),0,'missing MY TACKLE fields never produce green fit');
+  assert.ok((await page.locator('#tackleFitBody').textContent()||'').includes('一部条件を確認'),'partial MY TACKLE is explicitly conditional');
+
+  await page.reload({waitUntil:'networkidle'});
+  await waitApp(page);
+  tackle=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v17_tackle')||'{}'));
+  assert.equal(tackle.rods?.length,1,'manual rod survives reload');
+  assert.equal(tackle.reels?.length,1,'manual reel survives reload');
+  await page.locator('#tackleManage').click();
+  await page.locator('#tackleSheet').waitFor({state:'visible'});
+  await page.waitForFunction(()=>{
+    const select=document.getElementById('reelCatalogModel');
+    return select&&!select.disabled&&select.options.length>0;
+  },{timeout:15000});
+  assert.equal(await page.locator('#catalogReelLineType').inputValue(),'','catalog reel current line starts unspecified');
+  assert.equal(await page.locator('#catalogReelLineNo').inputValue(),'','catalog reel current line number starts unspecified');
+  await page.locator('#addCatalogReel').click();
+  tackle=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v17_tackle')||'{}'));
+  const catalogReel=tackle.reels?.find(x=>x.source==='catalog');
+  assert.ok(catalogReel,'catalog reel persisted through UI');
+  assert.equal(catalogReel.lineType,'','catalog reel product specs do not infer current line type');
+  assert.equal(catalogReel.lineNo,null,'catalog reel product specs do not infer current line number');
+  await assertLayout(page,390,'390 MY TACKLE populated sheet');
+  assert.equal(pageErrors.length,0,`MY TACKLE page errors\n${pageErrors.join('\n')}`);
+  assert.equal(consoleErrors.length,0,`MY TACKLE console errors\n${consoleErrors.join('\n')}`);
+  console.log('PASS MY TACKLE UI · empty/manual/partial-fit/catalog-line invariant/reload');
+  await context.close();
+}
+
 const browser=await chromium.launch({headless:true});
 try{
   for(const vp of VIEWPORTS)await runViewport(browser,vp);
   await runLegacyMigration(browser);
+  await runTackleFlow(browser);
   console.log('BROWSER QA PASS');
 }finally{
   await browser.close();
