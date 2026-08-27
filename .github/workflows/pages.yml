@@ -2,7 +2,7 @@ name: deploy-pages
 
 on:
   push:
-    branches: [main, codex/release-rc1, chatgpt/feature-v23-tackle-catalog, chatgpt/v23-daiwa-catalog-preview, chatgpt/v23-visual-pass1]
+    branches: [main, codex/release-rc1, chatgpt/feature-v23-tackle-catalog, chatgpt/v23-daiwa-catalog-preview, chatgpt/v23-visual-pass1, chatgpt/rc-v23-v8]
 
 permissions:
   contents: read
