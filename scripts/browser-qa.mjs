@@ -21,21 +21,40 @@ async function waitApp(page){
 }
 
 async function assertLayout(page,width,label){
-  const layout=await page.evaluate(()=>({
-    doc:document.documentElement.scrollWidth,
-    body:document.body.scrollWidth,
-    viewport:window.innerWidth,
-    unnamed:[...document.querySelectorAll('button,a,input,summary')].filter(el=>{
+  const layout=await page.evaluate(()=>{
+    const accessibleName=el=>{
+      const aria=el.getAttribute('aria-label')?.trim();
+      if(aria)return aria;
+      const labelledBy=el.getAttribute('aria-labelledby');
+      if(labelledBy){
+        const text=labelledBy.split(/\s+/).map(id=>document.getElementById(id)?.textContent||'').join(' ').trim();
+        if(text)return text;
+      }
+      if('labels' in el&&el.labels?.length){
+        const text=[...el.labels].map(node=>node.textContent||'').join(' ').trim();
+        if(text)return text;
+      }
+      const title=el.getAttribute('title')?.trim();
+      if(title)return title;
+      if(el instanceof HTMLInputElement&&['button','submit','reset'].includes(el.type)&&el.value.trim())return el.value.trim();
+      return (el.textContent||'').trim();
+    };
+    const unnamed=[...document.querySelectorAll('button,a,input,select,textarea,summary')].filter(el=>{
       const s=getComputedStyle(el),r=el.getBoundingClientRect();
       if(s.display==='none'||s.visibility==='hidden'||r.width===0||r.height===0)return false;
-      const name=(el.getAttribute('aria-label')||el.getAttribute('title')||el.getAttribute('placeholder')||el.textContent||'').trim();
-      return !name;
-    }).length
-  }));
+      return !accessibleName(el);
+    }).map(el=>({tag:el.tagName,id:el.id,klass:el.className,type:el.getAttribute('type'),html:el.outerHTML.slice(0,180)}));
+    return {
+      doc:document.documentElement.scrollWidth,
+      body:document.body.scrollWidth,
+      viewport:window.innerWidth,
+      unnamed
+    };
+  });
   assert.ok(layout.doc<=width+1,`${label}: document overflow ${layout.doc}>${width}`);
   assert.ok(layout.body<=width+1,`${label}: body overflow ${layout.body}>${width}`);
   assert.equal(layout.viewport,width,`${label}: viewport width`);
-  assert.equal(layout.unnamed,0,`${label}: visible interactive controls need an accessible name`);
+  assert.equal(layout.unnamed.length,0,`${label}: visible interactive controls need an accessible name\n${JSON.stringify(layout.unnamed,null,2)}`);
 }
 
 async function runViewport(browser,vp){
