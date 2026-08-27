@@ -164,7 +164,6 @@ async function openTackleSheetFromHome(page){
 
 async function runTackleFlow(browser){
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});
-  await context.addInitScript(()=>localStorage.removeItem('fish_target_v17_tackle'));
   const page=await context.newPage();
   const consoleErrors=[];
   const pageErrors=[];
