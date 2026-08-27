@@ -16,7 +16,7 @@ const assets=[
   'continuity.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css',
   'data.js','products.js','app.js','field-mode.js','pwa.js',
   'continuity.js','catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-fixtures.js','catalog.js','tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js',
-  'fish-real-v7.avif',
+  'fish-real-v7-q25-00.b64','fish-real-v7-q25-01.b64','fish-real-v7-q25-02.b64','fish-real-v7-q25-03.b64',
   'fish-real-row0.b64','fish-real-row1.b64',
   'fish-real-row2a.b64','fish-real-row2b.b64','fish-real-row3a.b64','fish-real-row3b.b64',
   'manifest.webmanifest','icon.svg','apple-touch-icon.png','icon-192.png','icon-512.png','icon-maskable-512.png'

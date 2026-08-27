@@ -1,6 +1,8 @@
 (()=>{
   const BUILD=document.documentElement.dataset.build||'dev';
-  const HQ_FILE='fish-real-v7.avif';
+  const HQ_PARTS=Object.freeze([
+    'fish-real-v7-q25-00.b64','fish-real-v7-q25-01.b64','fish-real-v7-q25-02.b64','fish-real-v7-q25-03.b64'
+  ]);
   const ROW_PARTS=Object.freeze([
     Object.freeze(['fish-real-row0.b64']),
     Object.freeze(['fish-real-row1.b64']),
@@ -31,21 +33,34 @@
   const loadImage=url=>new Promise((resolve,reject)=>{
     const image=new Image();
     image.onload=()=>resolve(image);
-    image.onerror=()=>reject(new Error(`fish image failed: ${url}`));
+    image.onerror=()=>reject(new Error(`fish image failed: ${url.slice(0,80)}`));
     image.src=url;
   });
 
-  async function loadPart(file){
+  async function loadTextPart(file){
     const response=await fetch(`./${file}?v=${BUILD}`);
-    if(!response.ok)throw new Error(`fish row request failed: ${file} ${response.status}`);
+    if(!response.ok)throw new Error(`fish asset request failed: ${file} ${response.status}`);
     const text=(await response.text()).trim();
-    if(!text||text.length<1000)throw new Error(`fish row payload is invalid or truncated: ${file}`);
+    if(!text||text.length<1000)throw new Error(`fish asset payload is invalid or truncated: ${file}`);
     return text;
+  }
+
+  async function loadHighResolutionSheet(){
+    const encoded=(await Promise.all(HQ_PARTS.map(loadTextPart))).join('');
+    if(!encoded.startsWith('AAAAIGZ0eXBhdmlm')||encoded.length<35000){
+      throw new Error('assembled high-resolution AVIF payload is invalid or truncated');
+    }
+    const image=await loadImage(`data:image/avif;base64,${encoded}`);
+    if(image.naturalWidth<1000||image.naturalHeight<700){
+      throw new Error(`high-resolution fish sheet is unexpectedly small: ${image.naturalWidth}x${image.naturalHeight}`);
+    }
+    hqSheet=image;
+    source='avif-grid';
   }
 
   async function loadFallbackRows(){
     const encoded=await Promise.all(ROW_PARTS.map(async parts=>{
-      const text=(await Promise.all(parts.map(loadPart))).join('');
+      const text=(await Promise.all(parts.map(loadTextPart))).join('');
       if(!text.startsWith('UklG')||text.length<5000)throw new Error('assembled fish row payload is invalid or truncated');
       return `data:image/webp;base64,${text}`;
     }));
@@ -55,10 +70,7 @@
 
   async function loadSource(){
     try{
-      const image=await loadImage(`./${HQ_FILE}?v=${BUILD}`);
-      if(image.naturalWidth<1000||image.naturalHeight<700)throw new Error(`high-resolution fish sheet is unexpectedly small: ${image.naturalWidth}x${image.naturalHeight}`);
-      hqSheet=image;
-      source='avif-grid';
+      await loadHighResolutionSheet();
     }catch(error){
       console.warn('high-resolution fish sheet unavailable; trying verified WebP fallback',error);
       try{
@@ -185,11 +197,7 @@
     if(name)mount(document.getElementById('tart'),name);
   }
 
-  function schedule(){
-    if(scheduled)return;
-    scheduled=true;
-    requestAnimationFrame(sync);
-  }
+  function schedule(){if(!scheduled){scheduled=true;requestAnimationFrame(sync)}}
 
   function start(){
     if(started)return;
@@ -206,10 +214,6 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   globalThis.FISH_TARGET_REAL_FISH=Object.freeze({
-    version:'V23-REAL7',
-    renderer:'hq-avif-grid-with-webp-fallback',
-    primary:HQ_FILE,
-    fallback:ROW_PARTS,
-    species:Object.freeze(Object.keys(ORDER))
+    version:'V23-REAL7',renderer:'hq-avif-chunks-with-webp-fallback',primary:HQ_PARTS,fallback:ROW_PARTS,species:Object.freeze(Object.keys(ORDER))
   });
 })();
