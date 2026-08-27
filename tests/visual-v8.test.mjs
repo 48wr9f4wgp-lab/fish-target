@@ -38,6 +38,6 @@ test('VISUAL8 loads after previous visual layers and ships offline',()=>{
   assert.match(pwa,/visual-v8\.css/);
   assert.match(build,/'visual-v8\.css'/);
   assert.match(build,/'visual-v8\.js'/);
-  assert.equal(config.version,'V23-DEV2-DAIWA-VISUAL8');
+  assert.equal(config.version,'V23-DEV2-DAIWA-VISUAL8C');
   assert.equal(config.features.fieldLive,false);
 });
