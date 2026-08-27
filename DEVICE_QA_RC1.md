@@ -9,11 +9,12 @@ These checks require a physical iPhone and are not certified by desktop/browser 
 - [x] Standalone launch: current Home Screen installation opens without Safari chrome.
 - [x] Existing installation upgrade: the installed app updated to `V23-DEV2-DAIWA-RC0` while prior saved/recent plan state remained present.
 - [x] Real airplane-mode + Wi-Fi-off cold launch: current RC shell, 19-target home UI, fish art, and saved `ブリ・ワラサ` plan state load successfully; `OFFLINE・基本診断は利用可` is shown.
-- [ ] Offline FIELD MODE: still needs physical-device open/back confirmation after the successful cold launch above.
+- [x] Offline FIELD MODE: opened successfully from the real offline cold-launch state, remained readable, and the physical-device back control returned correctly.
 - [ ] Safari private/storage-restricted mode: search and recommendations work; save failure does not break the page.
-- [~] Real touch QA: target selection, FIRST CAST, required tackle, MY TACKLE CHECK, scrolling, and bottom navigation were observed working; search keyboard/filters and FIELD MODE back controls remain.
+- [~] Real touch QA: target selection, FIRST CAST, required tackle, MY TACKLE CHECK, scrolling, bottom navigation, FIELD MODE open/back were observed working; search keyboard/filters remain.
 - [ ] Home-screen icon masks: 192/512 standard and 512 maskable artwork remains recognizable under iOS icon treatment.
-- [ ] Rotation/orientation/background return: active plan must survive portrait launch, backgrounding, and return.
+- [x] Background return: while in `ブリ・ワラサ` FIELD MODE, backgrounding the Home Screen app and returning after a short wait preserved the same active plan and FIELD MODE state.
+- [ ] Orientation rotation: portrait-primary behavior through an actual orientation change still needs explicit confirmation if rotation is allowed by the installed shell.
 
 ## Original required checks
 
