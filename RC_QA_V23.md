@@ -10,7 +10,7 @@ FIELD LIVE: OFF
 
 Automated RC QA: **PASS** for the covered browser, persistence, offline, catalog, scale, privacy/network, version-contract, and regression scopes.
 
-Physical iPhone RC QA: **PARTIAL PASS** for the directly observed standalone/update/core-flow/offline/FIELD MODE states below.
+Physical iPhone RC QA: **PARTIAL PASS** for the directly observed standalone/update/core-flow/offline/FIELD MODE/background-return states below.
 
 Release certification: **NOT COMPLETE**. Remaining physical iPhone/Safari checks in `DEVICE_QA_RC1.md` are still required. No merge to `main`, Store submission, or production catalog enablement is authorized by this document.
 
@@ -158,6 +158,7 @@ Observed on a physical iPhone using the existing Home Screen installation after 
 - from that offline state, `ブリ・ワラサ` detail remains usable and FIELD MODE opens successfully
 - FIELD MODE remains fully readable offline with FIRST CAST, required tackle, and all 3 field steps visible
 - FIELD MODE back control is visible/reachable in the tested offline state
+- while still in FIELD MODE, sending the app to the iOS background and returning after a short wait restores the same `ブリ・ワラサ` FIELD MODE state without losing the active plan
 
 Observed non-blocking polish notes:
 
@@ -173,7 +174,6 @@ Still **not certified** on physical iPhone and required before release certifica
 - real search keyboard/filter interaction beyond the already observed core detail flow
 - Add to Home Screen icon/name check if the current installation predates the latest icon/name assets
 - actual iOS icon masking check
-- orientation/background-return state retention
 - final public-release polish decision for the visible RC/build label and wrapped brand/build line
 
 ## Restrictions still in force
@@ -190,4 +190,4 @@ Still **not certified** on physical iPhone and required before release certifica
 
 **Physical iPhone release gate: PARTIAL PASS / PENDING remaining device checks**
 
-The next release-candidate action is physical iPhone FIELD MODE back-action QA and background-return retention, followed by Safari private/storage-restricted and icon/name checks before release certification.
+The next release-candidate action is physical iPhone FIELD MODE back-action QA, followed by Safari private/storage-restricted and icon/name checks before release certification.
