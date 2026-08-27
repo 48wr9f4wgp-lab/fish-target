@@ -31,7 +31,8 @@ test('DAIWA and SHIMANO provider gates remain disabled for production',()=>{
   const daiwa=providers.byMaker('DAIWA');
   const shimano=providers.byMaker('SHIMANO');
   assert.equal(daiwa.mode,'poc');
-  assert.equal(shimano.mode,'fixture-only');
+  assert.equal(shimano.id,'shimano-official-research');
+  assert.equal(shimano.mode,'research');
   assert.equal(daiwa.productionEnabled,false);
   assert.equal(shimano.productionEnabled,false);
   assert.equal(providers.canPublish(daiwa,'licensed'),false);
