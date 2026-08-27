@@ -3,7 +3,7 @@ name: rc-qa
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, chatgpt/rc-v23-v8]
 
 permissions:
   contents: read
