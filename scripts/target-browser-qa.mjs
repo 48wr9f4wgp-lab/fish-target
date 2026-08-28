@@ -64,14 +64,14 @@ async function runViewport(browser,{width,height}){
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: サバ method count`);
   assert.equal(await text(page,'#pmethod'),'サビキ釣り',`${width}: default method`);
 
-  // Seed a manual setup that is a direct fit for the alternate lure method but not the default sabiki plan.
-  // This lets E2E prove MY TACKLE recomputes from the selected Method rather than only remaining reachable.
+  // Seed a manual setup that is a direct fit for the alternate lure method but deliberately poor for sabiki.
+  // This proves MY TACKLE recomputes from the selected Method instead of only remaining reachable.
   await page.evaluate(()=>localStorage.setItem('fish_target_v17_tackle',JSON.stringify({
     rods:[{id:'qa-lure-rod',source:'manual',name:'QA 7.5ft L',length:7.5,power:'L',maxLure:20}],
     reels:[{id:'qa-lure-reel',source:'manual',name:'QA 2500 PE0.6',size:2500,lineType:'PE',lineNo:0.6}]
   })));
   await page.locator('#methodPickerV1 [data-method-id="default"]').click();
-  assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'一部条件を確認',`${width}: default MY TACKLE baseline`);
+  assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'買い足し候補あり',`${width}: default MY TACKLE baseline`);
 
   await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
   assert.equal(await text(page,'#pmethod'),'ライトゲーム/小型メタルジグ',`${width}: alternate method selected`);
@@ -101,7 +101,7 @@ async function runViewport(browser,{width,height}){
 
     // Save must persist methodKey and restore the exact method after reload.
     await page.locator('#save').click();
-    let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v9')||'[]'));
+    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v9')||'[]'));
     const row=saved.find(x=>x.fish==='サバ');
     assert.equal(row?.methodKey,'lure','saved methodKey');
     await page.reload({waitUntil:'networkidle'});
