@@ -19,7 +19,8 @@ const copiedAssets=[
   'continuity.js',
   'target-method-data-v1-part1.js','target-method-data-v1-part2.js','target-method-data-v1-part3.js','target-method-data-v1-part4.js','target-method-data-v1-part5.js','target-method-data-v1.js',
   'target-method-data-v2-part1.js','target-method-data-v2-part2.js','target-method-data-v2-part3.js','target-method-data-v2-part4.js','target-method-data-v2-part5.js','target-method-data-v2.js',
-  'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js','target-methods-v1.js',
+  'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js',
+  'target-method-data-v4-part1.js','target-method-data-v4-part2.js','target-method-data-v4-part3.js','target-method-data-v4-part4.js','target-method-data-v4-part5.js','target-method-data-v4.js','target-methods-v1.js',
   'catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-shimano-poc.js','catalog-fixtures.js','catalog.js','tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','visual-v8.js',
   'fish-real-v7.avif',
   'manifest.webmanifest','icon.svg'
