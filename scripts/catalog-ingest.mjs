@@ -36,9 +36,7 @@ function normalizeRow(input,index=0){
       const n=finite(value);
       if(n===null||n<0)throw new Error(`row ${index}: invalid numeric spec ${key}`);
       specs[key]=n;
-    }else{
-      specs[key]=typeof value==='string'?value.trim():clone(value);
-    }
+    }else specs[key]=typeof value==='string'?value.trim():clone(value);
   }
   if(finite(specs.lure_min_g)!==null&&finite(specs.lure_max_g)!==null&&specs.lure_min_g>specs.lure_max_g)throw new Error(`row ${index}: lure range reversed`);
   if(finite(specs.line_pe_min)!==null&&finite(specs.line_pe_max)!==null&&specs.line_pe_min>specs.line_pe_max)throw new Error(`row ${index}: PE range reversed`);
@@ -54,14 +52,7 @@ function normalizeRow(input,index=0){
   if(source_type!=='synthetic'&&!source_provider)throw new Error(`row ${index}: source_provider required`);
   const source_url=source.source_url==null?null:text(source.source_url);
   if(source_url&&!/^https:\/\//i.test(source_url))throw new Error(`row ${index}: source_url must use https`);
-  const normalizedSource={
-    source_type,
-    source_provider:source_provider||'unknown',
-    source_url,
-    retrieved_at:text(source.retrieved_at)||null,
-    last_verified:text(source.last_verified)||null,
-    license_status
-  };
+  const normalizedSource={source_type,source_provider:source_provider||'unknown',source_url,retrieved_at:text(source.retrieved_at)||null,last_verified:text(source.last_verified)||null,license_status};
 
   const identifiers={};
   const jan=text(input.identifiers?.jan);
@@ -69,7 +60,6 @@ function normalizeRow(input,index=0){
     if(!/^\d{13}$/.test(jan))throw new Error(`row ${index}: JAN must be exactly 13 digits`);
     identifiers.jan=jan;
   }
-
   return {maker,category,series,generation,model,display_name,status,specs,source:normalizedSource,identifiers};
 }
 
@@ -86,19 +76,22 @@ export function prepareRows(input,{expectedMaker=null,requireOfficial=false}={})
     if(seenKeys.has(key))throw new Error(`row ${i}: duplicate product key with row ${seenKeys.get(key)}`);
     seenKeys.set(key,i);
     const jan=row.identifiers.jan;
-    if(jan){
-      if(seenJan.has(jan))throw new Error(`row ${i}: duplicate JAN with row ${seenJan.get(jan)}`);
-      seenJan.set(jan,i);
-    }
+    if(jan){if(seenJan.has(jan))throw new Error(`row ${i}: duplicate JAN with row ${seenJan.get(jan)}`);seenJan.set(jan,i)}
   }
   rows.sort((a,b)=>[a.maker,a.category,a.series,a.generation,a.model].map(canonical).join('|').localeCompare([b.maker,b.category,b.series,b.generation,b.model].map(canonical).join('|'),'en'));
   return rows;
 }
 
+const frozenRowsSource=rows=>`Object.freeze(${JSON.stringify(rows)}.map(row=>Object.freeze({...row,specs:Object.freeze({...row.specs}),source:Object.freeze({...row.source}),identifiers:Object.freeze({...row.identifiers})})))`;
+
 export function renderModule(rows,globalName){
   if(!/^FISH_TARGET_[A-Z0-9_]+_ROWS$/.test(globalName))throw new Error('globalName must match FISH_TARGET_*_ROWS');
-  const payload=JSON.stringify(rows);
-  return `(()=>{\n  const rows=${payload};\n  globalThis.${globalName}=Object.freeze(rows.map(row=>Object.freeze({...row,specs:Object.freeze({...row.specs}),source:Object.freeze({...row.source}),identifiers:Object.freeze({...row.identifiers})})));\n})();\n`;
+  return `(()=>{\n  globalThis.${globalName}=${frozenRowsSource(rows)};\n})();\n`;
+}
+
+export function renderBatchModule(rows,batchId){
+  if(!/^[a-z0-9][a-z0-9-]*$/.test(batchId))throw new Error('batchId must be lowercase kebab-case');
+  return `(()=>{\n  const batch=Object.freeze({id:${JSON.stringify(batchId)},rows:${frozenRowsSource(rows)}});\n  const registry=globalThis.FISH_TARGET_CATALOG_BATCH_ROWS||(globalThis.FISH_TARGET_CATALOG_BATCH_ROWS=[]);\n  if(registry.some(x=>x?.id===batch.id))throw new Error('Duplicate catalog batch id: '+batch.id);\n  registry.push(batch);\n})();\n`;
 }
 
 function argsOf(argv){
@@ -116,17 +109,17 @@ function argsOf(argv){
 
 export async function runCli(argv=process.argv.slice(2)){
   const args=argsOf(argv);
-  if(!args.input||!args.output||!args.global)throw new Error('usage: node scripts/catalog-ingest.mjs --input batch.json --output catalog-batch.js --global FISH_TARGET_VENDOR_ROWS [--expected-maker DAIWA] [--require-official]');
+  if(!args.input||!args.output||(!args.global&&!args['batch-id']))throw new Error('usage: node scripts/catalog-ingest.mjs --input batch.json --output catalog-batch.js (--global FISH_TARGET_VENDOR_ROWS | --batch-id maker-series-id) [--expected-maker DAIWA] [--require-official]');
+  if(args.global&&args['batch-id'])throw new Error('choose either --global or --batch-id');
   const inputPath=path.resolve(args.input),outputPath=path.resolve(args.output);
   const parsed=JSON.parse(await readFile(inputPath,'utf8'));
   const rows=prepareRows(parsed,{expectedMaker:args['expected-maker']||null,requireOfficial:Boolean(args.requireOfficial)});
   await mkdir(path.dirname(outputPath),{recursive:true});
-  await writeFile(outputPath,renderModule(rows,args.global));
-  const summary={rows:rows.length,makers:[...new Set(rows.map(r=>r.maker))],categories:Object.fromEntries([...CATEGORIES].map(category=>[category,rows.filter(r=>r.category===category).length])),jans:rows.filter(r=>r.identifiers.jan).length,official:rows.filter(r=>r.source.source_type==='manufacturer_official').length,output:outputPath};
+  const moduleSource=args['batch-id']?renderBatchModule(rows,args['batch-id']):renderModule(rows,args.global);
+  await writeFile(outputPath,moduleSource);
+  const summary={rows:rows.length,makers:[...new Set(rows.map(r=>r.maker))],categories:Object.fromEntries([...CATEGORIES].map(category=>[category,rows.filter(r=>r.category===category).length])),jans:rows.filter(r=>r.identifiers.jan).length,official:rows.filter(r=>r.source.source_type==='manufacturer_official').length,batch_id:args['batch-id']||null,output:outputPath};
   console.log(JSON.stringify(summary));
   return summary;
 }
 
-if(import.meta.url===pathToFileURL(process.argv[1]||'').href){
-  runCli().catch(error=>{console.error(error.message);process.exitCode=1});
-}
+if(import.meta.url===pathToFileURL(process.argv[1]||'').href){runCli().catch(error=>{console.error(error.message);process.exitCode=1})}
