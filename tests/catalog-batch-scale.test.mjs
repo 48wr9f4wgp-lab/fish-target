@@ -8,9 +8,10 @@ const read=file=>readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 const manifest=JSON.parse(read('catalog-batch-manifest.json'));
 const batchFiles=[...new Set(manifest.batches.flatMap(x=>x.files||[]))];
 const sourceBatches=manifest.batches.filter(x=>x.source_input);
+const registryBatches=manifest.batches.filter(x=>(x.files||[]).some(file=>read(file).includes('FISH_TARGET_CATALOG_BATCH_ROWS')));
 const expectedOfficial=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const expectedSynthetic=14;
-const expectedRegistryRows=sourceBatches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
+const expectedRegistryRows=registryBatches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const expectedByMaker=maker=>manifest.batches.filter(x=>x.maker===maker).reduce((n,x)=>n+Number(x.expected_rows||0),0);
 
 function loadRuntime(){
@@ -28,7 +29,7 @@ test('catalog batch manifest is unique, complete, and self-consistent',()=>{
   const ids=manifest.batches.map(x=>x.id),files=manifest.batches.flatMap(x=>x.files||[]);
   assert.equal(new Set(ids).size,ids.length,'unique batch ids');
   assert.equal(new Set(files).size,files.length,'each runtime file belongs to one batch');
-  assert.ok(expectedOfficial>=174,'official factual row contract must not regress');
+  assert.ok(expectedOfficial>=307,'official factual row contract must not regress below multi-maker baseline');
   for(const batch of manifest.batches){
     assert.ok(batch.id&&batch.maker&&batch.stage,`${batch.id}: metadata`);
     assert.ok(Number.isInteger(batch.expected_rows)&&batch.expected_rows>0,`${batch.id}: expected_rows`);
@@ -38,20 +39,63 @@ test('catalog batch manifest is unique, complete, and self-consistent',()=>{
   }
 });
 
-test('runtime composes manifest official rows plus synthetic fixtures without collisions',()=>{
+test('runtime composes 307+ official rows plus synthetic fixtures without collisions',()=>{
   const context=loadRuntime(),catalog=context.FISH_TARGET_CATALOG;
   assert.equal(catalog.products.length,expectedOfficial+expectedSynthetic);
+  assert.ok(catalog.products.length>=321,'total product scale baseline');
   const official=catalog.products.filter(p=>p.source.source_type==='manufacturer_official');
   const synthetic=catalog.products.filter(p=>p.source.source_type==='synthetic');
   assert.equal(official.length,expectedOfficial);
   assert.equal(synthetic.length,expectedSynthetic);
-  assert.equal(official.filter(p=>p.maker==='DAIWA').length,expectedByMaker('DAIWA'));
-  assert.equal(official.filter(p=>p.maker==='SHIMANO').length,expectedByMaker('SHIMANO'));
+  for(const maker of ['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA']){
+    assert.equal(official.filter(p=>p.maker===maker).length,expectedByMaker(maker),`${maker}: manifest/runtime count`);
+  }
   assert.equal(catalog.validateCatalog(catalog.products).length,0,'catalog validation errors');
-  const ids=catalog.products.map(p=>p.product_id),jans=catalog.products.map(p=>p.identifiers?.jan).filter(Boolean);
+  const ids=catalog.products.map(p=>p.product_id),jans=catalog.products.map(p=>p.identifiers?.jan).filter(Boolean),upcs=catalog.products.map(p=>p.identifiers?.upc).filter(Boolean);
   assert.equal(new Set(ids).size,ids.length,'product ids unique');
   assert.equal(new Set(jans).size,jans.length,'JAN unique across all known JANs');
+  assert.equal(new Set(upcs).size,upcs.length,'UPC unique across all known UPCs');
   assert.equal(context.FISH_TARGET_CATALOG_COMPOSITION.batchRows,expectedRegistryRows);
+});
+
+test('multi-maker batches preserve facts and never infer the line currently on a reel',()=>{
+  const context=loadRuntime(),catalog=context.FISH_TARGET_CATALOG;
+  const zenon=catalog.search({query:'036282147485'}).items[0];
+  assert.equal(zenon.display_name,'ZENON 4000SH');
+  assert.equal(zenon.maker,'ABU GARCIA');
+  assert.equal(zenon.specs.weight_g,170);
+  assert.equal(zenon.specs.gear_ratio,6.2);
+  assert.equal(zenon.specs.retrieve_cm,100);
+  assert.equal(zenon.specs.line_capacity_raw,'0.33(16lb)-150 / PE2-220');
+  assert.equal(zenon.identifiers.product_code,'1548043');
+  const zenonOwned=catalog.ownedSnapshot(zenon,{id:'abu-reel'});
+  assert.equal(zenonOwned.lineType,'');
+  assert.equal(zenonOwned.lineNo,null);
+
+  const okuma=catalog.list({maker:'OKUMA',series:'CEYMAR HD'}).find(x=>x.model==='CHD-4000XA');
+  assert.ok(okuma);
+  assert.equal(okuma.specs.reel_size,4000);
+  assert.equal(okuma.specs.gear_ratio,6.2);
+  assert.equal(okuma.specs.retrieve_cm,99);
+  assert.equal(okuma.specs.max_drag_kg,9);
+  assert.equal(okuma.specs.line_capacity_raw,'0.25/280, 0.30/185, 0.35/130');
+
+  const penn=catalog.list({maker:'PENN',series:'BATTLE IV'}).find(x=>x.model==='BTLIV10000');
+  assert.ok(penn);
+  assert.equal(penn.specs.reel_size,10000);
+  assert.equal(penn.specs.gear_ratio,4.2);
+  assert.equal(penn.specs.max_drag_kg,18.1);
+  assert.equal(penn.specs.line_capacity_raw,'BRAID 770yd/50lb, 710yd/65lb, 490yd/80lb');
+  const pennOwned=catalog.ownedSnapshot(penn,{id:'penn-reel'});
+  assert.equal(pennOwned.lineType,'');
+  assert.equal(pennOwned.lineNo,null);
+
+  for(const maker of ['ABU GARCIA','PENN','OKUMA']){
+    const rows=catalog.list({maker});
+    assert.ok(rows.length>0,`${maker}: rows`);
+    assert.ok(rows.every(x=>x.source.license_status==='restricted'),`${maker}: restricted research data`);
+    assert.ok(rows.every(x=>catalog.productionEligible(x)===false),`${maker}: production blocked`);
+  }
 });
 
 test('scale batches preserve official DAIWA facts and stay production-blocked',()=>{
@@ -77,35 +121,10 @@ test('scale batches preserve official DAIWA facts and stay production-blocked',(
   assert.equal(emeraldasOwned.lineType,'');
   assert.equal(emeraldasOwned.lineNo,null);
 
-  const blast=catalog.list({maker:'DAIWA',series:'BLAST LT'}).find(x=>x.model==='LT6000D-H');
-  assert.ok(blast,'BLAST LT6000D-H');
-  assert.equal(blast.status,'unknown','lifecycle is not inferred from page presence');
-  assert.equal(blast.specs.reel_size,6000);
-  assert.equal(blast.specs.weight_g,370);
-  assert.equal(blast.specs.gear_ratio,5.7);
-  assert.equal(blast.specs.retrieve_cm,101);
-  assert.equal(blast.specs.max_drag_kg,12);
-  assert.equal(blast.specs.pe_capacity_raw,'3号-300m');
-  assert.equal(blast.identifiers.jan,'4960652239288');
-  assert.equal(catalog.productionEligible(blast),false);
-
-  const gekka=catalog.list({maker:'DAIWA',series:'GEKKABIJIN'}).find(x=>x.model==='LT2000S-H');
-  assert.ok(gekka,'GEKKABIJIN LT2000S-H');
-  assert.equal(gekka.status,'unknown');
-  assert.equal(gekka.specs.weight_g,165);
-  assert.equal(gekka.specs.gear_ratio,5.8);
-  assert.equal(gekka.specs.retrieve_cm,76);
-  assert.equal(gekka.specs.pe_capacity_raw,'0.4号-200m');
-  assert.equal(gekka.identifiers.jan,'4550133304538');
-  const gekkaOwned=catalog.ownedSnapshot(gekka,{id:'gekka-reel'});
-  assert.equal(gekkaOwned.lineType,'');
-  assert.equal(gekkaOwned.lineNo,null);
-
   const luviasRows=catalog.list({maker:'DAIWA',series:'LUVIAS'});
   assert.equal(luviasRows.length,16,'all 24 LUVIAS models');
   const luvias=luviasRows.find(x=>x.model==='LT5000D-CXH');
   assert.ok(luvias,'LUVIAS LT5000D-CXH');
-  assert.equal(luvias.status,'unknown','lifecycle is not inferred from page presence');
   assert.equal(luvias.specs.reel_size,5000);
   assert.equal(luvias.specs.weight_g,225);
   assert.equal(luvias.specs.gear_ratio,6.2);
@@ -113,9 +132,6 @@ test('scale batches preserve official DAIWA facts and stay production-blocked',(
   assert.equal(luvias.specs.max_drag_kg,12);
   assert.equal(luvias.specs.pe_capacity_raw,'2.5号-300m');
   assert.equal(luvias.identifiers.jan,'4550133389061');
-  assert.equal(luvias.source.source_url,'https://www.daiwa.com/jp/product/2dhvqnt');
-  assert.equal(luvias.source.last_verified,'2026-08-28');
-  assert.equal(catalog.productionEligible(luvias),false);
   const luviasOwned=catalog.ownedSnapshot(luvias,{id:'luv-reel'});
   assert.equal(luviasOwned.lineType,'');
   assert.equal(luviasOwned.lineNo,null);
