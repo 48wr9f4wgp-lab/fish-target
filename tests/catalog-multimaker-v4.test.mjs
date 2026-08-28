@@ -8,13 +8,9 @@ const files=[...new Set(manifest.batches.flatMap(x=>x.files||[]))];
 const ctx=vm.createContext({console});
 for(const f of ['catalog-providers.js','catalog-adapters.js',...files,'catalog-fixtures.js','catalog.js'])vm.runInContext(read(f),ctx,{filename:f});
 const c=ctx.FISH_TARGET_CATALOG;
-const official=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const yamaga=c.list({maker:'YAMAGA BLANKS'}).filter(x=>x.source.source_type==='manufacturer_official');
 
-test('YAMAGA expansion reaches 505 rows, 491 official facts, and eleven makers',()=>{
-  assert.equal(manifest.batches.length,23);
-  assert.equal(official,491);
-  assert.equal(c.products.length,505);
+test('YAMAGA batch keeps 25 official rods and remains production-blocked as catalog grows',()=>{
   assert.equal(yamaga.length,25);
   assert.ok(c.makers.includes('YAMAGA BLANKS'));
   assert.equal(c.validateCatalog(c.products).length,0);
