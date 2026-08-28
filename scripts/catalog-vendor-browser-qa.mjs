@@ -6,9 +6,9 @@ const KEY='fish_target_v17_tackle';
 const manifest=JSON.parse(readFileSync(new URL('../catalog-batch-manifest.json',import.meta.url),'utf8'));
 const EXPECTED=14+manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const browser=await chromium.launch({headless:true});
-async function waitApp(page){await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_CATALOG_LOADER&&document.querySelector('.v19TackleShortcut')),{timeout:15000})}
+async function waitApp(page){await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_CATALOG_LOADER&&document.querySelector('.v19TackleShortcut')),null,{timeout:15000})}
 async function open(page){await page.locator('.v19TackleShortcut').click();await page.locator('#tackleSheet').waitFor({state:'visible'});await page.waitForFunction(n=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG?.products?.length===n,EXPECTED,{timeout:20000})}
-async function chooseRod(page,maker,series,query,expected){await page.locator('#rodCatalogMaker').selectOption({label:maker});await page.locator('#rodCatalogSeries').selectOption({label:series});await page.locator('#rodCatalogSearch').fill(query);await page.waitForFunction(text=>[...document.querySelectorAll('#rodCatalogModel option')].some(o=>(o.textContent||'').includes(text)),expected,{timeout:15000});const opt=page.locator('#rodCatalogModel option').filter({hasText:expected}).first();const value=await opt.getAttribute('value');assert.ok(value,expected);await page.locator('#rodCatalogModel').selectOption(value);return value}
+async function chooseRod(page,maker,series,query,expected){await page.locator('#rodCatalogMaker').selectOption({label:maker});await page.locator('#rodCatalogSeries').selectOption({label:series});await page.locator('#rodCatalogSearch').fill(query);await page.waitForFunction(text=>[...document.querySelectorAll('#rodCatalogModel option')].some(o=>(o.textContent||'').includes(text)),expected,{timeout:15000});const opt=page.locator('#rodCatalogModel option').filter({hasText:expected}).first();const value=await opt.getAttribute('value');assert.ok(value,expected);const model=page.locator('#rodCatalogModel');await model.selectOption(value);await model.dispatchEvent('change');return value}
 try{
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});await waitApp(page);await open(page);
@@ -24,7 +24,7 @@ try{
   saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);rod=saved.rods.find(x=>x.product_id===proxId);assert.ok(rod,'PROX saved');assert.equal(rod.length,16.404);assert.equal(rod.maxLure,null);
 
   const fishmanId=await chooseRod(page,'FISHMAN','Beams','calmer8.6M','calmer8.6M');
-  await page.waitForFunction(()=>{const t=document.querySelector('#rodCatalogPreview')?.textContent||'';return t.includes('calmer8.6M')&&t.includes('8.5ft')&&t.includes('M')},{timeout:15000});
+  await page.waitForFunction(()=>{const t=document.querySelector('#rodCatalogPreview')?.textContent||'';return t.includes('calmer8.6M')&&t.includes('8.5ft')&&t.includes('M')},null,{timeout:15000});
   const fishmanPreview=await page.locator('#rodCatalogPreview').textContent()||'';assert.ok(fishmanPreview.includes('8.5ft'),'Fishman derived length visible');assert.ok(fishmanPreview.includes('M'),'Fishman power visible');
   const fishmanRuntime=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),fishmanId);assert.equal(fishmanRuntime.specs.lure_weight_raw,'2.5～4.5号');assert.equal(fishmanRuntime.specs.lure_min_g,null);assert.equal(fishmanRuntime.specs.lure_max_g,null);
   const discontinued=await page.evaluate(()=>globalThis.FISH_TARGET_CATALOG.list({maker:'FISHMAN',series:'Beams'}).find(x=>x.model==='blancsierra5.2UL')?.status);assert.equal(discontinued,'discontinued');
