@@ -4,21 +4,23 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source=file=>readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
+const manifest=JSON.parse(source('catalog-batch-manifest.json'));
+const batchFiles=[...new Set(manifest.batches.flatMap(x=>x.files||[]))];
 const context=vm.createContext({console});
-for(const file of ['catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-shimano-poc.js','catalog-fixtures.js','catalog.js']){
-  vm.runInContext(source(file),context,{filename:file});
-}
+for(const file of ['catalog-providers.js','catalog-adapters.js',...batchFiles,'catalog-fixtures.js','catalog.js'])vm.runInContext(source(file),context,{filename:file});
 const catalog=context.FISH_TARGET_CATALOG;
 const providers=context.FISH_TARGET_CATALOG_PROVIDERS;
+const expectedOfficial=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 
-test('research catalog contains 139 official factual rows plus 14 synthetic fixtures',()=>{
+test('research catalog contains manifest factual rows plus 14 synthetic fixtures',()=>{
   assert.ok(catalog);
-  assert.equal(catalog.products.length,153);
+  assert.equal(expectedOfficial,150);
+  assert.equal(catalog.products.length,expectedOfficial+14);
   const official=catalog.products.filter(p=>p.source.source_type==='manufacturer_official');
   const synthetic=catalog.products.filter(p=>p.source.source_type==='synthetic');
-  assert.equal(official.length,139);
+  assert.equal(official.length,expectedOfficial);
   assert.equal(synthetic.length,14);
-  assert.equal(official.filter(p=>p.maker==='DAIWA').length,105);
+  assert.equal(official.filter(p=>p.maker==='DAIWA').length,116);
   assert.equal(official.filter(p=>p.maker==='SHIMANO').length,34);
   assert.equal(catalog.validateCatalog(catalog.products).length,0);
 });
@@ -54,4 +56,11 @@ test('reel capacity is searchable product metadata but never inferred as the cur
   assert.equal(owned.size,4000);
   assert.equal(owned.lineType,'');
   assert.equal(owned.lineNo,null);
+
+  const emeraldas=catalog.search({query:'4550133579592'}).items[0];
+  assert.equal(emeraldas.display_name,'EMERALDAS AIR PC LT2500-H');
+  assert.equal(emeraldas.specs.pe_capacity_raw,'0.8号-200m');
+  const emeraldasOwned=catalog.ownedSnapshot(emeraldas,{id:'test-daiwa-reel'});
+  assert.equal(emeraldasOwned.lineType,'');
+  assert.equal(emeraldasOwned.lineNo,null);
 });
