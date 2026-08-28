@@ -1,5 +1,5 @@
 {
-  "version": "CATALOG-BATCHES-3",
+  "version": "CATALOG-BATCHES-4",
   "batches": [
     {
       "id": "daiwa-poc-core",
@@ -38,6 +38,14 @@
       "expected_rows": 3,
       "stage": "research",
       "source_input": "catalog-batches/daiwa-gekkabijin-2023.json"
+    },
+    {
+      "id": "daiwa-luvias-2024",
+      "maker": "DAIWA",
+      "files": ["catalog-daiwa-luvias-2024.js"],
+      "expected_rows": 16,
+      "stage": "research",
+      "source_input": "catalog-batches/daiwa-luvias-2024.json"
     }
   ]
 }
