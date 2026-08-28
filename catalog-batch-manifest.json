@@ -1,5 +1,5 @@
 {
-  "version": "CATALOG-BATCHES-8",
+  "version": "CATALOG-BATCHES-9-MULTI1",
   "batches": [
     {"id":"daiwa-poc-core","maker":"DAIWA","files":["catalog-daiwa-poc.js"],"expected_rows":105,"stage":"research"},
     {"id":"shimano-poc-core","maker":"SHIMANO","files":["catalog-shimano-poc.js"],"expected_rows":34,"stage":"research"},
@@ -11,6 +11,12 @@
     {"id":"daiwa-certate-2024","maker":"DAIWA","files":["catalog-daiwa-certate-2024.js"],"expected_rows":15,"stage":"research","source_input":"catalog-batches/daiwa-certate-2024.json"},
     {"id":"daiwa-certate-sw-2024","maker":"DAIWA","files":["catalog-daiwa-certate-sw-2024.js"],"expected_rows":8,"stage":"research","source_input":"catalog-batches/daiwa-certate-sw-2024.json"},
     {"id":"daiwa-certate-sw-2026","maker":"DAIWA","files":["catalog-daiwa-certate-sw-2026.js"],"expected_rows":9,"stage":"research","source_input":"catalog-batches/daiwa-certate-sw-2026.json"},
-    {"id":"shimano-stella-2022","maker":"SHIMANO","files":["catalog-shimano-stella-2022.js"],"expected_rows":16,"stage":"research","source_input":"catalog-batches/shimano-stella-2022.json"}
+    {"id":"shimano-stella-2022","maker":"SHIMANO","files":["catalog-shimano-stella-2022.js"],"expected_rows":16,"stage":"research","source_input":"catalog-batches/shimano-stella-2022.json"},
+    {"id":"abugarcia-zenon-2021","maker":"ABU GARCIA","files":["catalog-abugarcia-zenon-2021.js"],"expected_rows":9,"stage":"research"},
+    {"id":"okuma-ceymar-hd-2026","maker":"OKUMA","files":["catalog-okuma-ceymar-hd-2026.js"],"expected_rows":14,"stage":"research"},
+    {"id":"penn-battle-iv-2026","maker":"PENN","files":["catalog-penn-battle-iv-2026.js"],"expected_rows":12,"stage":"research"},
+    {"id":"penn-spinfisher-vii-2026","maker":"PENN","files":["catalog-penn-spinfisher-vii-2026.js"],"expected_rows":11,"stage":"research"},
+    {"id":"penn-slammer-iv-2026","maker":"PENN","files":["catalog-penn-slammer-iv-2026.js"],"expected_rows":12,"stage":"research"},
+    {"id":"penn-authority-2026","maker":"PENN","files":["catalog-penn-authority-2026.js"],"expected_rows":10,"stage":"research"}
   ]
 }
