@@ -1,5 +1,5 @@
 {
-  "version": "CATALOG-BATCHES-2",
+  "version": "CATALOG-BATCHES-3",
   "batches": [
     {
       "id": "daiwa-poc-core",
@@ -22,6 +22,22 @@
       "expected_rows": 11,
       "stage": "research",
       "source_input": "catalog-batches/daiwa-light-egi-reels-2026.json"
+    },
+    {
+      "id": "daiwa-blast-lt-2018",
+      "maker": "DAIWA",
+      "files": ["catalog-daiwa-blast-lt-2018.js"],
+      "expected_rows": 5,
+      "stage": "research",
+      "source_input": "catalog-batches/daiwa-blast-lt-2018.json"
+    },
+    {
+      "id": "daiwa-gekkabijin-2023",
+      "maker": "DAIWA",
+      "files": ["catalog-daiwa-gekkabijin-2023.js"],
+      "expected_rows": 3,
+      "stage": "research",
+      "source_input": "catalog-batches/daiwa-gekkabijin-2023.json"
     }
   ]
 }
