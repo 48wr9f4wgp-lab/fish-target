@@ -13,6 +13,20 @@
       targets.push(target);targetNames.add(target.name);
     }
   }
+
+  // TARGET2 provenance upgrade: SHIMANO's dedicated choinage guide explicitly
+  // lists ベラ as a target, so replace the older generic index evidence without
+  // changing the verified TARGET1 baseline branch.
+  const bera=targets.find(x=>x.name==='ベラ');
+  const beraChoinage=bera?.methods?.find(x=>x.id==='choinage');
+  if(beraChoinage)beraChoinage.source={
+    provider:'SHIMANO',
+    url:'https://fish.shimano.com/ja-JP/content/beginners/fishingstyle/baitfishing/tyoinage/index.html',
+    reviewed_at:'2026-08-28',
+    evidence:'method-target',
+    confidence:'A'
+  };
+
   const combined=Object.freeze({version:'V24-TARGET-METHOD2',existing:Object.freeze(existing),targets:Object.freeze(targets)});
   globalThis.FISH_TARGET_METHOD_EXPANSION_V1=combined;
   globalThis.FISH_TARGET_METHOD_EXPANSION_V2=combined;
