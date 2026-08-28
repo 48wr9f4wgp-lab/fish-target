@@ -79,7 +79,8 @@ try{
   const runtimeReel=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),reelId);
   assert.equal(runtimeReel.specs.pe_capacity_raw,'0.8号-200m','official PE capacity retained as product metadata');
 
-  const luviasId=await searchSelect(page,{makerId:'#reelCatalogMaker',seriesId:'#reelCatalogSeries',searchId:'#reelCatalogSearch',modelId:'#reelCatalogModel',maker:'DAIWA',series:'LUVIAS',query:'LT5000D-CXH',expected:'LT5000D-CXH'});
+  // Model names can repeat across DAIWA series, so select the LUVIAS-labelled option explicitly.
+  const luviasId=await searchSelect(page,{makerId:'#reelCatalogMaker',seriesId:'#reelCatalogSeries',searchId:'#reelCatalogSearch',modelId:'#reelCatalogModel',maker:'DAIWA',series:'LUVIAS',query:'LT5000D-CXH',expected:'LUVIAS · LT5000D-CXH'});
   await page.locator('#addCatalogReel').click();
   saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)||'{"rods":[],"reels":[]}'),KEY);
   const ownedLuvias=saved.reels.find(x=>x.source==='catalog'&&x.product_id===luviasId);
@@ -109,7 +110,7 @@ try{
   assert.ok((await page.locator('#tackleOwned').textContent()||'').includes('PC LT2500-H'),'offline saved scale-batch reel remains visible');
   await page.locator('#reelCatalogSeries').selectOption({label:'LUVIAS'});
   await page.locator('#reelCatalogSearch').fill('LT5000D-CXH');
-  await page.waitForFunction(()=>[...document.querySelectorAll('#reelCatalogModel option')].some(o=>(o.textContent||'').includes('LT5000D-CXH')),{timeout:15000});
+  await page.waitForFunction(()=>[...document.querySelectorAll('#reelCatalogModel option')].some(o=>(o.textContent||'').includes('LUVIAS · LT5000D-CXH')),{timeout:15000});
   assert.ok((await page.locator('#tackleOwned').textContent()||'').includes('LT5000D-CXH'),'offline saved LUVIAS reel remains visible');
   await context.setOffline(false);
 
