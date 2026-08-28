@@ -3,6 +3,7 @@
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const coreAssets=['catalog-providers.js','catalog-adapters.js'];
   const tailAssets=['catalog-fixtures.js','catalog.js'];
+  const MAKERS=['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT'];
   let runtime=null;
   let loading=null;
   let manifest=null;
@@ -84,12 +85,12 @@
 
   const hiddenStub=()=>Object.freeze({items:[],total:0,offset:0,limit:100,hasMore:false,deferred:true});
   const facade={
-    mode:'lazy',version:'V23-DEV2-LAZY1',makers:['DAIWA','SHIMANO'],categories:['rod','reel'],
+    mode:'lazy',version:'V23-DEV2-LAZY2',makers:MAKERS.slice(),categories:['rod','reel'],
     statuses:['current','discontinued','legacy','unknown'],
     licenseStatuses:['synthetic','internal','permitted','licensed','restricted','unknown'],
     ensureLoaded,
     index:opts=>runtime?.index?.(opts)||null,
-    makersFor:category=>runtime?.makersFor?.(category)||['DAIWA','SHIMANO'],
+    makersFor:category=>runtime?.makersFor?.(category)||MAKERS.slice(),
     seriesFor:(maker,category)=>runtime?.seriesFor?.(maker,category)||[''],
     get:id=>runtime?.get?.(id)||null,
     statusInfo:status=>runtime?.statusInfo?.(status)||statusInfo(status),
@@ -114,7 +115,7 @@
   globalThis.FISH_TARGET_CATALOG_LOADER=Object.freeze({ensureLoaded,loadManifest,state,facade});
 
   const refreshCatalogUi=()=>{
-    document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent='CATALOG RESEARCH · DAIWA / SHIMANO公式公開スペック。初回オープン時に読み込み、以後は端末キャッシュを利用。production利用は未承認。'});
+    document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent='CATALOG RESEARCH · 複数メーカー公式公開スペック。初回オープン時に読み込み、以後は端末キャッシュを利用。production利用は未承認。'});
     for(const id of ['rodCatalogMaker','reelCatalogMaker']){
       const el=document.getElementById(id);
       if(el)el.dispatchEvent(new Event('change',{bubbles:true}));
