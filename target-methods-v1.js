@@ -6,13 +6,9 @@
   const originalCount=F.length;
   const existingNames=new Set(F.map(x=>x.name));
 
-  for(const [name,methods] of Object.entries(expansion.existing||{})){
-    const fish=F.find(x=>x.name===name);
-    if(!fish)continue;
-    fish.methods=[...(Array.isArray(fish.methods)?fish.methods:[]),...clone(methods)];
-    fish.styles=[...new Set([fish.style,...fish.methods.map(x=>x.style)].filter(Boolean))];
-  }
-
+  // Add expanded targets first. Later expansion phases can attach additional
+  // methods through `existing` to targets introduced by an earlier phase
+  // (for example TARGET2 adding ちょい投げ to TARGET1's カレイ).
   for(const raw of expansion.targets||[]){
     if(existingNames.has(raw.name))continue;
     const methods=clone(raw.methods||[]);
@@ -24,6 +20,16 @@
     delete fish.source;
     F.push(fish);
     existingNames.add(fish.name);
+  }
+
+  // Apply alternate methods only after every expanded target exists in F.
+  // This keeps staged expansions composable instead of silently dropping
+  // methods aimed at targets added by a previous expansion phase.
+  for(const [name,methods] of Object.entries(expansion.existing||{})){
+    const fish=F.find(x=>x.name===name);
+    if(!fish)continue;
+    fish.methods=[...(Array.isArray(fish.methods)?fish.methods:[]),...clone(methods)];
+    fish.styles=[...new Set([fish.style,...fish.methods.map(x=>x.style)].filter(Boolean))];
   }
 
   const methodsFor=fish=>{
