@@ -10,10 +10,10 @@ const context=vm.createContext({console});
 for(const file of ['catalog-providers.js','catalog-adapters.js',...files,'catalog-fixtures.js','catalog.js'])vm.runInContext(read(file),context,{filename:file});
 const catalog=context.FISH_TARGET_CATALOG;
 
-test('Major Craft current research batch adds 33 official rods and total reaches 354',()=>{
+test('Major Craft current research batch keeps all 33 official rods as catalog grows',()=>{
   const rows=catalog.list({maker:'MAJOR CRAFT'});
   assert.equal(rows.length,33);
-  assert.equal(catalog.products.length,354);
+  assert.ok(catalog.products.length>=354,'later maker batches may grow the catalog without changing the Major Craft contract');
   assert.ok(rows.every(x=>x.category==='rod'));
   assert.ok(rows.every(x=>x.source.source_type==='manufacturer_official'));
   assert.ok(rows.every(x=>x.source.license_status==='restricted'));
