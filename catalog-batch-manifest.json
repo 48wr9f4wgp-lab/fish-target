@@ -1,5 +1,5 @@
 {
-  "version": "CATALOG-BATCHES-1",
+  "version": "CATALOG-BATCHES-2",
   "batches": [
     {
       "id": "daiwa-poc-core",
@@ -14,6 +14,14 @@
       "files": ["catalog-shimano-poc.js"],
       "expected_rows": 34,
       "stage": "research"
+    },
+    {
+      "id": "daiwa-light-egi-reels-2026",
+      "maker": "DAIWA",
+      "files": ["catalog-daiwa-light-egi-reels-2026.js"],
+      "expected_rows": 11,
+      "stage": "research",
+      "source_input": "catalog-batches/daiwa-light-egi-reels-2026.json"
     }
   ]
 }
