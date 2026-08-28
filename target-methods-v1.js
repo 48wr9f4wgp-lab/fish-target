@@ -87,6 +87,15 @@
     $('grid').querySelectorAll('.fish').forEach(b=>b.onclick=()=>openFish(F[+b.dataset.i]));
   };
 
+  // app.js attached the search input directly to its original renderHome function.
+  // Run the expansion-aware renderer after that listener so alternate method names
+  // (for example ハゼクランク) are searchable without rewriting the stable core.
+  const searchInput=$('q');
+  if(searchInput&&!searchInput.dataset.targetMethodSearchBound){
+    searchInput.dataset.targetMethodSearchBound='1';
+    searchInput.addEventListener('input',()=>renderHome());
+  }
+
   function ensurePicker(){
     const card=document.querySelector('#result .planCard');
     if(!card)return null;
