@@ -11,14 +11,15 @@ const c=ctx.FISH_TARGET_CATALOG;
 const expectedOfficial=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const byMaker=maker=>c.list({maker}).filter(x=>x.source.source_type==='manufacturer_official');
 
-test('multimaker catalog reaches 429 rows with nine makers',()=>{
-  assert.ok(expectedOfficial>=415);
+test('multimaker catalog reaches 480 rows with ten makers',()=>{
+  assert.equal(expectedOfficial,466);
   assert.equal(c.products.length,expectedOfficial+14);
-  assert.equal(c.products.length,429);
-  for(const maker of ['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX'])assert.ok(c.makers.includes(maker),maker);
+  assert.equal(c.products.length,480);
+  for(const maker of ['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX','FISHMAN'])assert.ok(c.makers.includes(maker),maker);
   assert.equal(byMaker('TAILWALK').length,38);
   assert.equal(byMaker('JACKSON').length,31);
   assert.equal(byMaker('PROX').length,6);
+  assert.equal(byMaker('FISHMAN').length,51);
   assert.equal(c.validateCatalog(c.products).length,0);
 });
 
@@ -60,4 +61,43 @@ test('PROX keeps official sinker and leader units without inventing lure weight'
   assert.equal(p.specs.lure_max_g,null);
   assert.equal(p.identifiers.jan,'4548992004652');
   assert.equal(c.productionEligible(p),false);
+});
+
+test('Fishman adds 51 official rods, preserves egi units, and separates discontinued models',()=>{
+  const rows=byMaker('FISHMAN');
+  assert.equal(rows.length,51);
+  assert.ok(rows.every(x=>x.category==='rod'));
+  assert.ok(rows.every(x=>x.source.source_provider==='fishman-official-research'));
+  assert.ok(rows.every(x=>x.source.license_status==='restricted'));
+  assert.ok(rows.every(x=>c.productionEligible(x)===false));
+  const jans=rows.map(x=>x.identifiers.jan);
+  assert.equal(new Set(jans).size,51);
+  assert.ok(jans.every(x=>/^457148790\d{4}$/.test(x)));
+
+  const calmer=c.list({maker:'FISHMAN',series:'Beams'}).find(x=>x.model==='calmer8.6M');
+  assert.ok(calmer);
+  assert.equal(calmer.specs.length_raw,'8ft6in');
+  assert.equal(calmer.specs.length_ft,8.5);
+  assert.equal(calmer.specs.power,'M');
+  assert.equal(calmer.specs.lure_weight_raw,'2.5～4.5号');
+  assert.equal(calmer.specs.lure_min_g,null);
+  assert.equal(calmer.specs.lure_max_g,null);
+  assert.equal(calmer.specs.line_pe_min,0.4);
+  assert.equal(calmer.specs.line_pe_max,1);
+  assert.equal(calmer.status,'unknown');
+
+  const discontinued=c.list({maker:'FISHMAN',series:'Beams'}).find(x=>x.model==='blancsierra5.2UL');
+  assert.ok(discontinued);
+  assert.equal(discontinued.status,'discontinued');
+
+  const heavy=c.list({maker:'FISHMAN',series:'BC4/BC5'}).find(x=>x.model==='8.3XXXH');
+  assert.ok(heavy);
+  assert.equal(heavy.specs.power,'XXXH');
+  assert.equal(heavy.specs.lure_min_g,70);
+  assert.equal(heavy.specs.lure_max_g,200);
+
+  const owned=c.ownedSnapshot(calmer,{id:'fishman-calmer'});
+  assert.equal(owned.length,8.5);
+  assert.equal(owned.power,'M');
+  assert.equal(owned.maxLure,null,'egi size must not become grams in MY TACKLE');
 });
