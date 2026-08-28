@@ -15,7 +15,8 @@
     research('tailwalk-official-research','TAILWALK','tailwalk official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
     research('jackson-official-research','JACKSON','Jackson official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
     research('prox-official-research','PROX','PROX official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
-    research('fishman-official-research','FISHMAN','Fishman official-site factual-spec research only. Production publication remains disabled until rights are approved.')
+    research('fishman-official-research','FISHMAN','Fishman official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
+    research('yamaga-official-research','YAMAGA BLANKS','YAMAGA Blanks official-site factual-spec research only. Production publication remains disabled until rights are approved.')
   ];
   const PRODUCTION_LICENSES=new Set(['internal','permitted','licensed']);
   const byMaker=maker=>PROVIDERS.find(p=>p.maker===maker)||null;
