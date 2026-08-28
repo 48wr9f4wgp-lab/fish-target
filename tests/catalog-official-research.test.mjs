@@ -15,7 +15,7 @@ const expectedByMaker=maker=>manifest.batches.filter(x=>x.maker===maker).reduce(
 
 test('research catalog contains manifest factual rows plus 14 synthetic fixtures',()=>{
   assert.ok(catalog);
-  assert.ok(expectedOfficial>=158,'official catalog must not regress below current scale baseline');
+  assert.ok(expectedOfficial>=239,'official catalog must not regress below current scale baseline');
   assert.equal(catalog.products.length,expectedOfficial+14);
   const official=catalog.products.filter(p=>p.source.source_type==='manufacturer_official');
   const synthetic=catalog.products.filter(p=>p.source.source_type==='synthetic');
@@ -47,6 +47,28 @@ test('SHIMANO rod normalization follows FISH TARGET ft.in convention and preserv
   assert.equal(s96mh.specs.length_ft,9.6);
   assert.equal(s96mh.specs.power,'MH');
   assert.equal(s96mh.specs.jig_max_g,80);
+});
+
+test('STELLA adds all 16 official models without inferring the users current line',()=>{
+  const rows=catalog.list({maker:'SHIMANO',series:'STELLA'});
+  assert.equal(rows.length,16);
+  const stella=rows.find(p=>p.model==='C5000XG');
+  assert.ok(stella);
+  assert.equal(stella.status,'unknown');
+  assert.equal(stella.specs.reel_size,5000);
+  assert.equal(stella.specs.weight_g,260);
+  assert.equal(stella.specs.gear_ratio,6.2);
+  assert.equal(stella.specs.retrieve_cm,101);
+  assert.equal(stella.specs.max_drag_kg,11);
+  assert.equal(stella.specs.pe_capacity_raw,'1.5号-400m / 2号-300m / 3号-200m');
+  assert.equal(stella.identifiers.jan,'4969363043979');
+  assert.equal(stella.source.source_url,'https://fish.shimano.com/ja-JP/product/reel/hanyouspinning/a075f00003e22p2qaa.html');
+  assert.equal(stella.source.license_status,'restricted');
+  assert.equal(catalog.productionEligible(stella),false);
+  const owned=catalog.ownedSnapshot(stella,{id:'test-stella'});
+  assert.equal(owned.size,5000);
+  assert.equal(owned.lineType,'');
+  assert.equal(owned.lineNo,null);
 });
 
 test('reel capacity is searchable product metadata but never inferred as the currently spooled line',()=>{
