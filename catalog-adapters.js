@@ -12,7 +12,8 @@
     };
     return {
       reel_size:finite(specs.reel_size),weight_g:finite(specs.weight_g),gear_ratio:finite(specs.gear_ratio),
-      retrieve_cm:finite(specs.retrieve_cm),max_drag_kg:finite(specs.max_drag_kg),pe_capacity_raw:text(specs.pe_capacity_raw)
+      retrieve_cm:finite(specs.retrieve_cm),max_drag_kg:finite(specs.max_drag_kg),
+      pe_capacity_raw:text(specs.pe_capacity_raw),line_capacity_raw:text(specs.line_capacity_raw)||text(specs.pe_capacity_raw)
     };
   }
 
@@ -30,8 +31,9 @@
   }
 
   function normalizeIdentifiers(input={}){
-    const jan=text(input.jan);
-    return jan?{jan}:{};
+    const out={};
+    for(const key of ['jan','upc','sku','product_code']){const value=text(input[key]);if(value)out[key]=value}
+    return out;
   }
 
   function createAdapter(maker){
@@ -58,7 +60,7 @@
     });
   }
 
-  const ADAPTERS=Object.freeze({DAIWA:createAdapter('DAIWA'),SHIMANO:createAdapter('SHIMANO')});
+  const ADAPTERS=Object.freeze(Object.fromEntries((providers?.providers||[]).map(provider=>[provider.maker,createAdapter(provider.maker)])));
   const byMaker=maker=>ADAPTERS[maker]||null;
   globalThis.FISH_TARGET_CATALOG_ADAPTERS=Object.freeze({byMaker,adapters:Object.values(ADAPTERS),normalizeSpecs,normalizeIdentifiers});
 })();
