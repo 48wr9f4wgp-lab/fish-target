@@ -3,7 +3,7 @@ name: rc-qa
 on:
   pull_request:
   push:
-    branches: [main, chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2]
+    branches: [main, chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2, chatgpt/target-method-expansion-v3]
 
 permissions:
   contents: read
