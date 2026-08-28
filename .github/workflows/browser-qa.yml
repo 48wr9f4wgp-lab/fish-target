@@ -2,7 +2,7 @@ name: rc-browser-qa
 
 on:
   push:
-    branches: [chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/target-method-expansion-v1]
+    branches: [chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2]
   pull_request:
 
 permissions:
@@ -33,9 +33,7 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4173/dist/ >/dev/null
-          if [ "$GITHUB_REF_NAME" = "chatgpt/target-method-expansion-v1" ]; then
-            node scripts/target-browser-qa.mjs
-          else
-            node scripts/browser-qa.mjs
-            node scripts/catalog-browser-qa.mjs
-          fi
+          case "$GITHUB_REF_NAME" in
+            chatgpt/target-method-expansion-v*) node scripts/target-browser-qa.mjs ;;
+            *) node scripts/browser-qa.mjs && node scripts/catalog-browser-qa.mjs ;;
+          esac
