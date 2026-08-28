@@ -67,7 +67,7 @@ try{
   let saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)||'{"rods":[],"reels":[]}'),KEY);
   assert.ok(saved.rods.some(x=>x.source==='catalog'&&x.product_id===rodId),'legacy catalog-backed rod persists');
 
-  // New scalable batch is selectable and reel capacity never becomes the user's current line.
+  // Scalable reel batches remain selectable and product capacity never becomes the user's current line.
   const reelId=await searchSelect(page,{makerId:'#reelCatalogMaker',seriesId:'#reelCatalogSeries',searchId:'#reelCatalogSearch',modelId:'#reelCatalogModel',maker:'DAIWA',series:'EMERALDAS AIR',query:'PC LT2500-H',expected:'PC LT2500-H'});
   await page.locator('#addCatalogReel').click();
   saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)||'{"rods":[],"reels":[]}'),KEY);
@@ -78,6 +78,18 @@ try{
   assert.equal(ownedReel.lineNo,null,'catalog capacity never guesses current line number');
   const runtimeReel=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),reelId);
   assert.equal(runtimeReel.specs.pe_capacity_raw,'0.8号-200m','official PE capacity retained as product metadata');
+
+  const luviasId=await searchSelect(page,{makerId:'#reelCatalogMaker',seriesId:'#reelCatalogSeries',searchId:'#reelCatalogSearch',modelId:'#reelCatalogModel',maker:'DAIWA',series:'LUVIAS',query:'LT5000D-CXH',expected:'LT5000D-CXH'});
+  await page.locator('#addCatalogReel').click();
+  saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)||'{"rods":[],"reels":[]}'),KEY);
+  const ownedLuvias=saved.reels.find(x=>x.source==='catalog'&&x.product_id===luviasId);
+  assert.ok(ownedLuvias,'LUVIAS catalog reel persists');
+  assert.equal(ownedLuvias.size,5000,'LUVIAS reel size maps');
+  assert.equal(ownedLuvias.lineType,'','LUVIAS capacity never guesses current line type');
+  assert.equal(ownedLuvias.lineNo,null,'LUVIAS capacity never guesses current line number');
+  const runtimeLuvias=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),luviasId);
+  assert.equal(runtimeLuvias.specs.pe_capacity_raw,'2.5号-300m','LUVIAS PE capacity retained only as product metadata');
+  assert.equal(runtimeLuvias.identifiers.jan,'4550133389061','LUVIAS official JAN retained');
   await page.locator('#tackleClose').click();
 
   await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
@@ -95,6 +107,10 @@ try{
   await page.locator('#reelCatalogSearch').fill('PC LT2500-H');
   await page.waitForFunction(()=>[...document.querySelectorAll('#reelCatalogModel option')].some(o=>(o.textContent||'').includes('PC LT2500-H')),{timeout:15000});
   assert.ok((await page.locator('#tackleOwned').textContent()||'').includes('PC LT2500-H'),'offline saved scale-batch reel remains visible');
+  await page.locator('#reelCatalogSeries').selectOption({label:'LUVIAS'});
+  await page.locator('#reelCatalogSearch').fill('LT5000D-CXH');
+  await page.waitForFunction(()=>[...document.querySelectorAll('#reelCatalogModel option')].some(o=>(o.textContent||'').includes('LT5000D-CXH')),{timeout:15000});
+  assert.ok((await page.locator('#tackleOwned').textContent()||'').includes('LT5000D-CXH'),'offline saved LUVIAS reel remains visible');
   await context.setOffline(false);
 
   assert.equal(errors.length,0,`page errors\n${errors.join('\n')}`);
