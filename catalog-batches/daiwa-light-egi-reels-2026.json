@@ -1,0 +1,136 @@
+{
+  "rows": [
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "GEKKABIJIN X",
+      "generation": "2024",
+      "model": "LT1000S-P",
+      "display_name": "GEKKABIJIN X LT1000S-P",
+      "status": "current",
+      "specs": {"reel_size": 1000, "weight_g": 185, "gear_ratio": 4.8, "retrieve_cm": 60, "max_drag_kg": 5, "capacity_pe": "0.3号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/pcd8uxg", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133393280"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "GEKKABIJIN X",
+      "generation": "2024",
+      "model": "LT2000S-P",
+      "display_name": "GEKKABIJIN X LT2000S-P",
+      "status": "current",
+      "specs": {"reel_size": 2000, "weight_g": 190, "gear_ratio": 4.8, "retrieve_cm": 63, "max_drag_kg": 5, "capacity_pe": "0.4号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/pcd8uxg", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133393297"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "GEKKABIJIN X",
+      "generation": "2024",
+      "model": "LT2000S",
+      "display_name": "GEKKABIJIN X LT2000S",
+      "status": "current",
+      "specs": {"reel_size": 2000, "weight_g": 190, "gear_ratio": 5.2, "retrieve_cm": 68, "max_drag_kg": 5, "capacity_pe": "0.4号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/pcd8uxg", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133393303"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS X",
+      "generation": "2024",
+      "model": "LT2500",
+      "display_name": "EMERALDAS X LT2500",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 210, "gear_ratio": 5.3, "retrieve_cm": 75, "max_drag_kg": 10, "capacity_pe": "0.8号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/b2tvxc4", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133431470"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS X",
+      "generation": "2024",
+      "model": "LT2500-XH",
+      "display_name": "EMERALDAS X LT2500-XH",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 210, "gear_ratio": 6.2, "retrieve_cm": 87, "max_drag_kg": 10, "capacity_pe": "0.8号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/b2tvxc4", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133431487"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS X",
+      "generation": "2024",
+      "model": "LT2500-DH",
+      "display_name": "EMERALDAS X LT2500-DH",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 225, "gear_ratio": 5.3, "retrieve_cm": 75, "max_drag_kg": 10, "capacity_pe": "0.8号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/b2tvxc4", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133431494"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS X",
+      "generation": "2024",
+      "model": "LT2500-XH-DH",
+      "display_name": "EMERALDAS X LT2500-XH-DH",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 225, "gear_ratio": 6.2, "retrieve_cm": 87, "max_drag_kg": 10, "capacity_pe": "0.8号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/b2tvxc4", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133431500"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS AIR",
+      "generation": "2025",
+      "model": "LT2500S",
+      "display_name": "EMERALDAS AIR LT2500S",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 155, "gear_ratio": 5.1, "retrieve_cm": 72, "max_drag_kg": 5, "capacity_pe": "0.6号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/10wlj94", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133579561"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS AIR",
+      "generation": "2025",
+      "model": "LT2500S-DH",
+      "display_name": "EMERALDAS AIR LT2500S-DH",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 170, "gear_ratio": 5.1, "retrieve_cm": 72, "max_drag_kg": 5, "capacity_pe": "0.6号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/10wlj94", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133579578"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS AIR",
+      "generation": "2025",
+      "model": "PC LT2500-DH",
+      "display_name": "EMERALDAS AIR PC LT2500-DH",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 185, "gear_ratio": 5.2, "retrieve_cm": 73, "max_drag_kg": 10, "capacity_pe": "0.8号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/10wlj94", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133579585"}
+    },
+    {
+      "maker": "DAIWA",
+      "category": "reel",
+      "series": "EMERALDAS AIR",
+      "generation": "2025",
+      "model": "PC LT2500-H",
+      "display_name": "EMERALDAS AIR PC LT2500-H",
+      "status": "current",
+      "specs": {"reel_size": 2500, "weight_g": 175, "gear_ratio": 5.7, "retrieve_cm": 80, "max_drag_kg": 10, "capacity_pe": "0.8号-200m"},
+      "source": {"source_type": "manufacturer_official", "source_provider": "daiwa-official-research", "source_url": "https://www.daiwa.com/jp/product/10wlj94", "retrieved_at": "2026-08-28", "last_verified": "2026-08-28", "license_status": "unknown"},
+      "identifiers": {"jan": "4550133579592"}
+    }
+  ]
+}
