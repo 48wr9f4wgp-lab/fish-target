@@ -1,11 +1,11 @@
 (()=>{
-  const MAKERS=['DAIWA','SHIMANO'];
   const CATEGORIES=['rod','reel'];
   const STATUSES=['current','discontinued','legacy','unknown'];
   const LICENSES=['synthetic','internal','permitted','licensed','restricted','unknown'];
   const PROD_LICENSES=new Set(['internal','permitted','licensed']);
   const providers=globalThis.FISH_TARGET_CATALOG_PROVIDERS||null;
   const fixtures=Array.isArray(globalThis.FISH_TARGET_CATALOG_FIXTURES)?globalThis.FISH_TARGET_CATALOG_FIXTURES:[];
+  const MAKERS=[...new Set([...(providers?.providers||[]).map(p=>p.maker),...fixtures.map(p=>p?.maker).filter(Boolean)])];
   const text=v=>String(v??'').trim();
   const hashToken=value=>{let h=2166136261;for(const ch of value){h^=ch.codePointAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(36)};
   const slug=v=>{const raw=text(v).normalize('NFKC').toLowerCase().replace(/[’'"`]/g,'');const ascii=raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');return /^[\x00-\x7F]*$/.test(raw)?(ascii||'unknown'):`${ascii||'u'}-${hashToken(raw)}`};
@@ -38,8 +38,9 @@
     if(production&&!PROD_LICENSES.has(license))errors.push('source not eligible for production');
     if(production&&!providerPublishable(product))errors.push('provider not production-enabled');
     if(product.source?.source_type!=='synthetic'&&!text(product.source?.source_provider))errors.push('source_provider required');
-    const jan=text(product.identifiers?.jan);
+    const jan=text(product.identifiers?.jan),upc=text(product.identifiers?.upc);
     if(jan&&!/^\d{13}$/.test(jan))errors.push('invalid JAN');
+    if(upc&&!/^\d{12}$/.test(upc))errors.push('invalid UPC');
     const specs=product.specs||{};
     const numeric=['length_ft','length_m','pieces','weight_g','lure_min_g','lure_max_g','jig_max_g','line_pe_min','line_pe_max','reel_size','gear_ratio','retrieve_cm','max_drag_kg'];
     for(const key of numeric){
@@ -55,16 +56,14 @@
 
   function validateCatalog(items,{production=false}={}){
     const errors=[];
-    const seen=new Set(),seenJan=new Map();
+    const seen=new Set(),seenJan=new Map(),seenUpc=new Map();
     for(const product of items||[]){
       const local=validateProduct(product,{production});
       if(seen.has(product?.product_id))local.push('duplicate product_id');
       seen.add(product?.product_id);
-      const jan=text(product?.identifiers?.jan);
-      if(jan){
-        if(seenJan.has(jan)&&seenJan.get(jan)!==product?.product_id)local.push('duplicate JAN');
-        else seenJan.set(jan,product?.product_id);
-      }
+      const jan=text(product?.identifiers?.jan),upc=text(product?.identifiers?.upc);
+      if(jan){if(seenJan.has(jan)&&seenJan.get(jan)!==product?.product_id)local.push('duplicate JAN');else seenJan.set(jan,product?.product_id)}
+      if(upc){if(seenUpc.has(upc)&&seenUpc.get(upc)!==product?.product_id)local.push('duplicate UPC');else seenUpc.set(upc,product?.product_id)}
       if(local.length)errors.push({product_id:product?.product_id||null,errors:local});
     }
     return errors;
@@ -79,7 +78,8 @@
     if(status&&product.status!==status)return false;
     if(Array.isArray(statuses)&&statuses.length&&!statuses.includes(product.status))return false;
     const q=queryText(query);
-    if(q&&!queryText(`${product.maker} ${product.series} ${product.model} ${product.display_name} ${product.identifiers?.jan||''}`).includes(q))return false;
+    const ids=Object.values(product.identifiers||{}).join(' ');
+    if(q&&!queryText(`${product.maker} ${product.series} ${product.model} ${product.display_name} ${ids}`).includes(q))return false;
     return true;
   }
 
