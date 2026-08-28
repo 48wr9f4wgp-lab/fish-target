@@ -7,7 +7,7 @@ const VIEWPORTS=[{width:375,height:812},{width:390,height:844},{width:430,height
 async function waitExpanded(page){
   await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});
   await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===60,{timeout:15000});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===60&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===128,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===60&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===130,{timeout:15000});
   await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_VISUAL_V8&&document.getElementById('tackleManage')),{timeout:15000});
 }
 
@@ -58,16 +58,14 @@ async function runViewport(browser,{width,height}){
   await waitExpanded(page);
   assert.equal(await page.locator('#grid .fish').count(),60,`${width}: target count`);
   assert.equal(await text(page,'#home .heroStats span:nth-of-type(1)'),'60魚種',`${width}: hero target count`);
-  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('128釣法プラン'),`${width}: plan count`);
+  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('130釣法プラン'),`${width}: plan count`);
   await noOverflow(page,width,`${width} home`);
 
-  // Multi-style target remains discoverable under alternate style.
   await openFilters(page);
   await page.locator('#styleFilters button[data-v="lure"]').click();
   assert.equal(await page.locator('button.fish[data-fish="サバ"]').count(),1,`${width}: multi-style target remains in lure filter`);
   await page.locator('#styleFilters button[data-v="all"]').click();
 
-  // Search must index methods added in all three expansion generations.
   for(const [query,fish,label] of [
     ['ハゼクランク','ハゼ','V1 method search'],
     ['ティップエギング','アオリイカ','V2 method search'],
@@ -78,7 +76,6 @@ async function runViewport(browser,{width,height}){
     await page.locator('#clearSearch').click();
   }
 
-  // Exact legacy propagation gate: selected method must drive every downstream surface.
   await openTarget(page,'サバ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),4,`${width}: サバ method count`);
   assert.equal(await text(page,'#pmethod'),'サビキ釣り',`${width}: default method`);
@@ -119,25 +116,35 @@ async function runViewport(browser,{width,height}){
     await page.locator('#home.on').waitFor({state:'visible'});
   }else await backHome(page);
 
-  // Preserve the TARGET1 -> TARGET2 staged expansion regression.
   await openTarget(page,'カレイ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="choinage"]').count(),1,`${width}: karei cross-phase method`);
   await page.locator('#methodPickerV1 [data-method-id="choinage"]').click();
   assert.equal(await text(page,'#pmethod'),'ちょい投げ',`${width}: karei choinage selectable`);
   await backHome(page);
 
-  // New TARGET3 fish: exact alternate method data must reach FIRST CAST and steps.
+  // V1 target receiving a V3 alternate method must preserve all earlier methods.
   await openTarget(page,'ウグイ');
-  assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: ugui methods`);
-  await page.locator('#methodPickerV1 [data-method-id="uki"]').click();
-  assert.equal(await text(page,'#pmethod'),'ウキ釣り',`${width}: ugui uki method`);
-  assert.equal(await text(page,'#firstRange'),'底上5〜10cmから',`${width}: ugui FIRST CAST range`);
-  assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'流れの緩い場所で底を測る',`${width}: ugui step1`);
+  assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: ugui methods after V3`);
+  assert.equal(await page.locator('#methodPickerV1 [data-method-id="lure"]').count(),1,`${width}: ugui V3 lure attached`);
+  await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
+  assert.equal(await text(page,'#pmethod'),'ウグイルアー',`${width}: ugui V3 lure selectable`);
+  assert.equal(await text(page,'#firstBait'),'小型スプーン/ミノー',`${width}: ugui FIRST CAST bait`);
+  assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'緩流部と流れの境を探す',`${width}: ugui V3 step1`);
   assert.equal(await page.locator('#steps .step').count(),3,`${width}: ugui three steps`);
+  await noOverflow(page,width,`${width} V1 to V3 cross-phase`);
+  await backHome(page);
+
+  // True TARGET3 fish must expose all evidence-backed methods and propagate selected values.
+  await openTarget(page,'ニゴイ');
+  assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: nigoi methods`);
+  await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
+  assert.equal(await text(page,'#pmethod'),'ニゴイルアー',`${width}: nigoi lure`);
+  assert.equal(await text(page,'#firstBait'),'小型スプーン/スピナー',`${width}: nigoi FIRST CAST bait`);
+  assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'トロ場・淵・カケアガリへ投げる',`${width}: nigoi step1`);
+  assert.equal(await page.locator('#steps .step').count(),3,`${width}: nigoi three steps`);
   await noOverflow(page,width,`${width} TARGET3 new target`);
   await backHome(page);
 
-  // Cross-phase regression: ワカサギ was added in TARGET2, then receives TARGET3 methods.
   await openTarget(page,'ワカサギ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="ice"]').count(),1,`${width}: wakasagi TARGET3 ice attached`);
   await page.locator('#methodPickerV1 [data-method-id="ice"]').click();
@@ -160,7 +167,6 @@ async function runViewport(browser,{width,height}){
     await page.locator('#home.on').waitFor({state:'visible'});
   }else await backHome(page);
 
-  // Keep a representative TARGET2 multi-method fish healthy after TARGET3 composition.
   await openTarget(page,'コウイカ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: kouika methods`);
   await page.locator('#methodPickerV1 [data-method-id="tera"]').click();
@@ -175,7 +181,6 @@ async function runViewport(browser,{width,height}){
     assert.ok(await page.locator('#rodCatalogMaker option').count()>=2,'catalog maker selector survives TARGET3');
     await page.locator('#tackleClose').click();
 
-    // TARGET3 files must be in the service-worker shell and usable after a cold offline reload.
     await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
     await page.reload({waitUntil:'networkidle'});
     await waitExpanded(page);
