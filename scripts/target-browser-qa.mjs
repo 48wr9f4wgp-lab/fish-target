@@ -32,6 +32,10 @@ async function openFilters(page){
   }
 }
 
+async function text(page,selector){
+  return (await page.locator(selector).textContent()||'').trim();
+}
+
 async function runViewport(browser,{width,height}){
   const context=await browser.newContext({viewport:{width,height},serviceWorkers:'allow'});
   const page=await context.newPage();
@@ -58,20 +62,40 @@ async function runViewport(browser,{width,height}){
 
   await openTarget(page,'サバ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: サバ method count`);
-  assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'サビキ釣り',`${width}: default method`);
+  assert.equal(await text(page,'#pmethod'),'サビキ釣り',`${width}: default method`);
+
+  // Seed a manual setup that is a direct fit for the alternate lure method but not the default sabiki plan.
+  // This lets E2E prove MY TACKLE recomputes from the selected Method rather than only remaining reachable.
+  await page.evaluate(()=>localStorage.setItem('fish_target_v17_tackle',JSON.stringify({
+    rods:[{id:'qa-lure-rod',source:'manual',name:'QA 7.5ft L',length:7.5,power:'L',maxLure:20}],
+    reels:[{id:'qa-lure-reel',source:'manual',name:'QA 2500 PE0.6',size:2500,lineType:'PE',lineNo:0.6}]
+  })));
+  await page.locator('#methodPickerV1 [data-method-id="default"]').click();
+  assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'一部条件を確認',`${width}: default MY TACKLE baseline`);
+
   await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
-  assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'ライトゲーム/小型メタルジグ',`${width}: alternate method selected`);
-  assert.ok((await page.locator('#firstBait').textContent()||'').trim(),`${width}: FIRST CAST`);
-  assert.ok(await page.locator('#gear .gearItem').count()>=4,`${width}: tackle`);
-  assert.ok(await page.locator('#steps .step').count()>=3,`${width}: steps`);
+  assert.equal(await text(page,'#pmethod'),'ライトゲーム/小型メタルジグ',`${width}: alternate method selected`);
+  assert.equal(await text(page,'#firstBait'),'小型メタルジグ',`${width}: FIRST CAST follows selected method`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(1) b'),'7〜8ft / L〜ML',`${width}: selected rod recommendation`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(2) b'),'2000〜3000番',`${width}: selected reel recommendation`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(3) b'),'PE 0.4〜0.8号',`${width}: selected line recommendation`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(4) b'),'フロロ 6〜12lb',`${width}: selected leader recommendation`);
+  assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'群れの外へキャスト',`${width}: selected step 1`);
+  assert.equal(await text(page,'#steps .step:nth-child(2) .st'),'表層から順に探る',`${width}: selected step 2`);
+  assert.equal(await text(page,'#steps .step:nth-child(3) .st'),'深いときはジグを沈めリフト&フォール',`${width}: selected step 3`);
+  assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'手持ちで組みやすい',`${width}: MY TACKLE recomputes for selected method`);
   await noOverflow(page,width,`${width} result`);
 
   if(width===390){
-    // Selected method must flow through FIELD MODE.
+    // Selected method must flow through FIELD MODE with its concrete values, not only non-empty placeholders.
     await page.locator('#fieldModeBtn').click();
     await page.locator('#fieldmode.on').waitFor({state:'visible'});
-    assert.equal((await page.locator('#fmFish').textContent()||'').trim(),'サバ','FIELD MODE target');
-    assert.ok((await page.locator('#fmBait').textContent()||'').trim(),'FIELD MODE FIRST CAST');
+    assert.equal(await text(page,'#fmFish'),'サバ','FIELD MODE target');
+    assert.equal(await text(page,'#fmMethod'),'ライトゲーム/小型メタルジグ','FIELD MODE method');
+    assert.equal(await text(page,'#fmBait'),'小型メタルジグ','FIELD MODE FIRST CAST');
+    assert.equal(await text(page,'#fmTackle div:nth-child(1) b'),'7〜8ft / L〜ML','FIELD MODE rod');
+    assert.equal(await text(page,'#fmTackle div:nth-child(2) b'),'2000〜3000番','FIELD MODE reel');
+    assert.equal(await text(page,'#fmSteps .fmStep:nth-child(1) span'),'群れの外へキャスト','FIELD MODE step 1');
     await page.locator('#fmBackPlan').click();
     await page.locator('#result.on').waitFor({state:'visible'});
 
@@ -85,9 +109,12 @@ async function runViewport(browser,{width,height}){
     await page.locator('.nav button[data-v="saved"]').click();
     await page.locator('#savedList .saveRow').filter({hasText:'サバ'}).locator('.op').click();
     await page.locator('#result.on').waitFor({state:'visible'});
-    assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'ライトゲーム/小型メタルジグ','saved method restored');
+    assert.equal(await text(page,'#pmethod'),'ライトゲーム/小型メタルジグ','saved method restored');
+    assert.equal(await text(page,'#firstBait'),'小型メタルジグ','saved FIRST CAST restored');
+    assert.equal(await text(page,'#gear .gearItem:nth-child(1) b'),'7〜8ft / L〜ML','saved rod recommendation restored');
+    assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'手持ちで組みやすい','saved MY TACKLE fit restored');
 
-    // MY TACKLE remains reachable with the expansion controller in front of its render wrapper.
+    // MY TACKLE management remains reachable with the expansion controller in front of its render wrapper.
     await page.locator('.nav button[data-v="home"]').click();
     await page.locator('.v19TackleShortcut').click();
     await page.locator('#tackleSheet').waitFor({state:'visible'});
