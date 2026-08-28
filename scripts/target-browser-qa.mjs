@@ -37,6 +37,10 @@ async function openFilters(page){
   }
 }
 
+async function text(page,selector){
+  return (await page.locator(selector).textContent()||'').trim();
+}
+
 async function runViewport(browser,{width,height}){
   const context=await browser.newContext({viewport:{width,height},serviceWorkers:'allow'});
   const page=await context.newPage();
@@ -46,7 +50,7 @@ async function runViewport(browser,{width,height}){
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
   await waitExpanded(page);
   assert.equal(await page.locator('#grid .fish').count(),55,`${width}: target count`);
-  assert.equal((await page.locator('#home .heroStats span').first().textContent()||'').trim(),'55魚種',`${width}: hero target count`);
+  assert.equal(await text(page,'#home .heroStats span'),'55魚種',`${width}: hero target count`);
   assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('105釣法プラン'),`${width}: plan count`);
   await noOverflow(page,width,`${width} home`);
 
@@ -64,23 +68,76 @@ async function runViewport(browser,{width,height}){
   assert.equal(await page.locator('button.fish[data-fish="アオリイカ"]').count(),1,`${width}: V2 method search`);
   await page.locator('#clearSearch').click();
 
-  // Existing target with multiple methods remains compatible.
+  // Exact propagation gate: one selected method must drive FIRST CAST, required tackle,
+  // MY TACKLE fit, field steps, FIELD MODE, save, and restore without falling back.
   await openTarget(page,'サバ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),4,`${width}: サバ method count with bishi`);
-  assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'サビキ釣り',`${width}: default method`);
+  assert.equal(await text(page,'#pmethod'),'サビキ釣り',`${width}: default method`);
+
+  await page.evaluate(()=>localStorage.setItem('fish_target_v17_tackle',JSON.stringify({
+    rods:[{id:'qa-lure-rod',source:'manual',name:'QA 7.5ft L',length:7.5,power:'L',maxLure:20}],
+    reels:[{id:'qa-lure-reel',source:'manual',name:'QA 2500 PE0.6',size:2500,lineType:'PE',lineNo:0.6}]
+  })));
+  await page.locator('#methodPickerV1 [data-method-id="default"]').click();
+  assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'買い足し候補あり',`${width}: default MY TACKLE baseline`);
+
   await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
-  assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'ライトゲーム/小型メタルジグ',`${width}: alternate method selected`);
-  assert.ok((await page.locator('#firstBait').textContent()||'').trim(),`${width}: FIRST CAST`);
-  assert.ok(await page.locator('#gear .gearItem').count()>=4,`${width}: tackle`);
-  assert.ok(await page.locator('#steps .step').count()>=3,`${width}: steps`);
+  assert.equal(await text(page,'#pmethod'),'ライトゲーム/小型メタルジグ',`${width}: alternate method selected`);
+  assert.equal(await text(page,'#firstBait'),'小型メタルジグ',`${width}: FIRST CAST follows selected method`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(1) b'),'7〜8ft / L〜ML',`${width}: selected rod recommendation`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(2) b'),'2000〜3000番',`${width}: selected reel recommendation`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(3) b'),'PE 0.4〜0.8号',`${width}: selected line recommendation`);
+  assert.equal(await text(page,'#gear .gearItem:nth-child(4) b'),'フロロ 6〜12lb',`${width}: selected leader recommendation`);
+  assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'群れの外へキャスト',`${width}: selected step 1`);
+  assert.equal(await text(page,'#steps .step:nth-child(2) .st'),'表層から順に探る',`${width}: selected step 2`);
+  assert.equal(await text(page,'#steps .step:nth-child(3) .st'),'深いときはジグを沈めリフト&フォール',`${width}: selected step 3`);
+  assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'手持ちで組みやすい',`${width}: MY TACKLE recomputes for selected method`);
   await noOverflow(page,width,`${width} result`);
+
+  if(width===390){
+    await page.locator('#fieldModeBtn').click();
+    await page.locator('#fieldmode.on').waitFor({state:'visible'});
+    assert.equal(await text(page,'#fmFish'),'サバ','FIELD MODE target');
+    assert.equal(await text(page,'#fmMethod'),'ライトゲーム/小型メタルジグ','FIELD MODE method');
+    assert.equal(await text(page,'#fmBait'),'小型メタルジグ','FIELD MODE FIRST CAST');
+    assert.equal(await text(page,'#fmTackle div:nth-child(1) b'),'7〜8ft / L〜ML','FIELD MODE rod');
+    assert.equal(await text(page,'#fmTackle div:nth-child(2) b'),'2000〜3000番','FIELD MODE reel');
+    assert.equal(await text(page,'#fmSteps .fmStep:nth-child(1) span'),'群れの外へキャスト','FIELD MODE step 1');
+    await page.locator('#fmBackPlan').click();
+    await page.locator('#result.on').waitFor({state:'visible'});
+
+    await page.locator('#save').click();
+    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v9')||'[]'));
+    const row=saved.find(x=>x.fish==='サバ');
+    assert.equal(row?.methodKey,'lure','saved methodKey');
+    await page.reload({waitUntil:'networkidle'});
+    await waitExpanded(page);
+    await page.locator('.nav button[data-v="saved"]').click();
+    await page.locator('#savedList .saveRow').filter({hasText:'サバ'}).locator('.op').click();
+    await page.locator('#result.on').waitFor({state:'visible'});
+    assert.equal(await text(page,'#pmethod'),'ライトゲーム/小型メタルジグ','saved method restored');
+    assert.equal(await text(page,'#firstBait'),'小型メタルジグ','saved FIRST CAST restored');
+    assert.equal(await text(page,'#gear .gearItem:nth-child(1) b'),'7〜8ft / L〜ML','saved rod recommendation restored');
+    assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'手持ちで組みやすい','saved MY TACKLE fit restored');
+    await page.locator('.nav button[data-v="home"]').click();
+    await page.locator('#home.on').waitFor({state:'visible'});
+  }else{
+    await backHome(page);
+  }
+
+  // Regression for the staged-expansion bug: カレイ is added in TARGET1, then
+  // TARGET2 attaches choinage through `existing`. It must survive at runtime.
+  await openTarget(page,'カレイ');
+  assert.equal(await page.locator('#methodPickerV1 [data-method-id="choinage"]').count(),1,`${width}: karei TARGET2 method attached`);
+  await page.locator('#methodPickerV1 [data-method-id="choinage"]').click();
+  assert.equal(await text(page,'#pmethod'),'ちょい投げ',`${width}: karei choinage selectable`);
   await backHome(page);
 
   // TARGET2 freshwater target and multi-method switching.
   await openTarget(page,'ヘラブナ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: herabuna methods`);
   await page.locator('#methodPickerV1 [data-method-id="kattuke"]').click();
-  assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'カッツケ釣り',`${width}: herabuna kattuke`);
+  assert.equal(await text(page,'#pmethod'),'カッツケ釣り',`${width}: herabuna kattuke`);
   assert.ok((await page.locator('#firstRange').textContent()||'').includes('1m'),`${width}: shallow FIRST CAST`);
   await noOverflow(page,width,`${width} freshwater result`);
   await backHome(page);
@@ -89,22 +146,22 @@ async function runViewport(browser,{width,height}){
   await openTarget(page,'コウイカ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: kouika methods`);
   await page.locator('#methodPickerV1 [data-method-id="tera"]').click();
-  assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'テーラ探り釣り',`${width}: kouika bait method`);
-  assert.ok(await page.locator('#steps .step').count()===3,`${width}: kouika 3 steps`);
+  assert.equal(await text(page,'#pmethod'),'テーラ探り釣り',`${width}: kouika bait method`);
+  assert.equal(await page.locator('#steps .step').count(),3,`${width}: kouika 3 steps`);
   await noOverflow(page,width,`${width} squid result`);
 
   if(width===390){
-    // Selected TARGET2 method must flow through FIELD MODE.
+    // A newly added TARGET2 target must also carry its selected method into FIELD MODE and persistence.
     await page.locator('#fieldModeBtn').click();
     await page.locator('#fieldmode.on').waitFor({state:'visible'});
-    assert.equal((await page.locator('#fmFish').textContent()||'').trim(),'コウイカ','FIELD MODE TARGET2 target');
-    assert.ok((await page.locator('#fmBait').textContent()||'').trim(),'FIELD MODE TARGET2 FIRST CAST');
+    assert.equal(await text(page,'#fmFish'),'コウイカ','FIELD MODE TARGET2 target');
+    assert.equal(await text(page,'#fmMethod'),'テーラ探り釣り','FIELD MODE TARGET2 method');
+    assert.ok(await text(page,'#fmBait'),'FIELD MODE TARGET2 FIRST CAST');
     await page.locator('#fmBackPlan').click();
     await page.locator('#result.on').waitFor({state:'visible'});
 
-    // Save must persist TARGET2 methodKey and restore the exact method after reload.
     await page.locator('#save').click();
-    let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v9')||'[]'));
+    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v9')||'[]'));
     const row=saved.find(x=>x.fish==='コウイカ');
     assert.equal(row?.methodKey,'tera','saved TARGET2 methodKey');
     await page.reload({waitUntil:'networkidle'});
@@ -112,9 +169,9 @@ async function runViewport(browser,{width,height}){
     await page.locator('.nav button[data-v="saved"]').click();
     await page.locator('#savedList .saveRow').filter({hasText:'コウイカ'}).locator('.op').click();
     await page.locator('#result.on').waitFor({state:'visible'});
-    assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'テーラ探り釣り','saved TARGET2 method restored');
+    assert.equal(await text(page,'#pmethod'),'テーラ探り釣り','saved TARGET2 method restored');
 
-    // MY TACKLE remains reachable with TARGET2 expansion controller.
+    // MY TACKLE management remains reachable with TARGET2 expansion controller.
     await page.locator('.nav button[data-v="home"]').click();
     await page.locator('.v19TackleShortcut').click();
     await page.locator('#tackleSheet').waitFor({state:'visible'});
@@ -131,7 +188,7 @@ async function runViewport(browser,{width,height}){
     assert.equal(await page.locator('#grid .fish').count(),55,'offline TARGET2 expansion available');
     await page.locator('button.fish[data-fish="ワカサギ"]').click();
     await page.locator('#result.on').waitFor({state:'visible'});
-    assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'ドーム船ワカサギ','offline new target usable');
+    assert.equal(await text(page,'#pmethod'),'ドーム船ワカサギ','offline new target usable');
     await context.setOffline(false);
   }
 
