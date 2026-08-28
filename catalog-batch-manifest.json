@@ -1,5 +1,5 @@
 {
-  "version": "CATALOG-BATCHES-4",
+  "version": "CATALOG-BATCHES-5",
   "batches": [
     {
       "id": "daiwa-poc-core",
@@ -46,6 +46,14 @@
       "expected_rows": 16,
       "stage": "research",
       "source_input": "catalog-batches/daiwa-luvias-2024.json"
+    },
+    {
+      "id": "daiwa-airity-2023",
+      "maker": "DAIWA",
+      "files": ["catalog-daiwa-airity-2023.js"],
+      "expected_rows": 17,
+      "stage": "research",
+      "source_input": "catalog-batches/daiwa-airity-2023.json"
     }
   ]
 }
