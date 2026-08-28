@@ -50,7 +50,7 @@ async function runViewport(browser,{width,height}){
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
   await waitExpanded(page);
   assert.equal(await page.locator('#grid .fish').count(),55,`${width}: target count`);
-  assert.equal(await text(page,'#home .heroStats span'),'55魚種',`${width}: hero target count`);
+  assert.equal(await text(page,'#home .heroStats span:nth-of-type(1)'),'55魚種',`${width}: hero target count`);
   assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('105釣法プラン'),`${width}: plan count`);
   await noOverflow(page,width,`${width} home`);
 
