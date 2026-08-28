@@ -62,7 +62,7 @@ test('TARGET4 representative shore boat bait and lure methods are all present',(
   const {combined}=load();
   const has=(fish,id)=>combined.existing?.[fish]?.some(x=>x.id===id);
   for(const [fish,id] of [
-    ['メバル','uki'],['メバル','kabura'],['カサゴ','saguri'],['カサゴ','boat_doutuki'],
+    ['メバル','uki'],['メバル','kabura'],['カサゴ','shore_saguri'],['カサゴ','boat_doutuki'],
     ['シーバス','nage'],['シーバス','uki'],['ヒラメ','boat_livebait'],['ヒラメ','boat_lure'],
     ['カンパチ','boat_jigging'],['ヒラマサ','offshore_casting'],['アユ','ayuing'],
     ['ブラックバス','topwater'],['テナガエビ','shimori'],['コイ','suikomi']
