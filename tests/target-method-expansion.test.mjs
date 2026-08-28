@@ -91,7 +91,10 @@ test('controller preserves method selection, staged composition, and TARGET2 loa
   assert.match(js,/styles\.includes\(styleFilter\)/);
   assert.match(js,/methodPickerV1/);
   assert.match(js,/methodNames=methodsFor\(f\)\.map/);
-  assert.ok(js.indexOf('for(const raw of expansion.targets||[])')<js.indexOf('for(const [name,methods] of Object.entries(expansion.existing||{}))','expanded targets must exist before cross-phase alternate methods are applied');
+  assert.ok(
+    js.indexOf('for(const raw of expansion.targets||[])') < js.indexOf('for(const [name,methods] of Object.entries(expansion.existing||{}))'),
+    'expanded targets must exist before cross-phase alternate methods are applied'
+  );
   assert.ok(pwa.indexOf(v1PartsToken)<pwa.indexOf("./target-method-data-v1.js"),'TARGET1 parts before TARGET1 aggregate');
   assert.ok(pwa.indexOf("./target-method-data-v1.js")<pwa.indexOf(v2PartsToken),'TARGET1 aggregate before TARGET2 parts');
   assert.ok(pwa.indexOf(v2PartsToken)<pwa.indexOf("./target-method-data-v2.js"),'TARGET2 parts before aggregate');
