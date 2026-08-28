@@ -1,5 +1,5 @@
 {
-  "version": "CATALOG-BATCHES-6",
+  "version": "CATALOG-BATCHES-7",
   "batches": [
     {"id":"daiwa-poc-core","maker":"DAIWA","files":["catalog-daiwa-poc.js"],"expected_rows":105,"stage":"research"},
     {"id":"shimano-poc-core","maker":"SHIMANO","files":["catalog-shimano-poc.js"],"expected_rows":34,"stage":"research"},
@@ -8,6 +8,8 @@
     {"id":"daiwa-gekkabijin-2023","maker":"DAIWA","files":["catalog-daiwa-gekkabijin-2023.js"],"expected_rows":3,"stage":"research","source_input":"catalog-batches/daiwa-gekkabijin-2023.json"},
     {"id":"daiwa-luvias-2024","maker":"DAIWA","files":["catalog-daiwa-luvias-2024.js"],"expected_rows":16,"stage":"research","source_input":"catalog-batches/daiwa-luvias-2024.json"},
     {"id":"daiwa-airity-2023","maker":"DAIWA","files":["catalog-daiwa-airity-2023.js"],"expected_rows":17,"stage":"research","source_input":"catalog-batches/daiwa-airity-2023.json"},
-    {"id":"daiwa-certate-2024","maker":"DAIWA","files":["catalog-daiwa-certate-2024.js"],"expected_rows":15,"stage":"research","source_input":"catalog-batches/daiwa-certate-2024.json"}
+    {"id":"daiwa-certate-2024","maker":"DAIWA","files":["catalog-daiwa-certate-2024.js"],"expected_rows":15,"stage":"research","source_input":"catalog-batches/daiwa-certate-2024.json"},
+    {"id":"daiwa-certate-sw-2024","maker":"DAIWA","files":["catalog-daiwa-certate-sw-2024.js"],"expected_rows":8,"stage":"research","source_input":"catalog-batches/daiwa-certate-sw-2024.json"},
+    {"id":"daiwa-certate-sw-2026","maker":"DAIWA","files":["catalog-daiwa-certate-sw-2026.js"],"expected_rows":9,"stage":"research","source_input":"catalog-batches/daiwa-certate-sw-2026.json"}
   ]
 }
