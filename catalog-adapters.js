@@ -5,10 +5,10 @@
 
   function normalizeSpecs(category,specs={}){
     if(category==='rod')return {
-      length_ft:finite(specs.length_ft),length_m:finite(specs.length_m),pieces:finite(specs.pieces),
-      weight_g:finite(specs.weight_g),power:text(specs.power).toUpperCase(),
-      lure_min_g:finite(specs.lure_min_g),lure_max_g:finite(specs.lure_max_g),jig_max_g:finite(specs.jig_max_g),
-      line_pe_min:finite(specs.line_pe_min),line_pe_max:finite(specs.line_pe_max)
+      length_ft:finite(specs.length_ft),length_m:finite(specs.length_m),length_raw:text(specs.length_raw),pieces:finite(specs.pieces),pieces_raw:text(specs.pieces_raw),
+      weight_g:finite(specs.weight_g),power:text(specs.power).toUpperCase(),power_raw:text(specs.power_raw),
+      lure_min_g:finite(specs.lure_min_g),lure_max_g:finite(specs.lure_max_g),jig_max_g:finite(specs.jig_max_g),lure_weight_raw:text(specs.lure_weight_raw),
+      line_pe_min:finite(specs.line_pe_min),line_pe_max:finite(specs.line_pe_max),line_weight_raw:text(specs.line_weight_raw),sinker_load_raw:text(specs.sinker_load_raw)
     };
     return {
       reel_size:finite(specs.reel_size),weight_g:finite(specs.weight_g),gear_ratio:finite(specs.gear_ratio),
