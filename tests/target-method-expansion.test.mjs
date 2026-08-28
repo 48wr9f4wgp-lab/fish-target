@@ -76,20 +76,25 @@ test('TARGET2 contains representative freshwater shore offshore squid and rock p
   assert.ok(data.existing['アオリイカ'].some(x=>x.id==='tiprun'),'aori tiprun');
   assert.ok(data.existing['メバル'].some(x=>x.id==='boat_doutuki'),'mebaru boat doutuki');
   assert.ok(data.existing['アジ'].some(x=>x.id==='bishi'),'aji bishi');
+  assert.ok(data.existing['カレイ'].some(x=>x.id==='choinage'),'TARGET1-added karei receives TARGET2 choinage');
 });
 
-test('controller preserves method selection, multi-style search, and TARGET2 load order',()=>{
+test('controller preserves method selection, staged composition, and TARGET2 load order',()=>{
   const js=read('target-methods-v1.js');
   const pwa=read('pwa.js');
   const build=read('scripts/build.mjs');
+  const v1PartsToken='./target-method-data-v1-part${i}.js';
+  const v2PartsToken='./target-method-data-v2-part${i}.js';
   assert.match(js,/state\.methodKey=next\.id/);
   assert.match(js,/x=\{fish:cur\.name,\.\.\.state,methodKey\}/);
   assert.match(js,/\(y\.methodKey\|\|'default'\)===methodKey/);
   assert.match(js,/styles\.includes\(styleFilter\)/);
   assert.match(js,/methodPickerV1/);
   assert.match(js,/methodNames=methodsFor\(f\)\.map/);
-  assert.ok(pwa.indexOf("./target-method-data-v1.js")<pwa.indexOf("./target-method-data-v2-part1.js"),'TARGET1 aggregate before TARGET2');
-  assert.ok(pwa.indexOf("./target-method-data-v2-part5.js")<pwa.indexOf("./target-method-data-v2.js"),'TARGET2 parts before aggregate');
+  assert.ok(js.indexOf('for(const raw of expansion.targets||[])')<js.indexOf('for(const [name,methods] of Object.entries(expansion.existing||{}))','expanded targets must exist before cross-phase alternate methods are applied');
+  assert.ok(pwa.indexOf(v1PartsToken)<pwa.indexOf("./target-method-data-v1.js"),'TARGET1 parts before TARGET1 aggregate');
+  assert.ok(pwa.indexOf("./target-method-data-v1.js")<pwa.indexOf(v2PartsToken),'TARGET1 aggregate before TARGET2 parts');
+  assert.ok(pwa.indexOf(v2PartsToken)<pwa.indexOf("./target-method-data-v2.js"),'TARGET2 parts before aggregate');
   assert.ok(pwa.indexOf("./target-method-data-v2.js")<pwa.indexOf("./target-methods-v1.js"),'combined data before controller');
   assert.ok(pwa.indexOf("./target-methods-v1.js")<pwa.indexOf("./tackle.js"),'method controller before MY TACKLE');
   for(const asset of [...V1_PARTS,'target-method-data-v1.js',...V2_PARTS,'target-method-data-v2.js','target-methods-v1.js','target-methods-v1.css'])assert.ok(build.includes(`'${asset}'`),`${asset} must ship in build`);
