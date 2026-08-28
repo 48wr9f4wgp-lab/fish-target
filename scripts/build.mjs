@@ -16,7 +16,9 @@ const copiedAssets=[
   'style.css','quick-plan.css','field-mode.css','pwa.css',
   'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','visual-v8.css',
   'data.js','products.js','app.js','field-mode.js','pwa.js',
-  'continuity.js','target-method-data-v1-part1.js','target-method-data-v1-part2.js','target-method-data-v1-part3.js','target-method-data-v1-part4.js','target-method-data-v1-part5.js','target-method-data-v1.js','target-methods-v1.js',
+  'continuity.js',
+  'target-method-data-v1-part1.js','target-method-data-v1-part2.js','target-method-data-v1-part3.js','target-method-data-v1-part4.js','target-method-data-v1-part5.js','target-method-data-v1.js',
+  'target-method-data-v2-part1.js','target-method-data-v2-part2.js','target-method-data-v2-part3.js','target-method-data-v2-part4.js','target-method-data-v2-part5.js','target-method-data-v2.js','target-methods-v1.js',
   'catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-shimano-poc.js','catalog-fixtures.js','catalog.js','tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','visual-v8.js',
   'fish-real-v7.avif',
   'manifest.webmanifest','icon.svg'
