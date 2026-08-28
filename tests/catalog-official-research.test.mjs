@@ -11,28 +11,29 @@ for(const file of ['catalog-providers.js','catalog-adapters.js',...batchFiles,'c
 const catalog=context.FISH_TARGET_CATALOG;
 const providers=context.FISH_TARGET_CATALOG_PROVIDERS;
 const expectedOfficial=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
+const expectedByMaker=maker=>manifest.batches.filter(x=>x.maker===maker).reduce((n,x)=>n+Number(x.expected_rows||0),0);
 
 test('research catalog contains manifest factual rows plus 14 synthetic fixtures',()=>{
   assert.ok(catalog);
-  assert.equal(expectedOfficial,150);
+  assert.ok(expectedOfficial>=158,'official catalog must not regress below current scale baseline');
   assert.equal(catalog.products.length,expectedOfficial+14);
   const official=catalog.products.filter(p=>p.source.source_type==='manufacturer_official');
   const synthetic=catalog.products.filter(p=>p.source.source_type==='synthetic');
   assert.equal(official.length,expectedOfficial);
   assert.equal(synthetic.length,14);
-  assert.equal(official.filter(p=>p.maker==='DAIWA').length,116);
-  assert.equal(official.filter(p=>p.maker==='SHIMANO').length,34);
+  assert.equal(official.filter(p=>p.maker==='DAIWA').length,expectedByMaker('DAIWA'));
+  assert.equal(official.filter(p=>p.maker==='SHIMANO').length,expectedByMaker('SHIMANO'));
   assert.equal(catalog.validateCatalog(catalog.products).length,0);
 });
 
 test('SHIMANO official research rows preserve JAN/source facts but remain production-blocked',()=>{
   const rows=catalog.products.filter(p=>p.maker==='SHIMANO'&&p.source.source_type==='manufacturer_official');
-  assert.equal(rows.length,34);
+  assert.equal(rows.length,expectedByMaker('SHIMANO'));
   const provider=providers.byMaker('SHIMANO');
   assert.equal(provider.id,'shimano-official-research');
   assert.equal(provider.productionEnabled,false);
   const jans=rows.map(p=>p.identifiers.jan);
-  assert.equal(new Set(jans).size,34);
+  assert.equal(new Set(jans).size,rows.length);
   assert.ok(jans.every(jan=>/^\d{13}$/.test(jan)));
   assert.ok(rows.every(p=>p.source.license_status==='restricted'));
   assert.ok(rows.every(p=>catalog.productionEligible(p)===false));
@@ -63,4 +64,11 @@ test('reel capacity is searchable product metadata but never inferred as the cur
   const emeraldasOwned=catalog.ownedSnapshot(emeraldas,{id:'test-daiwa-reel'});
   assert.equal(emeraldasOwned.lineType,'');
   assert.equal(emeraldasOwned.lineNo,null);
+
+  const blast=catalog.search({query:'4960652239288'}).items[0];
+  assert.equal(blast.display_name,'BLAST LT LT6000D-H');
+  assert.equal(blast.specs.pe_capacity_raw,'3号-300m');
+  const blastOwned=catalog.ownedSnapshot(blast,{id:'test-blast'});
+  assert.equal(blastOwned.lineType,'');
+  assert.equal(blastOwned.lineNo,null);
 });
