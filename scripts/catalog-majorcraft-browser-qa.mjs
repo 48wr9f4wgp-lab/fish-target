@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {chromium} from 'playwright';
 
 const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
 const KEY='fish_target_v17_tackle';
+const manifest=JSON.parse(readFileSync(new URL('../catalog-batch-manifest.json',import.meta.url),'utf8'));
+const EXPECTED=14+manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const browser=await chromium.launch({headless:true});
 try{
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});
@@ -15,7 +18,7 @@ try{
   await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});
   await page.locator('.v19TackleShortcut').click();
   await page.locator('#tackleSheet').waitFor({state:'visible'});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG?.products?.length===354,{timeout:15000});
+  await page.waitForFunction(expected=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG?.products?.length===expected,EXPECTED,{timeout:15000});
   await page.waitForFunction(()=>[...document.querySelectorAll('#rodCatalogMaker option')].some(o=>o.textContent==='MAJOR CRAFT'),{timeout:15000});
 
   await page.locator('#rodCatalogMaker').selectOption({label:'MAJOR CRAFT'});
@@ -29,6 +32,7 @@ try{
   const preview=await page.locator('#rodCatalogPreview').textContent()||'';
   assert.ok(preview.includes('10'),'Major Craft length visible in preview');
   assert.ok(preview.includes('MH'),'Major Craft power visible in preview');
+  assert.ok(preview.includes('公式スペック参照'),'official research label visible');
   await page.locator('#addCatalogRod').click();
 
   let saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)||'{"rods":[],"reels":[]}'),KEY);
@@ -61,7 +65,7 @@ try{
   await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});
   await page.locator('.v19TackleShortcut').click();
   await page.locator('#tackleSheet').waitFor({state:'visible'});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG?.products?.length===354,{timeout:15000});
+  await page.waitForFunction(expected=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG?.products?.length===expected,EXPECTED,{timeout:15000});
   assert.ok((await page.locator('#tackleOwned').textContent()||'').includes('XR7-1002MH'),'Major Craft saved rod visible offline');
   await page.locator('#rodCatalogMaker').selectOption({label:'MAJOR CRAFT'});
   await page.locator('#rodCatalogSearch').fill('SPAJ-S682M');
@@ -70,6 +74,6 @@ try{
 
   assert.equal(pageErrors.length,0,`page errors\n${pageErrors.join('\n')}`);
   assert.equal(consoleErrors.length,0,`console errors\n${consoleErrors.join('\n')}`);
-  console.log('MAJOR CRAFT BROWSER QA PASS · 33 rods / 354 total / save / offline');
+  console.log(`MAJOR CRAFT BROWSER QA PASS · 33 rods / ${EXPECTED} total / save / offline`);
   await context.close();
 }finally{await browser.close()}
