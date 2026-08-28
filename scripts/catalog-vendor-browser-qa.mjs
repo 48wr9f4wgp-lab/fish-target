@@ -12,7 +12,7 @@ async function chooseRod(page,maker,series,query,expected){await page.locator('#
 try{
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});await waitApp(page);await open(page);
-  const makers=await page.locator('#rodCatalogMaker option').allTextContents();for(const m of ['TAILWALK','JACKSON','PROX','FISHMAN'])assert.ok(makers.includes(m),`${m} maker option`);
+  const makers=await page.locator('#rodCatalogMaker option').allTextContents();for(const m of ['TAILWALK','JACKSON','PROX','FISHMAN','YAMAGA BLANKS'])assert.ok(makers.includes(m),`${m} maker option`);
 
   const tailId=await chooseRod(page,'TAILWALK','FULLRANGE [New Gen]','C66L','C66L');await page.locator('#addCatalogRod').click();
   let saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);let rod=saved.rods.find(x=>x.product_id===tailId);assert.ok(rod,'tailwalk saved');assert.equal(rod.length,6.5);assert.equal(rod.maxLure,10.63);
@@ -31,7 +31,19 @@ try{
   await page.locator('#addCatalogRod').click();
   saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);rod=saved.rods.find(x=>x.product_id===fishmanId);assert.ok(rod,'Fishman saved');assert.equal(rod.length,8.5);assert.equal(rod.power,'M');assert.equal(rod.maxLure,null,'egi size is not converted to grams');
 
+  const blueId=await chooseRod(page,'YAMAGA BLANKS','BlueCurrentⅢ','78/B','78/B');
+  await page.waitForFunction(()=>{const t=document.querySelector('#rodCatalogPreview')?.textContent||'';return t.includes('BlueCurrentⅢ 78/B')&&t.includes('2350mm')&&t.includes('MAX15g')},null,{timeout:15000});
+  const blueRuntime=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),blueId);assert.equal(blueRuntime.specs.length_ft,7.71);assert.equal(blueRuntime.specs.lure_min_g,null);assert.equal(blueRuntime.specs.lure_max_g,15);assert.equal(blueRuntime.identifiers.jan,'4571584101682');
+  await page.locator('#addCatalogRod').click();
+  saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);rod=saved.rods.find(x=>x.product_id===blueId);assert.ok(rod,'YAMAGA BlueCurrent saved');assert.equal(rod.length,7.71);assert.equal(rod.maxLure,15);
+
+  const calistaId=await chooseRod(page,'YAMAGA BLANKS','Calista','82ML/AR','82ML/AR');
+  await page.waitForFunction(()=>{const t=document.querySelector('#rodCatalogPreview')?.textContent||'';return t.includes('Calista 82ML/AR')&&t.includes('2496mm')&&t.includes('Egi 2.5~3.5号')},null,{timeout:15000});
+  const calistaRuntime=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),calistaId);assert.equal(calistaRuntime.specs.length_ft,8.189);assert.equal(calistaRuntime.specs.power,'ML');assert.equal(calistaRuntime.specs.lure_weight_raw,'Egi 2.5~3.5号');assert.equal(calistaRuntime.specs.lure_min_g,null);assert.equal(calistaRuntime.specs.lure_max_g,null);
+  await page.locator('#addCatalogRod').click();
+  saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);rod=saved.rods.find(x=>x.product_id===calistaId);assert.ok(rod,'YAMAGA Calista saved');assert.equal(rod.length,8.189);assert.equal(rod.power,'ML');assert.equal(rod.maxLure,null,'Calista egi size is not converted to grams');
+
   await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.locator('#tackleClose').click();await context.setOffline(true);await page.reload({waitUntil:'domcontentloaded',timeout:20000});await waitApp(page);await open(page);
-  const owned=await page.locator('#tackleOwned').textContent();for(const text of ['FULLRANGE [New Gen] C66L','SURF TRIBE STHS-1062M','GRAVIS TAMAN AIR-K GTAK850','Beams calmer8.6M'])assert.ok((owned||'').includes(text),`offline saved ${text}`);
-  assert.equal(errors.length,0,errors.join('\n'));console.log(`CATALOG VENDOR BROWSER QA PASS · ${EXPECTED} rows · TAILWALK/JACKSON/PROX/FISHMAN`);await context.close();
+  const owned=await page.locator('#tackleOwned').textContent();for(const text of ['FULLRANGE [New Gen] C66L','SURF TRIBE STHS-1062M','GRAVIS TAMAN AIR-K GTAK850','Beams calmer8.6M','BlueCurrentⅢ 78/B','Calista 82ML/AR'])assert.ok((owned||'').includes(text),`offline saved ${text}`);
+  assert.equal(errors.length,0,errors.join('\n'));console.log(`CATALOG VENDOR BROWSER QA PASS · ${EXPECTED} rows · TAILWALK/JACKSON/PROX/FISHMAN/YAMAGA`);await context.close();
 }finally{await browser.close()}
