@@ -3,7 +3,7 @@
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const coreAssets=['catalog-providers.js','catalog-adapters.js'];
   const tailAssets=['catalog-fixtures.js','catalog.js'];
-  const MAKERS=['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX'];
+  const MAKERS=['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX','FISHMAN'];
   let runtime=null;
   let loading=null;
   let manifest=null;
