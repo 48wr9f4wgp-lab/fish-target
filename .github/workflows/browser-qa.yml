@@ -34,7 +34,7 @@ jobs:
           done
           curl -fsS http://127.0.0.1:4173/dist/ >/dev/null
           case "$GITHUB_REF_NAME" in
-            chatgpt/catalog-multimaker-v*) node scripts/target-browser-qa.mjs && node scripts/catalog-lazy-browser-qa.mjs && node scripts/catalog-majorcraft-browser-qa.mjs ;;
+            chatgpt/catalog-multimaker-v*) node scripts/target-browser-qa.mjs && node scripts/catalog-lazy-browser-qa.mjs && node scripts/catalog-majorcraft-browser-qa.mjs && node scripts/catalog-vendor-browser-qa.mjs ;;
             chatgpt/catalog-lazy-load-v*|chatgpt/catalog-scale-v*) node scripts/target-browser-qa.mjs && node scripts/catalog-lazy-browser-qa.mjs ;;
             chatgpt/target-method-expansion-v*) node scripts/target-browser-qa.mjs ;;
             *) node scripts/browser-qa.mjs && node scripts/catalog-browser-qa.mjs ;;
