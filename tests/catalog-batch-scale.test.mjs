@@ -28,7 +28,7 @@ test('catalog batch manifest is unique, complete, and self-consistent',()=>{
   const ids=manifest.batches.map(x=>x.id),files=manifest.batches.flatMap(x=>x.files||[]);
   assert.equal(new Set(ids).size,ids.length,'unique batch ids');
   assert.equal(new Set(files).size,files.length,'each runtime file belongs to one batch');
-  assert.ok(expectedOfficial>=158,'official factual row contract must not regress');
+  assert.ok(expectedOfficial>=174,'official factual row contract must not regress');
   for(const batch of manifest.batches){
     assert.ok(batch.id&&batch.maker&&batch.stage,`${batch.id}: metadata`);
     assert.ok(Number.isInteger(batch.expected_rows)&&batch.expected_rows>0,`${batch.id}: expected_rows`);
@@ -100,10 +100,29 @@ test('scale batches preserve official DAIWA facts and stay production-blocked',(
   const gekkaOwned=catalog.ownedSnapshot(gekka,{id:'gekka-reel'});
   assert.equal(gekkaOwned.lineType,'');
   assert.equal(gekkaOwned.lineNo,null);
+
+  const luviasRows=catalog.list({maker:'DAIWA',series:'LUVIAS'});
+  assert.equal(luviasRows.length,16,'all 24 LUVIAS models');
+  const luvias=luviasRows.find(x=>x.model==='LT5000D-CXH');
+  assert.ok(luvias,'LUVIAS LT5000D-CXH');
+  assert.equal(luvias.status,'unknown','lifecycle is not inferred from page presence');
+  assert.equal(luvias.specs.reel_size,5000);
+  assert.equal(luvias.specs.weight_g,225);
+  assert.equal(luvias.specs.gear_ratio,6.2);
+  assert.equal(luvias.specs.retrieve_cm,105);
+  assert.equal(luvias.specs.max_drag_kg,12);
+  assert.equal(luvias.specs.pe_capacity_raw,'2.5号-300m');
+  assert.equal(luvias.identifiers.jan,'4550133389061');
+  assert.equal(luvias.source.source_url,'https://www.daiwa.com/jp/product/2dhvqnt');
+  assert.equal(luvias.source.last_verified,'2026-08-28');
+  assert.equal(catalog.productionEligible(luvias),false);
+  const luviasOwned=catalog.ownedSnapshot(luvias,{id:'luv-reel'});
+  assert.equal(luviasOwned.lineType,'');
+  assert.equal(luviasOwned.lineNo,null);
 });
 
 test('every source JSON deterministically regenerates its committed runtime batch',()=>{
-  assert.ok(sourceBatches.length>=3,'scalable source batches');
+  assert.ok(sourceBatches.length>=4,'scalable source batches');
   for(const batch of sourceBatches){
     assert.equal(batch.files.length,1,`${batch.id}: one generated runtime file per source batch`);
     const input=JSON.parse(read(batch.source_input));
