@@ -40,7 +40,7 @@ test('runtime composes 150 official factual rows plus 14 synthetic fixtures with
   assert.equal(synthetic.length,14);
   assert.equal(official.filter(p=>p.maker==='DAIWA').length,116);
   assert.equal(official.filter(p=>p.maker==='SHIMANO').length,34);
-  assert.deepEqual(catalog.validateCatalog(catalog.products),[]);
+  assert.equal(catalog.validateCatalog(catalog.products).length,0,'catalog validation errors');
   const ids=catalog.products.map(p=>p.product_id),jans=catalog.products.map(p=>p.identifiers?.jan).filter(Boolean);
   assert.equal(new Set(ids).size,ids.length,'product ids unique');
   assert.equal(new Set(jans).size,jans.length,'JAN unique across all known JANs');
