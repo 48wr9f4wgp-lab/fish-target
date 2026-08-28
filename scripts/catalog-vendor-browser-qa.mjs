@@ -12,7 +12,7 @@ async function chooseRod(page,maker,series,query,expected){await page.locator('#
 try{
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});await waitApp(page);await open(page);
-  const makers=await page.locator('#rodCatalogMaker option').allTextContents();for(const m of ['TAILWALK','JACKSON','PROX'])assert.ok(makers.includes(m),`${m} maker option`);
+  const makers=await page.locator('#rodCatalogMaker option').allTextContents();for(const m of ['TAILWALK','JACKSON','PROX','FISHMAN'])assert.ok(makers.includes(m),`${m} maker option`);
 
   const tailId=await chooseRod(page,'TAILWALK','FULLRANGE [New Gen]','C66L','C66L');await page.locator('#addCatalogRod').click();
   let saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);let rod=saved.rods.find(x=>x.product_id===tailId);assert.ok(rod,'tailwalk saved');assert.equal(rod.length,6.5);assert.equal(rod.maxLure,10.63);
@@ -23,7 +23,14 @@ try{
   const proxId=await chooseRod(page,'PROX','GRAVIS TAMAN AIR-K','GTAK850','GTAK850');await page.locator('#addCatalogRod').click();
   saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);rod=saved.rods.find(x=>x.product_id===proxId);assert.ok(rod,'PROX saved');assert.equal(rod.length,16.404);assert.equal(rod.maxLure,null);
 
+  const fishmanId=await chooseRod(page,'FISHMAN','Beams','calmer8.6M','calmer8.6M');
+  const fishmanPreview=await page.locator('#rodCatalogPreview').textContent()||'';assert.ok(fishmanPreview.includes('8.5ft'),'Fishman derived length visible');assert.ok(fishmanPreview.includes('M'),'Fishman power visible');
+  const fishmanRuntime=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),fishmanId);assert.equal(fishmanRuntime.specs.lure_weight_raw,'2.5～4.5号');assert.equal(fishmanRuntime.specs.lure_min_g,null);assert.equal(fishmanRuntime.specs.lure_max_g,null);
+  const discontinued=await page.evaluate(()=>globalThis.FISH_TARGET_CATALOG.list({maker:'FISHMAN',series:'Beams'}).find(x=>x.model==='blancsierra5.2UL')?.status);assert.equal(discontinued,'discontinued');
+  await page.locator('#addCatalogRod').click();
+  saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);rod=saved.rods.find(x=>x.product_id===fishmanId);assert.ok(rod,'Fishman saved');assert.equal(rod.length,8.5);assert.equal(rod.power,'M');assert.equal(rod.maxLure,null,'egi size is not converted to grams');
+
   await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.locator('#tackleClose').click();await context.setOffline(true);await page.reload({waitUntil:'domcontentloaded',timeout:20000});await waitApp(page);await open(page);
-  const owned=await page.locator('#tackleOwned').textContent();for(const text of ['FULLRANGE [New Gen] C66L','SURF TRIBE STHS-1062M','GRAVIS TAMAN AIR-K GTAK850'])assert.ok((owned||'').includes(text),`offline saved ${text}`);
-  assert.equal(errors.length,0,errors.join('\n'));console.log(`CATALOG VENDOR BROWSER QA PASS · ${EXPECTED} rows · TAILWALK/JACKSON/PROX`);await context.close();
+  const owned=await page.locator('#tackleOwned').textContent();for(const text of ['FULLRANGE [New Gen] C66L','SURF TRIBE STHS-1062M','GRAVIS TAMAN AIR-K GTAK850','Beams calmer8.6M'])assert.ok((owned||'').includes(text),`offline saved ${text}`);
+  assert.equal(errors.length,0,errors.join('\n'));console.log(`CATALOG VENDOR BROWSER QA PASS · ${EXPECTED} rows · TAILWALK/JACKSON/PROX/FISHMAN`);await context.close();
 }finally{await browser.close()}
