@@ -24,6 +24,7 @@ try{
   saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);rod=saved.rods.find(x=>x.product_id===proxId);assert.ok(rod,'PROX saved');assert.equal(rod.length,16.404);assert.equal(rod.maxLure,null);
 
   const fishmanId=await chooseRod(page,'FISHMAN','Beams','calmer8.6M','calmer8.6M');
+  await page.waitForFunction(()=>{const t=document.querySelector('#rodCatalogPreview')?.textContent||'';return t.includes('calmer8.6M')&&t.includes('8.5ft')&&t.includes('M')},{timeout:15000});
   const fishmanPreview=await page.locator('#rodCatalogPreview').textContent()||'';assert.ok(fishmanPreview.includes('8.5ft'),'Fishman derived length visible');assert.ok(fishmanPreview.includes('M'),'Fishman power visible');
   const fishmanRuntime=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),fishmanId);assert.equal(fishmanRuntime.specs.lure_weight_raw,'2.5～4.5号');assert.equal(fishmanRuntime.specs.lure_min_g,null);assert.equal(fishmanRuntime.specs.lure_max_g,null);
   const discontinued=await page.evaluate(()=>globalThis.FISH_TARGET_CATALOG.list({maker:'FISHMAN',series:'Beams'}).find(x=>x.model==='blancsierra5.2UL')?.status);assert.equal(discontinued,'discontinued');
