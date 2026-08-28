@@ -12,6 +12,9 @@ if(!/^V\d+(?:[.-][A-Za-z0-9]+)*$/.test(config.version))throw new Error('Invalid 
 if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldLive feature flag');
 const buildId=config.version.toLowerCase();
 
+const lazyRuntimeAssets=[
+  'catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-shimano-poc.js','catalog-fixtures.js','catalog.js'
+];
 const copiedAssets=[
   'style.css','quick-plan.css','field-mode.css','pwa.css',
   'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','visual-v8.css',
@@ -21,12 +24,13 @@ const copiedAssets=[
   'target-method-data-v2-part1.js','target-method-data-v2-part2.js','target-method-data-v2-part3.js','target-method-data-v2-part4.js','target-method-data-v2-part5.js','target-method-data-v2.js',
   'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js',
   'target-method-data-v4-part1.js','target-method-data-v4-part2.js','target-method-data-v4-part3.js','target-method-data-v4-part4.js','target-method-data-v4-part5.js','target-method-data-v4.js','target-methods-v1.js',
-  'catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-shimano-poc.js','catalog-fixtures.js','catalog.js','tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','visual-v8.js',
+  'catalog-loader.js',...lazyRuntimeAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','visual-v8.js',
   'fish-real-v7.avif',
   'manifest.webmanifest','icon.svg'
 ];
 const generatedAssets=['apple-touch-icon.png','icon-192.png','icon-512.png','icon-maskable-512.png'];
-const shell=['./','./index.html',...copiedAssets.map(file=>`./${file}`),...generatedAssets.map(file=>`./${file}`)];
+const shellAssets=copiedAssets.filter(file=>!lazyRuntimeAssets.includes(file));
+const shell=['./','./index.html',...shellAssets.map(file=>`./${file}`),...generatedAssets.map(file=>`./${file}`)];
 
 await rm(output,{recursive:true,force:true});
 await mkdir(output,{recursive:true});
@@ -45,4 +49,4 @@ const worker=replaceBuildTokens(await readFile(path.join(root,'sw.js'),'utf8'))
   .replace('__SHELL_MANIFEST__',JSON.stringify(shell,null,2));
 await writeFile(path.join(output,'sw.js'),worker);
 
-console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets)`);
+console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${lazyRuntimeAssets.length} lazy runtime assets)`);
