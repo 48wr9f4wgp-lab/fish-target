@@ -21,6 +21,9 @@
   ];
   const daiwaPoc=Array.isArray(globalThis.FISH_TARGET_DAIWA_POC_ROWS)?globalThis.FISH_TARGET_DAIWA_POC_ROWS:[];
   const shimanoPoc=Array.isArray(globalThis.FISH_TARGET_SHIMANO_POC_ROWS)?globalThis.FISH_TARGET_SHIMANO_POC_ROWS:[];
-  const combined=[...raw,...daiwaPoc,...shimanoPoc];
+  const registry=Array.isArray(globalThis.FISH_TARGET_CATALOG_BATCH_ROWS)?globalThis.FISH_TARGET_CATALOG_BATCH_ROWS:[];
+  const registryRows=registry.flatMap(batch=>Array.isArray(batch?.rows)?batch.rows:[]);
+  const combined=[...raw,...daiwaPoc,...shimanoPoc,...registryRows];
   globalThis.FISH_TARGET_CATALOG_FIXTURES=Object.freeze(combined.map(x=>adapters.byMaker(x.maker).normalize(x)));
+  globalThis.FISH_TARGET_CATALOG_COMPOSITION=Object.freeze({synthetic:raw.length,daiwaPoc:daiwaPoc.length,shimanoPoc:shimanoPoc.length,batches:registry.length,batchRows:registryRows.length,total:combined.length});
 })();
