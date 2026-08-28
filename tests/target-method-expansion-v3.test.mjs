@@ -15,10 +15,11 @@ function load(){
   vm.runInContext(read('target-method-data-v1.js'),context,{filename:'target-method-data-v1.js'});
   for(const file of V2_PARTS)vm.runInContext(read(file),context,{filename:file});
   vm.runInContext(read('target-method-data-v2.js'),context,{filename:'target-method-data-v2.js'});
+  const baselineNames=new Set(context.FISH_TARGET_METHOD_EXPANSION_V2.targets.map(x=>x.name));
   for(const file of V3_PARTS)vm.runInContext(read(file),context,{filename:file});
   const v3Parts=context.FISH_TARGET_METHOD_EXPANSION_V3_PARTS;
   vm.runInContext(read('target-method-data-v3.js'),context,{filename:'target-method-data-v3.js'});
-  return {combined:context.FISH_TARGET_METHOD_EXPANSION_V3,parts:v3Parts};
+  return {combined:context.FISH_TARGET_METHOD_EXPANSION_V3,parts:v3Parts,baselineNames};
 }
 
 const rows=parts=>parts.flatMap(part=>[
@@ -26,23 +27,25 @@ const rows=parts=>parts.flatMap(part=>[
   ...(part.targets||[]).flatMap(target=>target.methods.map(method=>({fish:target.name,method})))
 ]);
 
-test('TARGET3 composes the verified TARGET2 baseline into 60 targets and 128 plans',()=>{
+test('TARGET3 composes the verified TARGET2 baseline into 60 targets and 130 plans',()=>{
   const {combined}=load();
   assert.equal(combined.version,'V25-TARGET-METHOD3');
   assert.equal(combined.targets.length,41,'41 expansion targets + 19 canonical targets');
   assert.equal(19+combined.targets.length,60);
   const plans=19+Object.values(combined.existing).flat().length+combined.targets.reduce((n,x)=>n+x.methods.length,0);
-  assert.equal(plans,128);
+  assert.equal(plans,130);
   assert.equal(new Set(combined.targets.map(x=>x.name)).size,combined.targets.length,'expansion target names must remain unique');
 });
 
-test('TARGET3 batch adds exactly five targets and twenty-three evidence-backed plans',()=>{
-  const {parts}=load();
+test('TARGET3 batch adds exactly five new targets and twenty-five evidence-backed plans',()=>{
+  const {parts,baselineNames}=load();
   const addedTargets=parts.flatMap(x=>x.targets||[]);
   const addedRows=rows(parts);
-  assert.deepEqual([...addedTargets.map(x=>x.name)].sort(),['ウグイ','テナガエビ','ナマズ','ブルーギル','マブナ'].sort());
+  const expected=['カジカ','タナゴ','ナマズ','ニゴイ','ブルーギル'];
+  assert.deepEqual([...addedTargets.map(x=>x.name)].sort(),expected.sort());
   assert.equal(addedTargets.length,5);
-  assert.equal(addedRows.length,23);
+  assert.equal(addedRows.length,25);
+  for(const target of addedTargets)assert.ok(!baselineNames.has(target.name),`${target.name}: TARGET3 new target must not duplicate TARGET2 baseline`);
   for(const {fish,method} of addedRows){
     for(const field of REQUIRED)assert.ok(method[field]!==undefined&&method[field]!==null&&method[field]!=='' ,`${fish}/${method.id}: ${field}`);
     assert.ok(['bait','lure'].includes(method.style),`${fish}/${method.id}: style`);
@@ -56,13 +59,16 @@ test('TARGET3 batch adds exactly five targets and twenty-three evidence-backed p
   }
 });
 
-test('TARGET3 representative target and cross-phase methods are present without duplicate IDs',()=>{
+test('TARGET3 representative new and cross-phase methods are present without duplicate IDs',()=>{
   const {combined}=load();
   const byName=new Map(combined.targets.map(x=>[x.name,x]));
-  assert.equal(byName.get('ウグイ').methods.length,3);
-  assert.equal(byName.get('テナガエビ').methods.length,2);
+  assert.equal(byName.get('タナゴ').methods.length,1);
+  assert.equal(byName.get('ニゴイ').methods.length,3);
+  assert.equal(byName.get('カジカ').methods.length,2);
   assert.equal(byName.get('ブルーギル').methods.length,2);
   assert.equal(byName.get('ナマズ').methods[0].id,'top');
+  assert.ok(combined.existing['ウグイ'].some(x=>x.id==='lure'),'TARGET1-added ugui receives TARGET3 lure');
+  assert.ok(combined.existing['テナガエビ'].some(x=>x.id==='myaku'),'TARGET1-added tenaga receives TARGET3 myaku');
   assert.ok(combined.existing['クロダイ'].some(x=>x.id==='otoshikomi'),'kurodai otoshikomi');
   assert.ok(combined.existing['クロダイ'].some(x=>x.id==='ikada_dango'),'kurodai ikada dango');
   assert.ok(combined.existing['マダイ'].some(x=>x.id==='tairaba'),'madai tairaba');
