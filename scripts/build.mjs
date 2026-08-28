@@ -12,9 +12,16 @@ if(!/^V\d+(?:[.-][A-Za-z0-9]+)*$/.test(config.version))throw new Error('Invalid 
 if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldLive feature flag');
 const buildId=config.version.toLowerCase();
 
-const lazyRuntimeAssets=[
-  'catalog-providers.js','catalog-adapters.js','catalog-daiwa-poc.js','catalog-shimano-poc.js','catalog-fixtures.js','catalog.js'
-];
+const catalogManifest=JSON.parse(await readFile(path.join(root,'catalog-batch-manifest.json'),'utf8'));
+if(!catalogManifest||!Array.isArray(catalogManifest.batches))throw new Error('Invalid catalog batch manifest');
+const batchIds=new Set(),batchFiles=[];
+for(const batch of catalogManifest.batches){
+  if(!batch?.id||batchIds.has(batch.id))throw new Error(`Invalid/duplicate catalog batch id: ${batch?.id||'missing'}`);
+  batchIds.add(batch.id);
+  if(!Array.isArray(batch.files)||!batch.files.length)throw new Error(`Catalog batch has no files: ${batch.id}`);
+  for(const file of batch.files){if(!batchFiles.includes(file))batchFiles.push(file)}
+}
+const lazyRuntimeAssets=['catalog-providers.js','catalog-adapters.js',...batchFiles,'catalog-fixtures.js','catalog.js'];
 const copiedAssets=[
   'style.css','quick-plan.css','field-mode.css','pwa.css',
   'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','visual-v8.css',
@@ -24,7 +31,7 @@ const copiedAssets=[
   'target-method-data-v2-part1.js','target-method-data-v2-part2.js','target-method-data-v2-part3.js','target-method-data-v2-part4.js','target-method-data-v2-part5.js','target-method-data-v2.js',
   'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js',
   'target-method-data-v4-part1.js','target-method-data-v4-part2.js','target-method-data-v4-part3.js','target-method-data-v4-part4.js','target-method-data-v4-part5.js','target-method-data-v4.js','target-methods-v1.js',
-  'catalog-loader.js',...lazyRuntimeAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','visual-v8.js',
+  'catalog-batch-manifest.json','catalog-loader.js',...lazyRuntimeAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','visual-v8.js',
   'fish-real-v7.avif',
   'manifest.webmanifest','icon.svg'
 ];
@@ -49,4 +56,4 @@ const worker=replaceBuildTokens(await readFile(path.join(root,'sw.js'),'utf8'))
   .replace('__SHELL_MANIFEST__',JSON.stringify(shell,null,2));
 await writeFile(path.join(output,'sw.js'),worker);
 
-console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${lazyRuntimeAssets.length} lazy runtime assets)`);
+console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${lazyRuntimeAssets.length} lazy runtime assets in ${catalogManifest.batches.length} batches)`);
