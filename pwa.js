@@ -25,14 +25,9 @@
     for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v4-part${i}.js`,`target-method-data-v4-part${i}-js`);
     await loadScript('./target-method-data-v4.js','target-method-data-v4-js');
     await loadScript('./target-methods-v1.js','target-methods-v1-js');
-    await loadScript('./catalog-providers.js','catalog-providers-js');
-    await loadScript('./catalog-adapters.js','catalog-adapters-js');
-    await loadScript('./catalog-daiwa-poc.js','catalog-daiwa-poc-js');
-    await loadScript('./catalog-shimano-poc.js','catalog-shimano-poc-js');
-    await loadScript('./catalog-fixtures.js','catalog-fixtures-js');
-    await loadScript('./catalog.js','catalog-js');
+    await loadScript('./catalog-loader.js','catalog-loader-js');
     await loadScript('./tackle.js','tackle-js');
-    document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent='CATALOG RESEARCH · DAIWA / SHIMANO公式公開スペックの事実データを含む。production利用は未承認。'});
+    document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent='CATALOG RESEARCH · 商品CatalogはMY TACKLE初回オープン時に読み込み。DAIWA / SHIMANO公式公開スペックのproduction利用は未承認。'});
     await loadScript('./fit-explain.js','fit-explain-js');
     await loadScript('./simplify.js','simplify-js');
     await loadScript('./visual-pass.js','visual-pass-js');
