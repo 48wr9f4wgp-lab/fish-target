@@ -20,6 +20,8 @@
     await loadScript('./target-method-data-v1.js','target-method-data-v1-js');
     for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v2-part${i}.js`,`target-method-data-v2-part${i}-js`);
     await loadScript('./target-method-data-v2.js','target-method-data-v2-js');
+    for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v3-part${i}.js`,`target-method-data-v3-part${i}-js`);
+    await loadScript('./target-method-data-v3.js','target-method-data-v3-js');
     await loadScript('./target-methods-v1.js','target-methods-v1-js');
     await loadScript('./catalog-providers.js','catalog-providers-js');
     await loadScript('./catalog-adapters.js','catalog-adapters-js');
