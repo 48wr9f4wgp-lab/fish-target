@@ -11,10 +11,8 @@ const c=ctx.FISH_TARGET_CATALOG;
 const expectedOfficial=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const byMaker=maker=>c.list({maker}).filter(x=>x.source.source_type==='manufacturer_official');
 
-test('multimaker catalog reaches 480 rows with ten makers',()=>{
-  assert.equal(expectedOfficial,466);
+test('Fishman-era makers remain present as later catalog batches are added',()=>{
   assert.equal(c.products.length,expectedOfficial+14);
-  assert.equal(c.products.length,480);
   for(const maker of ['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX','FISHMAN'])assert.ok(c.makers.includes(maker),maker);
   assert.equal(byMaker('TAILWALK').length,38);
   assert.equal(byMaker('JACKSON').length,31);
