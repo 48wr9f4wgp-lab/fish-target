@@ -18,7 +18,7 @@
   });
   const loadScript=(src,key)=>new Promise(resolve=>{if(document.querySelector(`script[data-extension="${key}"]`)){resolve();return}const js=document.createElement('script');js.src=versioned(src);js.async=false;js.dataset.extension=key;js.onload=resolve;js.onerror=()=>{console.warn('extension load failed',src);resolve()};document.body.appendChild(js)});
   const extensionCss=Promise.all([
-    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css']
+    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css']
   ].map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
   (async()=>{
@@ -35,7 +35,6 @@
       await loadScript('./target-methods-v1.js','target-methods-v1-js');
       await loadScript('./catalog-loader.js','catalog-loader-js');
       await loadScript('./tackle.js','tackle-js');
-      document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent='CATALOG RESEARCH · 商品CatalogはMY TACKLE初回オープン時に読み込み。DAIWA / SHIMANO公式公開スペックのproduction利用は未承認。'});
       await loadScript('./fit-explain.js','fit-explain-js');
       await loadScript('./simplify.js','simplify-js');
       await loadScript('./visual-pass.js','visual-pass-js');
@@ -44,6 +43,7 @@
       await loadScript('./result-ux-v20.js','result-ux-v20-js');
       await loadScript('./result-ux-v21.js','result-ux-v21-js');
       await loadScript('./result-ux-v23.js','result-ux-v23-js');
+      await loadScript('./app-shell-v26.js','app-shell-v26-js');
     }catch(err){console.error('extension bootstrap failed',err)}
     await extensionCss.catch(err=>console.warn('extension css bootstrap failed',err));
     await reveal();
