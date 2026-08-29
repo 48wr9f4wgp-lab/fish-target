@@ -26,12 +26,6 @@ const rows=[
 ['1.5-530A',5.38,6,103,205,1.2,'1-4','1.5-4','251787','4969363251787'],
 ['2-450A',4.51,5,102,160,1.4,'1-4','1.5-4','251794','4969363251794'],
 ['2-530A',5.38,6,102.5,220,1.4,'2-5','2-5','251800','4969363251800']
-].map(([model,length_m,pieces,closed_length_cm,weight_g,tip_diameter_mm,sinker_load_raw,leader_line_raw,product_code,jan])=>Object.freeze({
-maker:'SHIMANO',category:'rod',series:'HOLIDAY ISO',generation:'unknown',model,display_name:`HOLIDAY ISO ${model}`,status:'current',
-specs:Object.freeze({length_ft:Number((length_m*3.28084).toFixed(2)),length_m,weight_g,power:'',lure_min_g:null,lure_max_g:null,jig_max_g:null,line_pe_min:null,line_pe_max:null,pieces,rod_joint_raw:'振出',closed_length_cm,tip_diameter_mm,sinker_load_raw,leader_line_raw,product_code}),
-source:Object.freeze({source_type:'manufacturer_official',source_provider:'shimano-official-research',source_url:src,retrieved_at:'2026-08-29',last_verified:'2026-08-29',license_status:'restricted'}),
-identifiers:Object.freeze({jan})
-}));
-globalThis.FISH_TARGET_CATALOG_BATCHES=globalThis.FISH_TARGET_CATALOG_BATCHES||[];
-globalThis.FISH_TARGET_CATALOG_BATCHES.push(Object.freeze({id:'shimano-holiday-iso-2026',maker:'SHIMANO',products:Object.freeze(rows)}));
+].map(([model,length_m,pieces,closed_length_cm,weight_g,tip_diameter_mm,sinker_load_raw,leader_line_raw,product_code,jan])=>Object.freeze({maker:'SHIMANO',category:'rod',series:'HOLIDAY ISO',generation:'unknown',model,display_name:`HOLIDAY ISO ${model}`,status:'current',specs:Object.freeze({length_ft:Number((length_m*3.28084).toFixed(2)),length_m,weight_g,power:'',lure_min_g:null,lure_max_g:null,jig_max_g:null,line_pe_min:null,line_pe_max:null,pieces,rod_joint_raw:'振出',closed_length_cm,tip_diameter_mm,sinker_load_raw,leader_line_raw,product_code}),source:Object.freeze({source_type:'manufacturer_official',source_provider:'shimano-official-research',source_url:src,retrieved_at:'2026-08-29',last_verified:'2026-08-29',license_status:'restricted'}),identifiers:Object.freeze({jan})}));
+const batch=Object.freeze({id:'shimano-holiday-iso-2026',rows:Object.freeze(rows)});const reg=globalThis.FISH_TARGET_CATALOG_BATCH_ROWS||(globalThis.FISH_TARGET_CATALOG_BATCH_ROWS=[]);if(reg.some(x=>x?.id===batch.id))throw new Error('Duplicate catalog batch id: '+batch.id);reg.push(batch);
 })();
