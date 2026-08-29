@@ -42,7 +42,7 @@
     if(jan&&!/^\d{13}$/.test(jan))errors.push('invalid JAN');
     if(upc&&!/^\d{12}$/.test(upc))errors.push('invalid UPC');
     const specs=product.specs||{};
-    const numeric=['length_ft','length_m','pieces','weight_g','lure_min_g','lure_max_g','jig_max_g','line_pe_min','line_pe_max','reel_size','gear_ratio','retrieve_cm','max_drag_kg'];
+    const numeric=['length_ft','length_m','pieces','weight_g','lure_min_g','lure_max_g','jig_max_g','line_pe_min','line_pe_max','reel_size','gear_ratio','retrieve_cm','max_drag_kg','allowable_strength_kg','spool_diameter_mm','spool_stroke_mm','handle_length_mm'];
     for(const key of numeric){
       if(specs[key]!==undefined&&specs[key]!==null&&finite(specs[key])===null)errors.push(`invalid numeric spec: ${key}`);
       if(finite(specs[key])!==null&&finite(specs[key])<0)errors.push(`negative numeric spec: ${key}`);
@@ -110,7 +110,7 @@
     if(!product)return null;
     const base={id:id||'',source:'catalog',product_id:product.product_id,name:name||product.display_name,maker:product.maker,series:product.series,model:product.model,catalog_status:product.status,license_status:product.source?.license_status||'unknown',user_overrides:user_overrides&&typeof user_overrides==='object'?{...user_overrides}:{}};
     if(product.category==='rod')return {...base,length:finite(product.specs?.length_ft),power:text(product.specs?.power).toUpperCase(),maxLure:finite(product.specs?.lure_max_g)};
-    return {...base,size:finite(product.specs?.reel_size),lineType:text(lineType),lineNo:finite(lineNo)};
+    return {...base,size:finite(product.specs?.reel_size),reelSizeRaw:text(product.specs?.reel_size_raw),lineType:text(lineType),lineNo:finite(lineNo),applicationRaw:text(product.specs?.application_raw),dragTypeRaw:text(product.specs?.drag_type_raw),peCapacityRaw:text(product.specs?.pe_capacity_raw),maxDragKg:finite(product.specs?.max_drag_kg)};
   }
 
   const validation=validateCatalog(PRODUCTS);
