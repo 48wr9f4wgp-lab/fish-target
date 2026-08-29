@@ -2,7 +2,7 @@ name: rc-browser-qa
 
 on:
   push:
-    branches: [chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/catalog-lazy-load-v1, chatgpt/catalog-scale-v1, chatgpt/catalog-multimaker-v2, chatgpt/catalog-multimaker-v3, chatgpt/catalog-multimaker-v4, chatgpt/catalog-multimaker-v5, chatgpt/catalog-multimaker-v6, chatgpt/catalog-multimaker-v7, chatgpt/catalog-multimaker-v8, chatgpt/catalog-multimaker-v9, chatgpt/catalog-multimaker-v10, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2, chatgpt/target-method-expansion-v3, chatgpt/target-method-expansion-v4]
+    branches: [chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/catalog-lazy-load-v1, chatgpt/catalog-scale-v1, chatgpt/catalog-multimaker-v2, chatgpt/catalog-multimaker-v3, chatgpt/catalog-multimaker-v4, chatgpt/catalog-multimaker-v5, chatgpt/catalog-multimaker-v6, chatgpt/catalog-multimaker-v7, chatgpt/catalog-multimaker-v8, chatgpt/catalog-multimaker-v9, chatgpt/catalog-multimaker-v10, chatgpt/catalog-multimaker-v11, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2, chatgpt/target-method-expansion-v3, chatgpt/target-method-expansion-v4]
   pull_request:
 
 permissions:
@@ -34,7 +34,7 @@ jobs:
           done
           curl -fsS http://127.0.0.1:4173/dist/ >/dev/null
           case "$GITHUB_REF_NAME" in
-            chatgpt/catalog-multimaker-v*) node scripts/target-browser-qa.mjs && node scripts/catalog-lazy-browser-qa.mjs && node scripts/catalog-majorcraft-browser-qa.mjs && node scripts/catalog-vendor-browser-qa.mjs && node scripts/catalog-tict-browser-qa.mjs && node scripts/catalog-gamakatsu-browser-qa.mjs && node scripts/catalog-zenaq-browser-qa.mjs && node scripts/catalog-palms-browser-qa.mjs ;;
+            chatgpt/catalog-multimaker-v*) node scripts/target-browser-qa.mjs && node scripts/catalog-lazy-browser-qa.mjs && node scripts/catalog-majorcraft-browser-qa.mjs && node scripts/catalog-vendor-browser-qa.mjs && node scripts/catalog-tict-browser-qa.mjs && node scripts/catalog-gamakatsu-browser-qa.mjs && node scripts/catalog-zenaq-browser-qa.mjs && node scripts/catalog-palms-browser-qa.mjs && node scripts/catalog-apia-browser-qa.mjs ;;
             chatgpt/catalog-lazy-load-v*|chatgpt/catalog-scale-v*) node scripts/target-browser-qa.mjs && node scripts/catalog-lazy-browser-qa.mjs ;;
             chatgpt/target-method-expansion-v*) node scripts/target-browser-qa.mjs ;;
             *) node scripts/browser-qa.mjs && node scripts/catalog-browser-qa.mjs ;;
