@@ -4,7 +4,15 @@
   const LICENSES=['synthetic','internal','permitted','licensed','restricted','unknown'];
   const PROD_LICENSES=new Set(['internal','permitted','licensed']);
   const providers=globalThis.FISH_TARGET_CATALOG_PROVIDERS||null;
-  const research=Array.isArray(globalThis.FISH_TARGET_CATALOG_RESEARCH_ROWS)?globalThis.FISH_TARGET_CATALOG_RESEARCH_ROWS:[];
+  const adapters=globalThis.FISH_TARGET_CATALOG_ADAPTERS||null;
+  const hasExplicitResearch=Array.isArray(globalThis.FISH_TARGET_CATALOG_RESEARCH_ROWS);
+  const explicitResearch=hasExplicitResearch?globalThis.FISH_TARGET_CATALOG_RESEARCH_ROWS:[];
+  const legacyDaiwa=Array.isArray(globalThis.FISH_TARGET_DAIWA_POC_ROWS)?globalThis.FISH_TARGET_DAIWA_POC_ROWS:[];
+  const legacyShimano=Array.isArray(globalThis.FISH_TARGET_SHIMANO_POC_ROWS)?globalThis.FISH_TARGET_SHIMANO_POC_ROWS:[];
+  const legacyRegistry=Array.isArray(globalThis.FISH_TARGET_CATALOG_BATCH_ROWS)?globalThis.FISH_TARGET_CATALOG_BATCH_ROWS:[];
+  const legacyRegistryRows=legacyRegistry.flatMap(batch=>Array.isArray(batch?.rows)?batch.rows:[]);
+  const normalizeLegacy=row=>{const adapter=adapters?.byMaker?.(row?.maker);return adapter?.normalize?adapter.normalize(row):row};
+  const research=hasExplicitResearch?explicitResearch:[...legacyDaiwa,...legacyShimano,...legacyRegistryRows].map(normalizeLegacy);
   const fixtures=Array.isArray(globalThis.FISH_TARGET_CATALOG_FIXTURES)?globalThis.FISH_TARGET_CATALOG_FIXTURES:[];
   const INPUT_ROWS=[...research,...fixtures];
   const MAKERS=[...new Set([...(providers?.providers||[]).map(p=>p.maker),...INPUT_ROWS.map(p=>p?.maker).filter(Boolean)])];
@@ -60,8 +68,20 @@
   function statusInfo(status){return ({current:{label:'現行',selectable:true,needsReview:false},discontinued:{label:'廃番',selectable:true,needsReview:true},legacy:{label:'旧モデル',selectable:true,needsReview:true},unknown:{label:'状態不明',selectable:true,needsReview:true}})[status]||{label:'状態不明',selectable:true,needsReview:true}}
   function ownedSnapshot(product,{id,name,lineType='',lineNo=null,user_overrides=null}={}){if(!product)return null;const base={id:id||'',source:'catalog',product_id:product.product_id,name:name||product.display_name,maker:product.maker,series:product.series,model:product.model,catalog_status:product.status,license_status:product.source?.license_status||'unknown',user_overrides:user_overrides&&typeof user_overrides==='object'?{...user_overrides}:{}};if(product.category==='rod')return {...base,length:finite(product.specs?.length_ft),power:text(product.specs?.power).toUpperCase(),maxLure:finite(product.specs?.lure_max_g)};return {...base,size:finite(product.specs?.reel_size),reelSizeRaw:text(product.specs?.reel_size_raw),lineType:text(lineType),lineNo:finite(lineNo),applicationRaw:text(product.specs?.application_raw),dragTypeRaw:text(product.specs?.drag_type_raw),peCapacityRaw:text(product.specs?.pe_capacity_raw),maxDragKg:finite(product.specs?.max_drag_kg)}}
   const validation=validateCatalog(PRODUCTS);if(validation.length)console.warn('Development catalog validation failed',validation);
-  const researchComposition=globalThis.FISH_TARGET_CATALOG_RESEARCH_COMPOSITION||{total:research.length};
+  const fallbackResearchComposition={daiwaPoc:legacyDaiwa.length,shimanoPoc:legacyShimano.length,batches:legacyRegistry.length,batchRows:legacyRegistryRows.length,total:research.length};
+  const researchComposition=globalThis.FISH_TARGET_CATALOG_RESEARCH_COMPOSITION||fallbackResearchComposition;
   const fixtureComposition=globalThis.FISH_TARGET_CATALOG_FIXTURE_COMPOSITION||{synthetic:fixtures.length,total:fixtures.length};
-  globalThis.FISH_TARGET_CATALOG_COMPOSITION=Object.freeze({research:research.length,synthetic:fixtures.length,total:PRODUCTS.length,researchComposition,fixtureComposition});
+  globalThis.FISH_TARGET_CATALOG_COMPOSITION=Object.freeze({
+    daiwaPoc:Number(researchComposition.daiwaPoc||0),
+    shimanoPoc:Number(researchComposition.shimanoPoc||0),
+    batches:Number(researchComposition.batches||0),
+    batchRows:Number(researchComposition.batchRows||0),
+    research:research.length,
+    synthetic:fixtures.length,
+    total:PRODUCTS.length,
+    researchComposition,
+    fixtureComposition,
+    researchMode:hasExplicitResearch?'explicit':'legacy-fallback'
+  });
   globalThis.FISH_TARGET_CATALOG=Object.freeze({mode:'development',version:'V23-DEV2',makers:MAKERS.slice(),categories:CATEGORIES.slice(),statuses:STATUSES.slice(),licenseStatuses:LICENSES.slice(),products:PRODUCTS.slice(),productId,validateProduct,validateCatalog,list,search,loadPage,index:catalogIndex,makersFor:makers,seriesFor:series,get,statusInfo,ownedSnapshot,providerFor:maker=>providers?.byMaker?.(maker)||null,productionEligible:p=>PROD_LICENSES.has(p?.source?.license_status)&&providerPublishable(p)});
 })();
