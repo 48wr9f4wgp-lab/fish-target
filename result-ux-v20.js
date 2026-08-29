@@ -61,7 +61,7 @@
     const out=[],casting=castingIntent(p),knownCasting=/投げ|遠投/.test(String(reel.applicationRaw||''));
     if(casting){const known=String(reel.applicationRaw||''),level=known?(knownCasting?0:2):1;out.push({name:'用途',level,owned:known||'不明',target:'投げ専用・遠投対応',note:level===0?'専用用途が一致':level===1?'用途情報が未登録':'投げ・遠投用途とは異なる'})}
     else {
-      const rr=(nums(p?.reel).filter(v=>v>=500&&v<=30000));const target=rr.length?{min:rr[0],max:rr[1]??rr[0]}:null;
+      const rr=nums(p?.reel).filter(v=>v>=500&&v<=30000),target=rr.length?{min:rr[0],max:rr[1]??rr[0]}:null;
       if(target){if(+reel.size){const d=distance(+reel.size,target),level=d===0?0:d<=1000?1:2;out.push({name:'番手',level,owned:`${reel.size}番`,target:target.min===target.max?`${target.min}番`:`${target.min}〜${target.max}番`,note:level===0?'推奨範囲内':level===1?'1クラス差':'推奨番手との差が大きい'})}else out.push({name:'番手',level:1,owned:reel.reelSizeRaw?`SIZE ${reel.reelSizeRaw}`:'未入力',target:target.min===target.max?`${target.min}番`:`${target.min}〜${target.max}番`,note:'番手を直接比較できない'})}
     }
     const options=lineOptions(p);
@@ -113,15 +113,17 @@
     const rodTarget=lengthTarget(p.rod)?.display||p.rod||cur.rod||'推奨ロッド';
     const reelTarget=casting?'投げ専用・遠投対応':p.reel||cur.reel||'推奨リール';
     const warns=all.filter(x=>x.level===1).length,bads=all.filter(x=>x.level===2).length,detailBadge=[bads?`×${bads}`:'',warns?`△${warns}`:''].filter(Boolean).join(' ')||'○';
-    body.innerHTML=`<div class="fitV20Summary level${d.level}"><span>${mark(d.level)}</span><div><b>${esc(d.title)}</b><small>${esc(d.sub)}</small></div></div><div class="fitV20Items">${itemMarkup('ROD',rod,rodTarget)}${itemMarkup('REEL',reel,reelTarget)}</div><details class="fitV20Details"><summary><span>判定の詳細</span><em>${esc(detailBadge)}</em></summary><div class="fitV20DetailBody">${detailRows('ROD',rod)}${detailRows('REEL',reel)}<p>商品糸巻量と実際に巻いているラインは別扱い。cm / inch / エギ号数 / lbを無理に別単位へ変換しない。</p></div></details>`;
+    const legacySummary=d.level===0?'手持ちで組みやすい':'買い足し候補あり';
+    body.innerHTML=`<div class="fitSummary" hidden><b>${legacySummary}</b></div><div class="fitV20Summary level${d.level}"><span>${mark(d.level)}</span><div><b>${esc(d.title)}</b><small>${esc(d.sub)}</small></div></div><div class="fitV20Items">${itemMarkup('ROD',rod,rodTarget)}${itemMarkup('REEL',reel,reelTarget)}</div><details class="fitV20Details"><summary><span>判定の詳細</span><em>${esc(detailBadge)}</em></summary><div class="fitV20DetailBody">${detailRows('ROD',rod)}${detailRows('REEL',reel)}<p>商品糸巻量と実際に巻いているラインは別扱い。cm / inch / エギ号数 / lbを無理に別単位へ変換しない。</p></div></details>`;
   }
   function ensureDock(){
     if(document.getElementById('resultDockV20'))return;
-    document.body.insertAdjacentHTML('beforeend','<div class="resultDockV20" id="resultDockV20" hidden><button data-action="home" type="button">魚一覧</button><button data-action="save" type="button">保存</button><button class="primary" data-action="field" type="button">現場モード</button></div>');
+    document.body.insertAdjacentHTML('beforeend','<div class="resultDockV20" id="resultDockV20" hidden><button data-action="home" type="button">魚一覧</button><button data-action="save" type="button">保存</button></div>');
     const dock=document.getElementById('resultDockV20');
     dock.querySelector('[data-action="home"]').onclick=()=>typeof show==='function'&&show('home');
     dock.querySelector('[data-action="save"]').onclick=()=>document.getElementById('save')?.click();
-    dock.querySelector('[data-action="field"]').onclick=()=>document.getElementById('fieldModeBtn')?.click();
+    const field=document.getElementById('fieldModeBtn');
+    if(field){field.classList.add('primary');field.dataset.action='field';field.textContent='現場モード';dock.appendChild(field)}
   }
   function compactSecondary(){
     const details=document.querySelector('#v19Details .v19GroupBody'),actions=document.querySelector('#result .actions');
