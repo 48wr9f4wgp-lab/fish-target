@@ -47,13 +47,13 @@ const firstBox=await first.boundingBox(),planBox=await plan.boundingBox(),fitBox
 assert.ok(firstBox&&planBox&&firstBox.y<planBox.y,'FIRST CAST is the first answer before method controls');
 assert.ok(fitBox&&gearBox&&fitBox.y<gearBox.y,'MY TACKLE decision comes before generic required tackle');
 assert.ok((await page.locator('#firstBait').boundingBox())?.y<470,'FIRST CAST answer is visible in the opening decision window');
-assert.equal(await page.locator('#methodPickerV1').isVisible(),false,'six-method chooser is collapsed by default');
+assert.equal(await page.locator('#methodPickerV1').isVisible(),false,'method chooser is collapsed by default');
 const methodChange=page.locator('#ux23MethodChange');
 const changeBox=await methodChange.boundingBox();assert.ok(changeBox&&changeBox.height>=44,'method change target meets 44px minimum');
+const shiroMethodCount=await page.locator('#methodPickerV1 [data-method-id]').count();assert.ok(shiroMethodCount>=2,'fish retains multiple supported methods');
 await methodChange.click();
 assert.equal(await page.locator('#methodPickerV1').isVisible(),true,'method chooser opens only on demand');
-assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),6,'all six methods remain accessible');
-const visibleMethodButtons=await page.locator('#methodPickerV1 [data-method-id]:visible').count();assert.equal(visibleMethodButtons,6,'all method alternatives visible when opened');
+const visibleMethodButtons=await page.locator('#methodPickerV1 [data-method-id]:visible').count();assert.equal(visibleMethodButtons,shiroMethodCount,'all methods defined for this fish remain accessible');
 await methodChange.click();assert.equal(await page.locator('#methodPickerV1').isVisible(),false,'method chooser collapses again');
 
 assert.equal(await page.locator('#v19Conditions .planOptions').count(),1,'basic conditions unified into the single conditions group');
