@@ -8,13 +8,9 @@ const files=[...new Set(manifest.batches.flatMap(x=>x.files||[]))];
 const ctx=vm.createContext({console});
 for(const f of ['catalog-providers.js','catalog-adapters.js',...files,'catalog-fixtures.js','catalog.js'])vm.runInContext(read(f),ctx,{filename:f});
 const c=ctx.FISH_TARGET_CATALOG;
-const official=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 const tenryu=c.list({maker:'TENRYU'}).filter(x=>x.source.source_type==='manufacturer_official');
 
-test('TENRYU expansion reaches 541 rows, 527 official facts, 24 batches and twelve makers',()=>{
-  assert.equal(manifest.batches.length,24);
-  assert.equal(official,527);
-  assert.equal(c.products.length,541);
+test('TENRYU batch keeps all 36 official rods as later makers are added',()=>{
   assert.equal(tenryu.length,36);
   assert.ok(c.makers.includes('TENRYU'));
   assert.equal(c.validateCatalog(c.products).length,0);
