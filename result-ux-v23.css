@@ -32,7 +32,7 @@
 #result .rotation button.on{display:none!important}
 #result .switchRule{display:none!important}
 #result .favoriteToggle{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;margin:0!important;padding:0!important;border-radius:999px!important;font-size:22px!important;line-height:1!important;display:grid!important;place-items:center!important;overflow:hidden!important}
-#result #favoriteBtn.ux23FavoriteIcon::before,#result #favoriteBtn.ux23FavoriteIcon::after{content:none!important;display:none!important}
+#result #favoriteBtn::before,#result #favoriteBtn::after,#result #favoriteBtn.on::before,#result #favoriteBtn:not(.on)::before,button#favoriteBtn.favoriteToggle::before,button#favoriteBtn.favoriteToggle::after{content:none!important;display:none!important}
 #result #gear{display:grid!important;grid-template-columns:1fr!important;gap:0!important;border:1px solid #dbe6e7;border-radius:16px;overflow:hidden;background:#fff}
 #result #gear .gearItem{display:grid!important;grid-template-columns:76px minmax(0,1fr)!important;align-items:center!important;min-height:48px!important;padding:9px 12px!important;border:0!important;border-radius:0!important;background:#fff!important}
 #result #gear .gearItem+ .gearItem{border-top:1px solid #edf2f3!important}
