@@ -24,3 +24,54 @@
 #result .gearItem b{font-size:12.5px!important;line-height:1.35!important}
 .v20ResultActive .nav{display:none!important}.v20ResultActive #result .body{padding-bottom:76px!important}.resultDockV20{position:fixed;left:8px;right:8px;bottom:calc(5px + env(safe-area-inset-bottom));z-index:82;display:grid;grid-template-columns:56px 56px minmax(132px,1fr);gap:5px;padding:5px;border:1px solid rgba(210,225,226,.94);border-radius:17px;background:rgba(250,252,252,.95);box-shadow:0 8px 24px rgba(7,32,39,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}.resultDockV20[hidden]{display:none!important}.resultDockV20 button{min-height:42px;border:0;border-radius:12px;background:#eef4f4;color:#496168;font-size:9.5px;font-weight:950;padding:0 5px!important}.resultDockV20 button.primary{background:#0b333b;color:#fff;font-size:11.5px}.resultDockV20 #fieldModeBtn{display:block!important;position:static!important;width:auto!important;margin:0!important;padding:0 10px!important;min-height:42px!important;box-shadow:none!important;transform:none!important}.v20SecondaryActions{margin:10px 0 0!important;padding-top:9px;border-top:1px solid #e5eded}.v20SecondaryActions button{min-height:40px!important}
 @media(max-width:390px){.fitV20Card{padding:13px!important}.fitV20Summary{grid-template-columns:28px 1fr;padding:9px 10px}.fitV20Summary>span{width:28px;height:28px}.fitV20Summary b{font-size:13.5px}.fitV20Item{grid-template-columns:36px minmax(0,1fr) auto;padding:7px 8px;gap:6px;min-height:50px}.fitV20Item>div b{font-size:11.5px}.fitV20Item>em{font-size:8.5px}#result .target{grid-template-columns:minmax(0,1fr) 108px!important}#result .target h1{font-size:26px!important}#result .tart{height:86px!important}#result .gearItem{min-height:68px!important;padding:9px 10px!important}.resultDockV20{left:7px;right:7px;grid-template-columns:52px 52px minmax(126px,1fr);gap:4px;padding:4px}.resultDockV20 button{min-height:40px;font-size:9px}.resultDockV20 button.primary{font-size:11px}.resultDockV20 #fieldModeBtn{min-height:40px!important}}
+
+/* Result UX22: get FIRST CAST into the opening decision window */
+@media(max-width:699px){
+  #result .resultHero{padding-top:calc(11px + env(safe-area-inset-top))!important;padding-bottom:9px!important;border-radius:0 0 22px 22px!important}
+  #result .toprow{min-height:28px!important;margin-bottom:4px!important}
+  #result .back{width:36px!important;height:36px!important;border-radius:11px!important}
+  #result .target{grid-template-columns:minmax(0,1fr) 100px!important;gap:8px!important}
+  #result .target h1{font-size:25px!important;margin:2px 0 3px!important}
+  #result .tart{height:78px!important;border-radius:15px!important}
+  #result .body{padding-top:9px!important}
+  #result .planCard{padding:11px 12px 9px!important;border-radius:17px!important}
+  #result .planTop{gap:8px!important}
+  #result .recommend{font-size:8.5px!important}
+  #result .method{font-size:22px!important;margin:4px 0 0!important}
+  #result .difficultyBadge{font-size:8px!important;padding:5px 7px!important}
+  #result .methodPickerV1{margin-top:8px!important;padding-top:8px!important}
+  #result .methodPickerHead{margin-bottom:5px!important}
+  #result .methodPickerHead span,#result .methodPickerHead b{font-size:9px!important}
+  #result .methodPickerRail{gap:4px!important}
+  #result .methodPickerRail button{min-height:37px!important;padding:5px 4px!important;border-radius:10px!important}
+  #result .methodPickerRail b{font-size:10px!important}
+  #result .why{margin-top:7px!important;font-size:10.5px!important;line-height:1.45!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #result .quickPromise{display:none!important}
+  #result .planFacts{margin-top:7px!important;gap:4px!important}
+  #result .planFacts span{font-size:8px!important;padding:4px 6px!important}
+  #result .favoriteToggle{width:auto!important;min-height:30px!important;margin:7px 0 0 auto!important;padding:5px 9px!important;border-radius:999px!important;font-size:8.5px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+  #result .planOptions{margin-top:7px!important;padding-top:2px!important}
+  #result .planOptions summary{min-height:38px!important;padding:5px 1px!important}
+  #result .planOptions summary b{font-size:10px!important}
+  #result .planOptions summary small{font-size:7.5px!important}
+  #result .planOptions summary em{font-size:7.5px!important;padding:4px 6px!important}
+  #result .sectionTitle{margin-top:14px!important;margin-bottom:6px!important}
+  #result .accentTitle{font-size:18px!important}
+  #result .firstCast{padding:12px!important;border-radius:18px!important}
+  #result .firstCastKicker{font-size:8px!important}
+  #result .firstName{font-size:23px!important;margin:4px 0 9px!important}
+  #result .firstGrid{gap:5px!important}
+  #result .firstGrid div{padding:8px!important;border-radius:11px!important}
+  #result .firstGrid span{font-size:7.5px!important}
+  #result .firstGrid b{font-size:11px!important;margin-top:3px!important}
+  #result .rotationLabel{font-size:8px!important;margin:9px 0 5px!important}
+  #result .rotation{gap:5px!important}
+  #result .rotation button{min-height:38px!important;border-radius:12px!important;padding:7px 9px!important;font-size:9px!important}
+  #result .rotation button small{font-size:7px!important}
+  #result .switchRule{margin-top:7px!important;padding:8px!important;border-radius:10px!important;font-size:9px!important;line-height:1.45!important}
+  .v20ResultActive #result .body{padding-bottom:66px!important}
+  .resultDockV20{left:6px!important;right:6px!important;bottom:calc(3px + env(safe-area-inset-bottom))!important;grid-template-columns:48px 48px minmax(120px,1fr)!important;gap:3px!important;padding:3px!important;border-radius:14px!important}
+  .resultDockV20 button,.resultDockV20 #fieldModeBtn{min-height:36px!important}
+  .resultDockV20 button{font-size:8.5px!important;border-radius:10px!important}
+  .resultDockV20 button.primary{font-size:10.5px!important}
+}
