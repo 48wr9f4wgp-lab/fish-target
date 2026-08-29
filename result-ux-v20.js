@@ -117,20 +117,23 @@
     body.innerHTML=`<div class="fitSummary" hidden><b>${legacySummary}</b></div><div class="fitV20Summary level${d.level}"><span>${mark(d.level)}</span><div><b>${esc(d.title)}</b><small>${esc(d.sub)}</small></div></div><div class="fitV20Items">${itemMarkup('ROD',rod,rodTarget)}${itemMarkup('REEL',reel,reelTarget)}</div><details class="fitV20Details"><summary><span>判定の詳細</span><em>${esc(detailBadge)}</em></summary><div class="fitV20DetailBody">${detailRows('ROD',rod)}${detailRows('REEL',reel)}<p>商品糸巻量と実際に巻いているラインは別扱い。cm / inch / エギ号数 / lbを無理に別単位へ変換しない。</p></div></details>`;
   }
   function ensureDock(){
-    if(document.getElementById('resultDockV20'))return;
-    document.body.insertAdjacentHTML('beforeend','<div class="resultDockV20" id="resultDockV20" hidden><button data-action="home" type="button">魚一覧</button><button data-action="save" type="button">保存</button></div>');
-    const dock=document.getElementById('resultDockV20');
-    dock.querySelector('[data-action="home"]').onclick=()=>typeof show==='function'&&show('home');
-    dock.querySelector('[data-action="save"]').onclick=()=>document.getElementById('save')?.click();
+    let dock=document.getElementById('resultDockV20');
+    if(!dock){
+      document.body.insertAdjacentHTML('beforeend','<div class="resultDockV20" id="resultDockV20" hidden><button data-action="home" type="button">魚一覧</button><button data-action="save" type="button">保存</button></div>');
+      dock=document.getElementById('resultDockV20');
+      dock.querySelector('[data-action="home"]').onclick=()=>typeof show==='function'&&show('home');
+      dock.querySelector('[data-action="save"]').onclick=()=>document.getElementById('save')?.click();
+    }
     const field=document.getElementById('fieldModeBtn');
-    if(field){field.classList.add('primary');field.dataset.action='field';field.textContent='現場モード';dock.appendChild(field)}
+    if(field&&field.parentElement!==dock){field.classList.add('primary');field.dataset.action='field';field.textContent='現場モード';dock.appendChild(field)}
+    return dock;
   }
   function compactSecondary(){
     const details=document.querySelector('#v19Details .v19GroupBody'),actions=document.querySelector('#result .actions');
     if(details&&actions&&!actions.closest('#v19Details')){actions.classList.add('v20SecondaryActions');details.appendChild(actions)}
   }
   function syncDock(){
-    ensureDock();const on=document.getElementById('result')?.classList.contains('on'),dock=document.getElementById('resultDockV20');if(dock)dock.hidden=!on;document.body.classList.toggle('v20ResultActive',!!on);
+    const dock=ensureDock();const on=document.getElementById('result')?.classList.contains('on');if(dock)dock.hidden=!on;document.body.classList.toggle('v20ResultActive',!!on);
   }
   function apply(){renderFit();compactSecondary();syncDock()}
   ensureDock();apply();
