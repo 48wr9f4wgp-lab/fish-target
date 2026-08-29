@@ -13,12 +13,12 @@
     if(!title?.matches('h2.sectionTitle'))title=document.querySelector('#result .ux23AnswerTitle');
     if(title){
       title.classList.add('ux23AnswerTitle');
-      title.innerHTML='まず投げる・FIRST CAST<small>魚を選んだら、最初にここだけ見ればOK。</small>';
+      title.innerHTML='まずこれを投げる<small>魚を選んだら、ここだけ見ればOK。</small>';
       body.insertBefore(title,plan);
     }
     body.insertBefore(first,plan);
     const kicker=document.getElementById('firstCastKicker');if(kicker)kicker.textContent='FIRST CAST · 最初の1投';
-    const rotationLabel=document.querySelector('#result .rotationLabel');if(rotationLabel)rotationLabel.textContent='反応がなければ次へ';
+    const rotationLabel=document.querySelector('#result .rotationLabel');if(rotationLabel)rotationLabel.textContent='反応がなければ →';
 
     const gear=document.getElementById('gear'),fit=document.getElementById('tackleFitCard');
     const gearTitle=gear?.previousElementSibling?.matches('h2.sectionTitle')?gear.previousElementSibling:null;
@@ -52,9 +52,11 @@
   }
 
   function syncFavorite(){
-    const btn=document.getElementById('favoriteBtn');if(!btn)return;
-    const on=btn.getAttribute('aria-pressed')==='true';const desired=on?'★ 魚をお気に入り済み':'☆ 魚をお気に入り';
+    const btn=document.getElementById('favoriteBtn'),top=document.querySelector('#result .planCard .planTop');if(!btn)return;
+    const on=btn.getAttribute('aria-pressed')==='true';const desired=on?'★':'☆';const label=on?'魚のお気に入りを解除':'魚をお気に入りに追加';
     if(btn.textContent!==desired)btn.textContent=desired;
+    btn.setAttribute('aria-label',label);btn.setAttribute('title',label);
+    if(top&&btn.parentElement!==top)top.appendChild(btn);
     if(!btn.dataset.ux23Observed){
       btn.dataset.ux23Observed='1';
       new MutationObserver(()=>requestAnimationFrame(syncFavorite)).observe(btn,{attributes:true,attributeFilter:['aria-pressed'],childList:true,subtree:true});
@@ -87,5 +89,5 @@
   apply();
   if(typeof renderResult==='function'){const prev=renderResult;renderResult=function(...args){const out=prev.apply(this,args);apply();return out}}
   window.addEventListener('pageshow',apply);
-  globalThis.FISH_TARGET_RESULT_UX_V23=Object.freeze({version:'V23R1',render:apply});
+  globalThis.FISH_TARGET_RESULT_UX_V23=Object.freeze({version:'V23D1',render:apply});
 })();
