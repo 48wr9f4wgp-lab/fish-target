@@ -71,6 +71,9 @@ assert.match(((await favorite.textContent())||'').trim(),/^[☆★]$/,'favorite 
 assert.match((await favorite.getAttribute('aria-label'))||'',/お気に入り/,'favorite remains explicitly named for assistive tech');
 assert.equal(await favorite.evaluate(el=>el.parentElement?.classList.contains('planTop')),true,'favorite moves into method header instead of consuming a full row');
 const favoriteBox=await favorite.boundingBox();assert.ok(favoriteBox&&favoriteBox.width>=44&&favoriteBox.height>=44,'favorite target meets 44px minimum');
+const favoritePseudo=await favorite.evaluate(el=>({before:getComputedStyle(el,'::before').content,after:getComputedStyle(el,'::after').content}));
+const pseudoEmpty=v=>v==='none'||v==='normal'||v==='""'||v==="''";
+assert.ok(pseudoEmpty(favoritePseudo.before)&&pseudoEmpty(favoritePseudo.after),`favorite renders exactly one glyph with no legacy pseudo icon: ${JSON.stringify(favoritePseudo)}`);
 const backBox=await page.locator('#back').boundingBox();assert.ok(backBox&&backBox.width>=44&&backBox.height>=44,'back target meets 44px minimum');
 
 assert.equal(await page.locator('#resultDockV20').isVisible(),true,'result action dock visible');
