@@ -1,7 +1,6 @@
 (()=>{
   const LOCAL=new Set(globalThis.FISH_TARGET_REAL_FISH?.species||[]);
   const pending=new Map();
-  const mounted=new WeakSet();
   const cacheKey=name=>`ft-fish-photo-v27:${name}`;
   const titleAlias=Object.freeze({
     'ブリ・ワラサ':'ブリ','ヤマメ・イワナ':'ヤマメ','グレ':'メジナ','シーバス':'スズキ','ブラックバス':'オオクチバス'
@@ -16,7 +15,7 @@
   async function resolve(name){
     try{
       const stored=localStorage.getItem(cacheKey(name));
-      if(stored){const v=JSON.parse(stored);if(v?.url&&v?.license)return v}
+      if(stored){const v=JSON.parse(stored);if(v?.url&&v?.license&&allowed.test(v.license))return v}
     }catch{}
     const title=titleAlias[name]||name;
     const wp=`https://ja.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=name&titles=${encodeURIComponent(title)}`;
@@ -35,17 +34,28 @@
     try{localStorage.setItem(cacheKey(name),JSON.stringify(value))}catch{}
     return value;
   }
+  function clearHost(host){
+    if(!host)return;
+    host.querySelectorAll(':scope>.fishPhotoV27,:scope>.fishPhotoCreditV27').forEach(el=>el.remove());
+    host.classList.remove('fishPhotoMountedV27');
+    if(host.dataset.fishAsset==='wikimedia-licensed-photo')delete host.dataset.fishAsset;
+    delete host.dataset.fishPhotoName;
+  }
   function creditText(v){return [v.source,v.license,v.artist].filter(Boolean).join(' · ')}
   function mount(host,name){
-    if(!host||!name||LOCAL.has(name)||mounted.has(host))return;
-    mounted.add(host);
+    if(!host||!name)return;
+    if(LOCAL.has(name)){if(host.dataset.fishPhotoName)clearHost(host);return}
+    if(host.dataset.fishPhotoName===name&&host.classList.contains('fishPhotoMountedV27'))return;
+    if(host.dataset.fishPhotoName&&host.dataset.fishPhotoName!==name)clearHost(host);
+    host.dataset.fishPhotoName=name;
     let task=pending.get(name);
     if(!task){task=resolve(name).catch(()=>null);pending.set(name,task)}
     task.then(v=>{
-      if(!v||!host.isConnected)return;
+      if(!v||!host.isConnected||host.dataset.fishPhotoName!==name)return;
       const img=document.createElement('img');
       img.className='fishPhotoV27';img.alt=`${name}の実写`;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.src=v.url;
       img.addEventListener('load',()=>{
+        if(host.dataset.fishPhotoName!==name)return;
         host.querySelectorAll(':scope>.fishPhotoV27,:scope>.fishPhotoCreditV27').forEach(el=>el.remove());
         host.appendChild(img);
         const credit=document.createElement('span');credit.className='fishPhotoCreditV27';credit.textContent=creditText(v);credit.title=credit.textContent;host.appendChild(credit);
@@ -54,11 +64,23 @@
     });
   }
   const seen=new WeakSet();
-  const io='IntersectionObserver'in window?new IntersectionObserver(entries=>entries.forEach(e=>{if(!e.isIntersecting)return;const h=e.target;const n=h.closest('.fish[data-fish]')?.dataset.fish||document.getElementById('rname')?.textContent?.trim();mount(h,n);io.unobserve(h)}),{rootMargin:'220px 0px'}):null;
-  function watch(host){if(!host||seen.has(host))return;seen.add(host);if(io)io.observe(host);else{const n=host.closest('.fish[data-fish]')?.dataset.fish||document.getElementById('rname')?.textContent?.trim();mount(host,n)}}
-  function sync(){document.querySelectorAll('#grid .fish[data-fish] .art').forEach(watch);watch(document.getElementById('tart'))}
-  const observer=new MutationObserver(()=>requestAnimationFrame(sync));
-  function start(){sync();['grid','result'].map(id=>document.getElementById(id)).filter(Boolean).forEach(el=>observer.observe(el,{childList:true,subtree:true,characterData:true}));window.addEventListener('pageshow',sync)}
+  const io='IntersectionObserver'in window?new IntersectionObserver(entries=>entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const host=e.target;const name=host.closest('.fish[data-fish]')?.dataset.fish;
+    if(name)mount(host,name);
+    io.unobserve(host);
+  }),{rootMargin:'220px 0px'}):null;
+  function watchGrid(host){if(!host||seen.has(host))return;seen.add(host);if(io)io.observe(host);else mount(host,host.closest('.fish[data-fish]')?.dataset.fish)}
+  function sync(){
+    document.querySelectorAll('#grid .fish[data-fish] .art').forEach(watchGrid);
+    const detail=document.getElementById('tart');
+    const name=document.getElementById('rname')?.textContent?.trim();
+    if(detail&&name)mount(detail,name);
+  }
+  let scheduled=false;
+  const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;sync()})};
+  const observer=new MutationObserver(schedule);
+  function start(){sync();['grid','result'].map(id=>document.getElementById(id)).filter(Boolean).forEach(el=>observer.observe(el,{childList:true,subtree:true,characterData:true}));window.addEventListener('pageshow',schedule)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({version:'V27',provider:'Wikimedia Commons',policy:'licensed-photo-only-with-svg-offline-fallback',localSpecies:Object.freeze([...LOCAL])});
+  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({version:'V27',provider:'Wikimedia Commons',policy:'licensed-photo-only-with-svg-offline-fallback',localSpecies:Object.freeze([...LOCAL]),aliases:titleAlias});
 })();
