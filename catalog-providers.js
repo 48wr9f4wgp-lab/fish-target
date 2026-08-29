@@ -16,7 +16,8 @@
     research('tict-official-research','TICT','TICT official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
     research('gamakatsu-official-research','GAMAKATSU','Gamakatsu / LUXXE official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
     research('zenaq-official-research','ZENAQ','ZENAQ official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
-    research('palms-official-research','PALMS','PALMS official-site factual-spec research only. Production publication remains disabled until rights are approved.')
+    research('palms-official-research','PALMS','PALMS official-site factual-spec research only. Production publication remains disabled until rights are approved.'),
+    research('apia-official-research','APIA','APIA official rod-spec factual research only. Production publication remains disabled until rights are approved.')
   ];
   const PRODUCTION_LICENSES=new Set(['internal','permitted','licensed']);
   const byMaker=maker=>PROVIDERS.find(p=>p.maker===maker)||null;
