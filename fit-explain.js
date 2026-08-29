@@ -23,6 +23,8 @@
     const n=nums(s).filter(v=>v>=500&&v<=30000);
     return n.length?{min:n[0],max:n[1]??n[0]}:null;
   };
+  const dedicatedCastingIntent=p=>/(投げ専用|投げ用リール|遠投リール|投げ・遠投)/.test(String(p?.reel||''));
+  const dragIntent=p=>{const s=String(p?.reel||'');if(/ドラグ(?:付き|あり)/.test(s))return 'drag';if(/ドラグ(?:レス|なし)/.test(s))return 'no-drag';return null};
   const lineOptions=s=>String(s||'').split(/\s*\/\s*/).map(part=>{
     const type=/\bPE\b/i.test(part)?'PE':/ナイロン/.test(part)?'ナイロン':/フロロ/.test(part)?'フロロ':null;
     if(!type)return null;
@@ -68,7 +70,16 @@
     const target=reelRange(p.reel);
     if(target){
       if(+reel.size){const d=distance(+reel.size,target),level=d===0?0:d<=1000?1:2;out.push({name:'番手',level,owned:`${reel.size}番`,target:fmtRange(target,'番'),note:levelText(level,'推奨範囲内','1クラス差。糸巻量・重量を確認','推奨番手から差が大きい')})}
-      else out.push({name:'番手',level:1,owned:'未入力',target:fmtRange(target,'番'),note:'番手未入力のため要確認'});
+      else out.push({name:'番手',level:1,owned:reel.reelSizeRaw?`SIZE ${reel.reelSizeRaw}`:'未入力',target:fmtRange(target,'番'),note:'一般スピニング番手ではないため直接比較しない'});
+    }
+    if(dedicatedCastingIntent(p)){
+      const known=String(reel.applicationRaw||'');const level=known?(/投げ|遠投/.test(known)?0:2):1;
+      out.push({name:'リール種別',level,owned:known||'不明',target:'投げ・遠投専用',note:levelText(level,'専用用途が一致','商品種別が未登録のため要確認','投げ・遠投専用ではない')});
+    }
+    const drag=dragIntent(p);
+    if(drag){
+      const known=String(reel.dragTypeRaw||''),ok=drag==='drag'?/あり|付き/.test(known):/なし|レス/.test(known),level=known?(ok?0:2):1;
+      out.push({name:'ドラグ種別',level,owned:known||'不明',target:drag==='drag'?'ドラグあり':'ドラグなし',note:levelText(level,'指定と一致','商品仕様が未登録のため要確認','指定と異なる')});
     }
     const options=lineOptions(p.line);
     if(options.length){
