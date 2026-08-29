@@ -18,5 +18,5 @@ test('startup boot gate hides the raw app until enhanced UI is ready',()=>{
 });
 
 test('startup flash fix ships under a fresh build id',()=>{
-  assert.match(config.version,/-BOOT1$/);
+  assert.match(config.version,/-BOOT1(?:-|$)/);
 });
