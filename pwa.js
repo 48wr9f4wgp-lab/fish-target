@@ -18,7 +18,7 @@
   });
   const loadScript=(src,key)=>new Promise(resolve=>{if(document.querySelector(`script[data-extension="${key}"]`)){resolve();return}const js=document.createElement('script');js.src=versioned(src);js.async=false;js.dataset.extension=key;js.onload=resolve;js.onerror=()=>{console.warn('extension load failed',src);resolve()};document.body.appendChild(js)});
   const extensionCss=Promise.all([
-    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./visual-v8.css','visual-v8-css']
+    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css']
   ].map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
   (async()=>{
@@ -41,6 +41,7 @@
       await loadScript('./visual-pass.js','visual-pass-js');
       await loadScript('./fish-real.js','fish-real-js');
       await loadScript('./visual-v8.js','visual-v8-js');
+      await loadScript('./result-ux-v20.js','result-ux-v20-js');
     }catch(err){console.error('extension bootstrap failed',err)}
     await extensionCss.catch(err=>console.warn('extension css bootstrap failed',err));
     await reveal();
