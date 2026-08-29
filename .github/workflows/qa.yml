@@ -3,7 +3,7 @@ name: rc-qa
 on:
   pull_request:
   push:
-    branches: [main, chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/catalog-lazy-load-v1, chatgpt/catalog-scale-v1, chatgpt/catalog-multimaker-v2, chatgpt/catalog-multimaker-v3, chatgpt/catalog-multimaker-v4, chatgpt/catalog-multimaker-v5, chatgpt/catalog-multimaker-v6, chatgpt/catalog-multimaker-v7, chatgpt/catalog-multimaker-v8, chatgpt/catalog-multimaker-v9, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2, chatgpt/target-method-expansion-v3, chatgpt/target-method-expansion-v4]
+    branches: [main, chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/catalog-lazy-load-v1, chatgpt/catalog-scale-v1, chatgpt/catalog-multimaker-v2, chatgpt/catalog-multimaker-v3, chatgpt/catalog-multimaker-v4, chatgpt/catalog-multimaker-v5, chatgpt/catalog-multimaker-v6, chatgpt/catalog-multimaker-v7, chatgpt/catalog-multimaker-v8, chatgpt/catalog-multimaker-v9, chatgpt/catalog-multimaker-v10, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2, chatgpt/target-method-expansion-v3, chatgpt/target-method-expansion-v4]
 
 permissions:
   contents: read
