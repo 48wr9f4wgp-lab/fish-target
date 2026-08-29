@@ -26,6 +26,7 @@
   const powerRange=s=>{const tail=String(s||'').split('/').slice(1).join('/').trim().toUpperCase();if(!tail||/^\d/.test(tail))return null;const hits=POWER.filter(p=>new RegExp(`(^|[^A-Z])${p}([^A-Z]|$)`).test(tail));if(!hits.length)return null;const ranks=hits.map(p=>POWER.indexOf(p));return {min:Math.min(...ranks),max:Math.max(...ranks)}};
   const reelRange=s=>{const n=nums(s).filter(v=>v>=500&&v<=30000);return n.length?{min:n[0],max:n[1]??n[0]}:null};
   const dedicatedCastingIntent=p=>/(投げ専用|投げ用リール|遠投リール|投げ・遠投)/.test(String(p?.reel||''));
+  const castingPreferenceIntent=p=>dedicatedCastingIntent(p)||(String(p?.method||'')==='投げ釣り'&&/投げ竿/.test(String(p?.rod||'')));
   const dragIntent=p=>{const s=String(p?.reel||'');if(/ドラグ(?:付き|あり)/.test(s))return 'drag';if(/ドラグ(?:レス|なし)/.test(s))return 'no-drag';return null};
   const lineOptions=s=>String(s||'').split(/\s*\/\s*/).map(part=>{const type=/\bPE\b/i.test(part)?'PE':/ナイロン/.test(part)?'ナイロン':/フロロ/.test(part)?'フロロ':null;if(!type)return null;const no=unitRange(part,'号');if(no)return {type,unit:'号',range:no};const lb=unitRange(part,'lb\\b');if(lb)return {type,unit:'lb',range:lb};return {type,unit:null,range:null}}).filter(Boolean);
   const distance=(v,r)=>v<r.min?r.min-v:v>r.max?v-r.max:0;
@@ -38,14 +39,15 @@
     const worst=checks.length?Math.max(...checks):1;return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
   }
   function reelFit(reel,p){
-    const checks=[];const target=reelRange(p.reel);if(target){if(+reel.size){const d=distance(+reel.size,target);checks.push(d===0?0:d<=1000?1:2)}else checks.push(1)}
-    if(dedicatedCastingIntent(p)){if(reel.applicationRaw)checks.push(/投げ|遠投/.test(reel.applicationRaw)?0:2);else checks.push(1)}
+    const checks=[],casting=castingPreferenceIntent(p),knownCasting=/投げ|遠投/.test(String(reel.applicationRaw||'')),target=reelRange(p.reel);
+    if(target&&!(casting&&knownCasting)){if(+reel.size){const d=distance(+reel.size,target);checks.push(d===0?0:d<=1000?1:2)}else checks.push(1)}
+    if(casting){if(reel.applicationRaw)checks.push(knownCasting?0:2);else checks.push(1)}
     const drag=dragIntent(p);if(drag){if(reel.dragTypeRaw){const ok=drag==='drag'?/あり|付き/.test(reel.dragTypeRaw):/なし|レス/.test(reel.dragTypeRaw);checks.push(ok?0:2)}else checks.push(1)}
     const options=lineOptions(p.line);if(options.length){const matched=reel.lineType?options.find(x=>x.type===reel.lineType):null;checks.push(reel.lineType?(matched?0:1):1);if(matched?.unit==='号'){if(+reel.lineNo){const d=distance(+reel.lineNo,matched.range);checks.push(d===0?0:d<=0.5?1:2)}else checks.push(1)}else if(matched?.unit==='lb')checks.push(1)}
     const worst=checks.length?Math.max(...checks):1;return {level:worst,label:worst===0?'そのまま使いやすい':worst===1?'条件付きで候補':'推奨から外れ気味'};
   }
 
-  globalThis.FISH_TARGET_TACKLE_LOGIC=Object.freeze({weightRange,lineOptions,rodFit,reelFit,dedicatedCastingIntent,dragIntent,normalizeOwned,applyOwnedEdit});
+  globalThis.FISH_TARGET_TACKLE_LOGIC=Object.freeze({weightRange,lineOptions,rodFit,reelFit,dedicatedCastingIntent,castingPreferenceIntent,dragIntent,normalizeOwned,applyOwnedEdit});
   const best=(items,fn)=>items.map(x=>({...x,fit:fn(x)})).sort((a,b)=>a.fit.level-b.fit.level)[0]||null;
   const statusMeta=status=>catalog?.statusInfo?.(status)||{label:'状態不明',needsReview:true};
   const statusFor=x=>catalog?.get?.(x?.product_id)?.status||x?.catalog_status||'unknown';
@@ -90,7 +92,7 @@
   }
 
   function renderHomeSummary(){const box=document.getElementById('tackleSummary');if(!box)return;const db=read();if(!db.rods.length&&!db.reels.length){box.innerHTML='<button class="tackleEmptyCta" id="tackleEmptyCta" type="button"><b>手持ちタックルを登録</b><span>商品から選択 / 旧モデルは手入力。魚ごとに適合を自動判定 ›</span></button>';document.getElementById('tackleEmptyCta').onclick=openSheet;return}box.innerHTML=`<div class="tackleCount"><div><span>ROD</span><b>${db.rods.length}</b></div><div><span>REEL</span><b>${db.reels.length}</b></div><p>登録済みタックルから、魚ごとに近い組み合わせを自動表示。</p></div>`}
-  function renderFit(){const body=document.getElementById('tackleFitBody');if(!body||typeof cur==='undefined'||!cur)return;const db=read(),p=typeof basePlan==='function'?basePlan():cur,r=typeof currentRotation==='function'?currentRotation(p):null;if(!db.rods.length&&!db.reels.length){body.innerHTML='<div class="fitEmpty"><b>MY TACKLE未登録</b><span>ロッドとリールを登録すると、このプランに使えるか照合する。</span><button id="fitEmptyAdd">登録する</button></div>';document.getElementById('fitEmptyAdd').onclick=openSheet;return}const rod=best(db.rods,x=>rodFit(x,p,r)),reel=best(db.reels,x=>reelFit(x,p));const item=(kind,x,target)=>x?`<div class="fitItem level${x.fit.level}"><div class="fitKind">${kind}</div><div><b>${esc(x.name)}</b><span>${esc(x.fit.label)}</span></div><small>推奨 ${esc(target)}</small></div>`:`<div class="fitItem level1"><div class="fitKind">${kind}</div><div><b>未登録</b><span>判定できません</span></div><small>推奨 ${esc(target)}</small></div>`;const worst=Math.max(rod?.fit.level??1,reel?.fit.level??1),summary=worst===0?'手持ちで組みやすい':worst===1?'一部条件を確認':'買い足し候補あり';body.innerHTML=`<div class="fitSummary level${worst}"><span>判定</span><b>${summary}</b></div><div class="fitItems">${item('ROD',rod,p.rod||cur.rod)}${item('REEL',reel,p.reel||cur.reel)}</div><p class="fitNote">入力済みの長さ・パワー・重量上限、番手・ライン規格・明示された専用リール種別だけを簡易照合。商品糸巻量と実際に巻いているラインは分離し、cm/inch/エギ号数をgへ誤変換せず、lb表記は自動判定しない。</p>`}
+  function renderFit(){const body=document.getElementById('tackleFitBody');if(!body||typeof cur==='undefined'||!cur)return;const db=read(),p=typeof basePlan==='function'?basePlan():cur,r=typeof currentRotation==='function'?currentRotation(p):null;if(!db.rods.length&&!db.reels.length){body.innerHTML='<div class="fitEmpty"><b>MY TACKLE未登録</b><span>ロッドとリールを登録すると、このプランに使えるか照合する。</span><button id="fitEmptyAdd">登録する</button></div>';document.getElementById('fitEmptyAdd').onclick=openSheet;return}const rod=best(db.rods,x=>rodFit(x,p,r)),reel=best(db.reels,x=>reelFit(x,p));const item=(kind,x,target)=>x?`<div class="fitItem level${x.fit.level}"><div class="fitKind">${kind}</div><div><b>${esc(x.name)}</b><span>${esc(x.fit.label)}</span></div><small>推奨 ${esc(target)}</small></div>`:`<div class="fitItem level1"><div class="fitKind">${kind}</div><div><b>未登録</b><span>判定できません</span></div><small>推奨 ${esc(target)}</small></div>`;const worst=Math.max(rod?.fit.level??1,reel?.fit.level??1),summary=worst===0?'手持ちで組みやすい':worst===1?'一部条件を確認':'買い足し候補あり';body.innerHTML=`<div class="fitSummary level${worst}"><span>判定</span><b>${summary}</b></div><div class="fitItems">${item('ROD',rod,p.rod||cur.rod)}${item('REEL',reel,p.reel||cur.reel)}</div><p class="fitNote">入力済みの長さ・パワー・重量上限、番手・ライン規格・投げ釣り時の専用リール適性を簡易照合。商品糸巻量と実際に巻いているラインは分離し、cm/inch/エギ号数をgへ誤変換せず、lb表記は自動判定しない。</p>`}
   function refresh(){renderOwned();renderHomeSummary();renderFit()}
   ensureUI();refresh();if(typeof renderResult==='function'){const prev=renderResult;renderResult=function(...args){const out=prev.apply(this,args);renderFit();return out}}
 })();
