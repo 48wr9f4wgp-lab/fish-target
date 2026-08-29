@@ -41,8 +41,12 @@ async function backHome(page){
   else if(await page.locator('#back').isVisible())await page.locator('#back').click();
   await page.waitForTimeout(80);
   if(!(await page.locator('#home.on').count())){
-    const homeNav=page.locator('.nav button[data-v="home"]');
-    if(await homeNav.count()&&await homeNav.isVisible())await homeNav.click();
+    const appHome=page.locator('#appTabBarV26 button[data-app-tab="home"]');
+    if(await appHome.count()&&await appHome.isVisible())await appHome.click();
+    else {
+      const homeNav=page.locator('.nav button[data-v="home"]');
+      if(await homeNav.count()&&await homeNav.isVisible())await homeNav.click();
+    }
   }
   await page.locator('#home.on').waitFor({state:'visible'});
 }
@@ -58,7 +62,9 @@ async function openFilters(page){
 async function restoreSaved(page,fish){
   await page.reload({waitUntil:'networkidle'});
   await waitExpanded(page);
-  await page.locator('.nav button[data-v="saved"]').click();
+  const appSaved=page.locator('#appTabBarV26 button[data-app-tab="saved"]');
+  if(await appSaved.count()&&await appSaved.isVisible())await appSaved.click();
+  else await page.locator('.nav button[data-v="saved"]').click();
   await page.locator('#savedList .saveRow').filter({hasText:fish}).locator('.op').click();
   await page.locator('#result.on').waitFor({state:'visible'});
 }
@@ -93,7 +99,6 @@ async function runViewport(browser,{width,height}){
     await page.locator('#clearSearch').click();
   }
 
-  // Legacy exact propagation + MY TACKLE gate through the current UX23 method-change path.
   await openTarget(page,'サバ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),4,`${width}: サバ method count`);
   assert.equal(await text(page,'#pmethod'),'サビキ釣り',`${width}: default method`);
@@ -133,14 +138,12 @@ async function runViewport(browser,{width,height}){
     await backHome(page);
   }else await backHome(page);
 
-  // V1 -> V2 cross-phase regression.
   await openTarget(page,'カレイ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="choinage"]').count(),1,`${width}: karei cross-phase method`);
   await selectMethod(page,'choinage');
   assert.equal(await text(page,'#pmethod'),'ちょい投げ',`${width}: karei choinage selectable`);
   await backHome(page);
 
-  // V1 -> V3 cross-phase regression.
   await openTarget(page,'ウグイ');
   assert.ok(await page.locator('#methodPickerV1 [data-method-id]').count()>=3,`${width}: ugui method density`);
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="lure"]').count(),1,`${width}: ugui V3 lure attached`);
@@ -150,7 +153,6 @@ async function runViewport(browser,{width,height}){
   assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'緩流部と流れの境を探す',`${width}: ugui V3 step1`);
   await backHome(page);
 
-  // True TARGET3 fish remains healthy.
   await openTarget(page,'ニゴイ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: nigoi methods`);
   await selectMethod(page,'lure');
@@ -160,7 +162,6 @@ async function runViewport(browser,{width,height}){
   await noOverflow(page,width,`${width} TARGET3 new target`);
   await backHome(page);
 
-  // TARGET4 exact propagation gate: canonical Ayu receives a distinct lure Game Plan.
   await openTarget(page,'アユ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="ayuing"]').count(),1,`${width}: ayuing attached`);
   await selectMethod(page,'ayuing');
@@ -188,7 +189,6 @@ async function runViewport(browser,{width,height}){
     await backHome(page);
   }else await backHome(page);
 
-  // V1 fish receiving V4 boat/shore methods must not lose its original plans.
   await openTarget(page,'カサゴ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="saguri"]').count(),1,`${width}: kasago saguri attached`);
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="boat_doutuki"]').count(),1,`${width}: kasago boat doutuki attached`);
@@ -197,7 +197,6 @@ async function runViewport(browser,{width,height}){
   assert.equal(await text(page,'#firstBait'),'魚切身/虫エサ',`${width}: kasago boat FIRST CAST`);
   await backHome(page);
 
-  // V2 -> V3 persistence regression remains intact.
   await openTarget(page,'ワカサギ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="ice"]').count(),1,`${width}: wakasagi TARGET3 ice attached`);
   await selectMethod(page,'ice');
@@ -218,7 +217,6 @@ async function runViewport(browser,{width,height}){
     await backHome(page);
   }else await backHome(page);
 
-  // TARGET2 representative remains healthy after four composition layers.
   await openTarget(page,'コウイカ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: kouika methods`);
   await selectMethod(page,'tera');
@@ -233,7 +231,6 @@ async function runViewport(browser,{width,height}){
     assert.ok(await page.locator('#rodCatalogMaker option').count()>=2,'catalog maker selector survives TARGET4');
     await page.locator('#tackleClose').click();
 
-    // V4 data must survive a cold offline reload and still expose its new method.
     await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));
     await page.reload({waitUntil:'networkidle'});
     await waitExpanded(page);
