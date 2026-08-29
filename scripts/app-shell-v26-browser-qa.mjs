@@ -16,7 +16,7 @@ assert.equal(tabs.length,3,'three primary app tabs');assert.ok(tabs.every(x=>x.h
 const cards=await page.locator('#grid .fish.discoveryCardV26').count();assert.ok(cards>=6,'fish discovery cards upgraded');
 const homeOverflow=await page.evaluate(()=>{
   const vw=innerWidth;
-  const offenders=[...document.querySelectorAll('body *')].map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName,id:el.id,cls:String(el.className||'').slice(0,120),left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scroll:el.scrollWidth}}).filter(x=>x.right>vw+1||x.left<-1||x.width>vw+1).sort((a,b)=>b.right-a.right).slice(0,12);
+  const offenders=[...document.querySelectorAll('body *')].map(el=>{const r=el.getBoundingClientRect();const parent=el.parentElement;return {tag:el.tagName,id:el.id,cls:String(el.className||'').slice(0,120),text:(el.textContent||'').trim().replace(/\s+/g,' ').slice(0,80),parent:parent?`${parent.tagName}#${parent.id}.${String(parent.className||'').replace(/\s+/g,'.').slice(0,100)}`:'',left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),scroll:el.scrollWidth,overflow:getComputedStyle(parent||el).overflowX}}).filter(x=>x.right>vw+1||x.left<-1||x.width>vw+1).sort((a,b)=>b.right-a.right).slice(0,12);
   return {doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:vw,offenders};
 });
 assert.ok(homeOverflow.doc<=376&&homeOverflow.body<=376,`V26 375 home overflow: ${JSON.stringify(homeOverflow)}`);
