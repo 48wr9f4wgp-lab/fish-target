@@ -40,10 +40,10 @@ Boundaries:
 - `catalog-fixtures.js` owns synthetic development fixtures only.
 - `catalog.js` composes both for the current development runtime.
 - Legacy direct-load compatibility retained without repopulating fixture boundary with factual rows.
-- `catalog-research.js` is now shipped as a lazy runtime asset and remains outside install-time PWA shell.
+- `catalog-research.js` is shipped as a lazy runtime asset and remains outside install-time PWA shell.
 
 ### C. Generic Catalog Contract Gate
-`scripts/catalog-contract-qa.mjs` now validates all catalog batches through one central contract:
+`scripts/catalog-contract-qa.mjs` validates all catalog batches through one central contract:
 - manifest/batch integrity
 - expected row counts
 - maker consistency
@@ -112,7 +112,21 @@ Current contract target: 150 globally unique plan IDs.
 - Regression/build/catalog contract run in `rc-qa`.
 - Current browser suite routes PRs using `GITHUB_HEAD_REF`, avoiding stale branch detection from `refs/pull/*/merge`.
 - Domain registry browser QA validates actual 60-species / 150-plan runtime.
-- Workflow concurrency cancels superseded future runs so rapid data/import commits do not accumulate redundant CI work.
+- Workflow concurrency is enabled so future superseded PR runs are cancelled instead of accumulating indefinitely.
+
+## QA state
+Confirmed green checkpoint before the final registry/CI-only commits:
+- `rc-qa`: PASS with 197/197 tests at the catalog architecture checkpoint.
+- Generic catalog contract: PASS for 41 batches / 19 makers / 946 research / 14 synthetic / 960 runtime / 516 JAN.
+- Catalog scale gate: PASS at 1k / 5k / 10k products.
+- Method Registry-inclusive regression SHA `d04d6cc4a6135e8d20594ccf81a8147977f59431`: `rc-qa` PASS.
+
+Still required before this branch is considered verified:
+- `rc-browser-qa` PASS on the latest branch HEAD, including the domain registry browser gate.
+- `rc-qa` PASS on the same latest HEAD after workflow-concurrency/doc-only commits.
+- iPhone/device verification remains separate and required for visual/photo acceptance.
+
+Do not report Platform Architecture v1 as complete until the same latest HEAD has both automated gates green.
 
 ## Next migration phases
 
