@@ -1,0 +1,9 @@
+.fishPhotoV27{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity .18s ease;pointer-events:none}
+.fishPhotoMountedV27>.fishPhotoV27{opacity:1}
+.fishPhotoMountedV27>.speciesSvg{opacity:0}
+.fishPhotoMountedV27{background:linear-gradient(145deg,rgba(6,29,40,.16),rgba(66,190,171,.08))}
+.fishPhotoCreditV27{position:absolute;right:5px;bottom:4px;z-index:3;max-width:78%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 5px;border-radius:999px;background:rgba(4,20,27,.58);color:rgba(255,255,255,.82);font-size:7px;line-height:1.2;letter-spacing:.01em;pointer-events:none;backdrop-filter:blur(4px)}
+#result .tart .fishPhotoV27{object-fit:contain;padding:3%;filter:drop-shadow(0 7px 12px rgba(0,0,0,.24))}
+#result .tart .fishPhotoCreditV27{font-size:7.5px;right:6px;bottom:5px}
+@media(max-width:699px){#home .visualFishCard .art .fishPhotoV27{object-fit:cover}}
+@media(prefers-reduced-motion:reduce){.fishPhotoV27{transition:none}}
