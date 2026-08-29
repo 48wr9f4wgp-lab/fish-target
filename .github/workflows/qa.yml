@@ -18,8 +18,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Syntax, build, regression, and catalog scale
+      - name: Syntax, build, regression, and catalog gates
         run: |
           npm run test:syntax
           npm test
+          npm run catalog:contract
           node scripts/catalog-scale-qa.mjs
