@@ -42,6 +42,7 @@
       await loadScript('./fish-real.js','fish-real-js');
       await loadScript('./visual-v8.js','visual-v8-js');
       await loadScript('./result-ux-v20.js','result-ux-v20-js');
+      await loadScript('./result-ux-v21.js','result-ux-v21-js');
     }catch(err){console.error('extension bootstrap failed',err)}
     await extensionCss.catch(err=>console.warn('extension css bootstrap failed',err));
     await reveal();
