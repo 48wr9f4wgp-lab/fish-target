@@ -1,0 +1,74 @@
+/* V26 App Shell Visual Rebuild — Surfline x AllTrails x Fishbrain principles */
+:root{
+  --v26-deep:#061f27;
+  --v26-deep2:#0a3842;
+  --v26-cyan:#64e0d2;
+  --v26-cyan2:#23a99d;
+  --v26-ink:#0e252c;
+  --v26-muted:#71858a;
+  --v26-bg:#edf4f4;
+  --v26-glass:rgba(246,250,250,.78);
+  --v26-line:rgba(102,137,143,.18);
+  --v26-shadow:0 16px 38px rgba(4,31,38,.12);
+}
+html.app-shell-v26,html.app-shell-v26 body{background:radial-gradient(circle at 50% -10%,#dcefee 0,#edf4f4 36%,#f4f7f7 100%)!important}
+html.app-shell-v26 body{padding-bottom:88px!important}
+html.app-shell-v26 .nav{display:none!important}
+
+/* Native-style global shell */
+.appTabBarV26{position:fixed;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));z-index:2600;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px;border:1px solid rgba(107,146,151,.18);border-radius:24px;background:rgba(244,249,249,.82);backdrop-filter:blur(22px) saturate(1.15);-webkit-backdrop-filter:blur(22px) saturate(1.15);box-shadow:0 16px 42px rgba(4,31,38,.17),inset 0 1px 0 rgba(255,255,255,.86)}
+.appTabBarV26 button{min-height:52px;border:0;border-radius:18px;background:transparent;color:#71878c;font:inherit;display:grid;place-items:center;align-content:center;gap:2px}
+.appTabBarV26 button.on{background:linear-gradient(145deg,#082a33,#0b434d);color:white;box-shadow:0 8px 18px rgba(3,34,41,.16)}
+.appTabBarV26 .tabIcon{font-size:18px;line-height:1}.appTabBarV26 b{font-size:11px;letter-spacing:.04em}
+body.resultOpenV26 .appTabBarV26{transform:translateY(130%);pointer-events:none;opacity:0}
+.appTabBarV26{transition:transform .2s ease,opacity .2s ease}
+
+/* Home becomes visual discovery rather than web list */
+#home .hero{border-radius:0 0 34px 34px!important;box-shadow:0 18px 40px rgba(3,31,38,.16)!important;overflow:hidden!important}
+#home .hero:after{content:"";position:absolute;inset:auto -10% -36% 24%;height:62%;border:1px solid rgba(104,224,211,.12);border-radius:50%;transform:rotate(-7deg);pointer-events:none}
+#home .grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:4px 14px 108px!important}
+#home .fish.discoveryCardV26{display:block!important;min-height:222px!important;border:1px solid rgba(99,137,143,.17)!important;border-radius:24px!important;overflow:hidden!important;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(239,246,246,.96))!important;box-shadow:0 10px 24px rgba(7,38,45,.08)!important;position:relative!important;padding:0!important;text-align:left!important}
+#home .fish.discoveryCardV26 .art{width:100%!important;height:126px!important;border:0!important;border-radius:0!important;background:radial-gradient(circle at 50% 45%,#e4f3f1 0,#d9ebe8 58%,#cfe2e0 100%)!important;overflow:hidden!important}
+#home .fish.discoveryCardV26 .art img,#home .fish.discoveryCardV26 .art svg{width:88%!important;height:88%!important;object-fit:contain!important;filter:drop-shadow(0 10px 12px rgba(16,65,72,.16))!important}
+#home .fish.discoveryCardV26>div:not(.art){padding:13px 14px 15px!important}
+#home .fish.discoveryCardV26 h3{font-size:20px!important;line-height:1.15!important;margin:0 0 7px!important;color:#10272d!important}
+#home .fish.discoveryCardV26 p{font-size:11px!important;line-height:1.45!important;color:#72878b!important;margin:0 0 7px!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+#home .fish.discoveryCardV26 .difficulty,#home .fish.discoveryCardV26 .tag{font-size:9px!important}
+
+/* Result is an app workspace with local segmented rail */
+#resultRailV26{position:sticky;top:max(0px,env(safe-area-inset-top));z-index:1500;margin:-1px 12px 12px;padding:5px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border:1px solid rgba(97,138,143,.16);border-radius:18px;background:rgba(241,247,247,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 9px 22px rgba(6,37,44,.10)}
+#resultRailV26 button{height:42px;border:0;border-radius:13px;background:transparent;color:#657c81;font-weight:800;font-size:11px;letter-spacing:.10em}
+#resultRailV26 button.on{background:linear-gradient(145deg,#082a33,#0c414b);color:#fff}
+#result .body{padding-bottom:96px!important}
+#result .sectionTitle{margin-top:24px!important}
+
+/* Tackle sheet becomes native bottom sheet / control surface */
+.tackleBackdrop{background:rgba(2,20,25,.56)!important;backdrop-filter:blur(5px)!important;-webkit-backdrop-filter:blur(5px)!important}
+.appTackleSheetV26{top:auto!important;bottom:0!important;height:min(88dvh,760px)!important;border-radius:32px 32px 0 0!important;background:linear-gradient(180deg,#f7fbfb,#eef5f5)!important;box-shadow:0 -24px 70px rgba(2,24,30,.25)!important;border:1px solid rgba(113,151,156,.16)!important}
+.appTackleSheetV26:before{content:"";position:absolute;top:8px;left:50%;width:44px;height:5px;border-radius:999px;transform:translateX(-50%);background:rgba(84,111,116,.25)}
+.appTackleSheetV26 .tackleSheetHead{padding-top:24px!important;background:transparent!important;border-bottom:1px solid rgba(106,143,149,.12)!important}
+.appTackleSheetV26 #tackleClose{width:44px!important;height:44px!important;border-radius:16px!important;background:#e7f0f0!important;color:#183b43!important;font-size:0!important}
+.appTackleSheetV26 #tackleClose:after{content:"×";font-size:27px;font-weight:400}
+.tackleSheetIntroV26{margin:0 0 14px;padding:14px 16px;border-radius:18px;background:linear-gradient(145deg,#082d35,#0c434c);color:white;display:grid;gap:4px}
+.tackleSheetIntroV26 b{font-size:11px;letter-spacing:.14em;color:var(--v26-cyan)}
+.tackleSheetIntroV26 span{font-size:12px;color:rgba(255,255,255,.75)}
+.appTackleSheetV26 .tackleFormCard{border-radius:24px!important;border:1px solid rgba(105,143,149,.17)!important;background:rgba(255,255,255,.86)!important;box-shadow:0 10px 24px rgba(7,38,45,.07)!important}
+.appTackleSheetV26 .userCatalogNote{padding:10px 12px!important;border:0!important;border-radius:14px!important;background:#e9f5f3!important;color:#37716d!important;font-size:11px!important}
+.appTackleSheetV26 select,.appTackleSheetV26 input{min-height:50px!important;border-radius:16px!important;background:#f7fbfb!important;border-color:rgba(106,143,149,.24)!important}
+.appTackleSheetV26 .tackleAdd{min-height:52px!important;border-radius:17px!important;background:linear-gradient(145deg,#082d35,#0c434c)!important;box-shadow:0 8px 18px rgba(5,37,44,.14)!important}
+
+/* Result dock remains local primary action dock */
+#resultDockV20.ux23Dock{left:12px!important;right:12px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;border-radius:24px!important}
+
+@media(max-width:430px){
+  #home .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;padding-left:10px!important;padding-right:10px!important}
+  #home .fish.discoveryCardV26{min-height:204px!important;border-radius:21px!important}
+  #home .fish.discoveryCardV26 .art{height:112px!important}
+  #home .fish.discoveryCardV26 h3{font-size:18px!important}
+  .appTackleSheetV26{height:91dvh!important;border-radius:28px 28px 0 0!important}
+}
+@media(max-width:359px){#home .grid{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:no-preference){
+  #home .fish.discoveryCardV26{transition:transform .16s ease,box-shadow .16s ease}
+  #home .fish.discoveryCardV26:active{transform:scale(.985)}
+}
