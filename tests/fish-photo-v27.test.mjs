@@ -7,21 +7,32 @@ const css=readFileSync(new URL('../fish-photo-v27.css',import.meta.url),'utf8');
 const pwa=readFileSync(new URL('../pwa.js',import.meta.url),'utf8');
 const build=readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
 
-test('V27 keeps bundled real fish first and only resolves missing species remotely',()=>{
+test('V27R3 keeps bundled real fish first and only resolves missing species remotely',()=>{
   assert.match(js,/FISH_TARGET_REAL_FISH\?\.species/);
   assert.match(js,/LOCAL\.has\(name\)/);
-  assert.match(js,/provider:'Wikimedia Commons'/);
+  assert.match(js,/version:'V27R3'/);
+  assert.match(js,/provider:'Wikimedia'/);
   assert.match(js,/licensed-photo-only-with-svg-offline-fallback/);
 });
 
-test('V27 resolves Wikipedia page image then validates Commons license metadata',()=>{
+test('V27R3 resolves jawiki imageinfo first then falls back to Commons with license validation',()=>{
   assert.match(js,/ja\.wikipedia\.org\/w\/api\.php/);
-  assert.match(js,/commons\.wikimedia\.org\/w\/api\.php/);
+  assert.match(js,/imageInfo\('https:\/\/ja\.wikipedia\.org\/w\/api\.php'/);
+  assert.match(js,/imageInfo\('https:\/\/commons\.wikimedia\.org\/w\/api\.php'/);
   assert.match(js,/extmetadata/);
   assert.match(js,/LicenseShortName/);
   assert.match(js,/CC0\|Public domain\|CC BY/);
   assert.match(js,/if\(!allowed\.test\(license\)\)return null/);
   assert.doesNotMatch(js,/unsplash|pexels|pixabay|googleusercontent/i);
+});
+
+test('V27R3 adds explicit aliases for device-observed silhouette species',()=>{
+  assert.match(js,/'サバ':'マサバ'/);
+  assert.match(js,/'イワシ':'マイワシ'/);
+  assert.match(js,/'ハゼ':'マハゼ'/);
+  assert.match(js,/'エソ':'マエソ'/);
+  assert.match(js,/'マブナ':'ギンブナ'/);
+  assert.match(js,/ft-fish-photo-v27r3/);
 });
 
 test('V27 remote provider is production HTTPS only unless explicitly enabled for dedicated QA',()=>{
@@ -34,6 +45,7 @@ test('V27 remote provider is production HTTPS only unless explicitly enabled for
 test('V27 provides visible attribution and preserves SVG fallback',()=>{
   assert.match(js,/fishPhotoCreditV27/);
   assert.match(js,/Wikimedia Commons/);
+  assert.match(js,/Wikipedia \/ Wikimedia/);
   assert.match(css,/\.fishPhotoMountedV27>\.speciesSvg\{opacity:0\}/);
   assert.match(css,/\.fishPhotoCreditV27\{/);
   assert.match(css,/font-size:7px/);
