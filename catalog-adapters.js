@@ -11,8 +11,9 @@
         length_ft:lf??rawFt??(lm===null?null:Number((lm*3.28084).toFixed(3))),length_m:lm,length_raw:lr,pieces:finite(specs.pieces),pieces_raw:text(specs.pieces_raw),
         weight_g:finite(specs.weight_g),power:text(specs.power).toUpperCase(),power_raw:text(specs.power_raw),
         lure_min_g:finite(specs.lure_min_g),lure_max_g:finite(specs.lure_max_g),jig_max_g:finite(specs.jig_max_g),lure_weight_raw:text(specs.lure_weight_raw),
-        line_pe_min:finite(specs.line_pe_min),line_pe_max:finite(specs.line_pe_max),line_weight_raw:text(specs.line_weight_raw),sinker_load_raw:text(specs.sinker_load_raw),
-        leader_line_raw:text(specs.leader_line_raw),rod_joint_raw:text(specs.rod_joint_raw),closed_length_cm:finite(specs.closed_length_cm),tip_diameter_mm:finite(specs.tip_diameter_mm),product_code:text(specs.product_code)
+        line_pe_min:finite(specs.line_pe_min),line_pe_max:finite(specs.line_pe_max),line_weight_raw:text(specs.line_weight_raw),sinker_load_raw:text(specs.sinker_load_raw),standard_sinker_load_raw:text(specs.standard_sinker_load_raw),
+        leader_line_raw:text(specs.leader_line_raw),rod_joint_raw:text(specs.rod_joint_raw),closed_length_cm:finite(specs.closed_length_cm),tip_diameter_mm:finite(specs.tip_diameter_mm),product_code:text(specs.product_code),
+        reel_seat_position_mm:finite(specs.reel_seat_position_mm),carbon_content_pct:finite(specs.carbon_content_pct)
       };
     }
     return {
