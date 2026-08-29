@@ -103,7 +103,8 @@ await page.locator('#fmBackPlan').click();await page.locator('#result.on').waitF
 assert.equal(await page.locator('#resultDockV20').isVisible(),true,'dock returns with result view');
 await backHome();
 assert.equal(await page.locator('#resultDockV20').isVisible(),false,'dock hidden on home');
-assert.equal(await page.locator('.nav').isVisible(),true,'generic nav restored on home');
+assert.equal(await page.locator('.nav').isVisible(),false,'legacy generic nav remains retired on home');
+assert.equal(await page.locator('#appTabBarV26').isVisible(),true,'V26 native app tab bar is restored on home');
 
 await setTackle({
   rods:[{id:'good-rod',source:'manual',name:'SURF 13FT',length:13,power:'',maxLure:null}],
