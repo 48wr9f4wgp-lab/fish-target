@@ -20,8 +20,15 @@ test('V27 resolves Wikipedia page image then validates Commons license metadata'
   assert.match(js,/extmetadata/);
   assert.match(js,/LicenseShortName/);
   assert.match(js,/CC0\|Public domain\|CC BY/);
-  assert.match(js,/license rejected/);
+  assert.match(js,/if\(!allowed\.test\(license\)\)return null/);
   assert.doesNotMatch(js,/unsplash|pexels|pixabay|googleusercontent/i);
+});
+
+test('V27 remote provider is production HTTPS only unless explicitly enabled for dedicated QA',()=>{
+  assert.match(js,/location\.protocol==='https:'/);
+  assert.match(js,/fishPhotoRemote/);
+  assert.match(js,/fishPhotoEager/);
+  assert.match(js,/if\(!REMOTE_ENABLED\)return/);
 });
 
 test('V27 provides visible attribution and preserves SVG fallback',()=>{
