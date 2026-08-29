@@ -19,29 +19,37 @@ await page.locator('#result.on').waitFor({state:'visible'});
 await page.locator('#result .firstCast').waitFor({state:'visible'});
 
 const styles=await page.evaluate(()=>{
-  const read=(sel)=>{const el=document.querySelector(sel);const s=getComputedStyle(el);return {bg:s.backgroundImage,bgc:s.backgroundColor,border:s.borderColor,shadow:s.boxShadow,blur:s.backdropFilter||s.webkitBackdropFilter||'',radius:s.borderRadius,color:s.color}};
+  const read=(sel)=>{const el=document.querySelector(sel);if(!el)throw new Error(`Missing visual QA selector: ${sel}`);const s=getComputedStyle(el);return {bg:s.backgroundImage,bgc:s.backgroundColor,border:s.borderColor,shadow:s.boxShadow,blur:s.backdropFilter||s.webkitBackdropFilter||'',radius:s.borderRadius,color:s.color}};
   return {
     fishArt:read('#result .tart'),
     plan:read('#result .planCard'),
     fit:read('#tackleFitCard'),
     gear:read('#gear'),
-    stepCard:read('#result .steps>.card'),
+    stepCard:read('#steps'),
     refine:read('#result .refine'),
     dock:read('#resultDockV20'),
     field:read('#fieldModeBtn')
   };
 });
 
+const stepPanel=await page.locator('#steps').evaluate(el=>{const p=el.parentElement;if(!p)throw new Error('Missing field steps parent panel');const s=getComputedStyle(p);return {bg:s.backgroundImage,shadow:s.boxShadow,border:s.borderColor}});
 assert.match(styles.fishArt.bg,/gradient/i,'fish art uses integrated background rather than a plain box');
 assert.ok(styles.plan.shadow!=='none','method surface retains controlled depth');
 assert.ok(styles.fit.shadow!=='none','MY TACKLE surface uses the same material system');
 assert.ok(styles.gear.shadow!=='none','required tackle surface uses the same material system');
-assert.ok(styles.stepCard.shadow!=='none','field steps surface uses the same material system');
+assert.ok(stepPanel.shadow!=='none','field steps parent surface uses the same material system');
+assert.match(stepPanel.bg,/gradient/i,'field steps parent surface uses unified gradient material');
 assert.ok(styles.refine.shadow!=='none','disclosure surface receives subtle depth');
 assert.match(styles.dock.blur,/blur/i,'dock remains frosted glass');
 assert.match(styles.field.bg,/gradient/i,'field mode remains the dominant CTA');
 
-const surfaceColors=await page.evaluate(()=>['#result .planCard','#tackleFitCard','#gear','#result .steps>.card'].map(sel=>getComputedStyle(document.querySelector(sel)).backgroundImage));
+const surfaceColors=await page.evaluate(()=>{
+  const selectors=['#result .planCard','#tackleFitCard','#gear'];
+  const values=selectors.map(sel=>getComputedStyle(document.querySelector(sel)).backgroundImage);
+  const steps=document.querySelector('#steps')?.parentElement;if(!steps)throw new Error('Missing field steps panel');
+  values.push(getComputedStyle(steps).backgroundImage);
+  return values;
+});
 assert.ok(surfaceColors.every(v=>/gradient/i.test(v)),`primary result surfaces share gradient material language: ${JSON.stringify(surfaceColors)}`);
 
 const titleAccent=await page.locator('#result .sectionTitle').first().evaluate(el=>getComputedStyle(el,'::before').backgroundImage);
