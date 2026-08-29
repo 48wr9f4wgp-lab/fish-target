@@ -5,9 +5,10 @@
   const QA_AUTOLOAD=PARAMS.get('fishPhotoQaAutoLoad')==='on'&&location.hostname==='127.0.0.1';
   const LOCAL=new Set(globalThis.FISH_TARGET_REAL_FISH?.species||[]);
   const pending=new Map();
-  const cacheKey=name=>`ft-fish-photo-v27:${name}`;
+  const cacheKey=name=>`ft-fish-photo-v27r3:${name}`;
   const titleAlias=Object.freeze({
-    'ブリ・ワラサ':'ブリ','ヤマメ・イワナ':'ヤマメ','グレ':'メジナ','シーバス':'スズキ','ブラックバス':'オオクチバス'
+    'ブリ・ワラサ':'ブリ','ヤマメ・イワナ':'ヤマメ','グレ':'メジナ','シーバス':'スズキ','ブラックバス':'オオクチバス',
+    'サバ':'マサバ','イワシ':'マイワシ','ハゼ':'マハゼ','エソ':'マエソ','テナガエビ':'テナガエビ','ウミタナゴ':'ウミタナゴ','コノシロ':'コノシロ','ウグイ':'ウグイ','マブナ':'ギンブナ'
   });
   const allowed=/^(CC0|Public domain|CC BY(?:-[A-Z]+)?(?: \d(?:\.\d)?)?|CC BY-SA(?: \d(?:\.\d)?)?)$/i;
   const clean=s=>String(s||'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
@@ -17,20 +18,33 @@
     const timer=setTimeout(()=>ctl.abort(),6500);
     try{const r=await fetch(url,{mode:'cors',credentials:'omit',signal:ctl.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(timer)}
   }
+  function licensedValue(info,source,article){
+    if(!info)return null;
+    const ext=info.extmetadata||{};
+    const license=clean(ext.LicenseShortName?.value||ext.UsageTerms?.value);
+    if(!allowed.test(license))return null;
+    const value={url:info.thumburl||info.url,license,artist:clean(ext.Artist?.value||ext.Credit?.value),source,article};
+    return value.url?value:null;
+  }
+  async function imageInfo(api,file,source,article){
+    const url=`${api}?action=query&format=json&origin=*&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=720&titles=${encodeURIComponent(`File:${file}`)}`;
+    const meta=await json(url);
+    const info=Object.values(meta?.query?.pages||{})[0]?.imageinfo?.[0];
+    return licensedValue(info,source,article);
+  }
   async function resolveTitle(title){
     const wp=`https://ja.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=name&titles=${encodeURIComponent(title)}`;
     const page=await json(wp);
     const p=Object.values(page?.query?.pages||{})[0];
     const file=p?.pageimage;
     if(!file)return null;
-    const commons=`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=720&titles=${encodeURIComponent(`File:${file}`)}`;
-    const meta=await json(commons);
-    const info=Object.values(meta?.query?.pages||{})[0]?.imageinfo?.[0];
-    const ext=info?.extmetadata||{};
-    const license=clean(ext.LicenseShortName?.value||ext.UsageTerms?.value);
-    if(!allowed.test(license))return null;
-    const value={url:info.thumburl||info.url,license,artist:clean(ext.Artist?.value||ext.Credit?.value),source:'Wikimedia Commons',article:title};
-    return value.url?value:null;
+    try{
+      const local=await imageInfo('https://ja.wikipedia.org/w/api.php',file,'Wikipedia / Wikimedia',title);
+      if(local)return local;
+    }catch{}
+    try{
+      return await imageInfo('https://commons.wikimedia.org/w/api.php',file,'Wikimedia Commons',title);
+    }catch{return null}
   }
   async function resolve(name){
     try{
@@ -114,5 +128,5 @@
     window.addEventListener('pageshow',schedule);window.addEventListener('online',schedule);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({version:'V27',provider:'Wikimedia Commons',policy:'licensed-photo-only-with-svg-offline-fallback',enabled:REMOTE_ENABLED,eager:EAGER,qaAutoLoad:QA_AUTOLOAD,localSpecies:Object.freeze([...LOCAL]),aliases:titleAlias});
+  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({version:'V27R3',provider:'Wikimedia',policy:'licensed-photo-only-with-svg-offline-fallback',enabled:REMOTE_ENABLED,eager:EAGER,qaAutoLoad:QA_AUTOLOAD,localSpecies:Object.freeze([...LOCAL]),aliases:titleAlias});
 })();
