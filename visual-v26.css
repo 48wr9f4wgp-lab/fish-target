@@ -11,8 +11,10 @@
   --v26-line:rgba(102,137,143,.18);
   --v26-shadow:0 16px 38px rgba(4,31,38,.12);
 }
-html.app-shell-v26,html.app-shell-v26 body{background:radial-gradient(circle at 50% -10%,#dcefee 0,#edf4f4 36%,#f4f7f7 100%)!important}
-html.app-shell-v26 body{padding-bottom:88px!important;overflow-x:hidden!important}
+html.app-shell-v26,html.app-shell-v26 body{background:radial-gradient(circle at 50% -10%,#dcefee 0,#edf4f4 36%,#f4f7f7 100%)!important;max-width:100%!important;overflow-x:clip!important}
+html.app-shell-v26 body{padding-bottom:88px!important}
+html.app-shell-v26 body>.app{width:100%!important;max-width:100vw!important;min-width:0!important;overflow-x:clip!important;contain:paint!important}
+html.app-shell-v26 .view{max-width:100%!important;overflow-x:clip!important}
 html.app-shell-v26 .nav{display:none!important}
 
 /* Native-style global shell */
