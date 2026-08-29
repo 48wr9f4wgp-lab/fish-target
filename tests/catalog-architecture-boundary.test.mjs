@@ -45,8 +45,8 @@ test('research rows and synthetic fixtures remain separate explicit boundaries',
 test('legacy direct-load path composes identical runtime without re-mixing fixture boundary',()=>{
   const explicit=load({explicitResearch:true});
   const legacy=load({explicitResearch:false});
-  const explicitIds=explicit.FISH_TARGET_CATALOG.products.map(row=>row.product_id).sort();
-  const legacyIds=legacy.FISH_TARGET_CATALOG.products.map(row=>row.product_id).sort();
+  const explicitIds=Array.from(explicit.FISH_TARGET_CATALOG.products,row=>String(row.product_id)).sort();
+  const legacyIds=Array.from(legacy.FISH_TARGET_CATALOG.products,row=>String(row.product_id)).sort();
 
   assert.deepEqual(legacyIds,explicitIds,'legacy test/load harness resolves to the same product set');
   assert.equal(legacy.FISH_TARGET_CATALOG_FIXTURES.length,expectedSynthetic,'legacy compatibility does not repopulate fixture boundary with factual rows');
