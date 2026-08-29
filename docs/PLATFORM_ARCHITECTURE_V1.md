@@ -115,18 +115,18 @@ Current contract target: 150 globally unique plan IDs.
 - Workflow concurrency is enabled so future superseded PR runs are cancelled instead of accumulating indefinitely.
 
 ## QA state
-Confirmed green checkpoint before the final registry/CI-only commits:
-- `rc-qa`: PASS with 197/197 tests at the catalog architecture checkpoint.
+Confirmed green checkpoints:
+- Catalog architecture checkpoint: `rc-qa` PASS with 197/197 tests.
 - Generic catalog contract: PASS for 41 batches / 19 makers / 946 research / 14 synthetic / 960 runtime / 516 JAN.
 - Catalog scale gate: PASS at 1k / 5k / 10k products.
 - Method Registry-inclusive regression SHA `d04d6cc4a6135e8d20594ccf81a8147977f59431`: `rc-qa` PASS.
 
-Still required before this branch is considered verified:
-- `rc-browser-qa` PASS on the latest branch HEAD, including the domain registry browser gate.
-- `rc-qa` PASS on the same latest HEAD after workflow-concurrency/doc-only commits.
+Latest-head requirements:
+- `rc-browser-qa` must PASS on the final branch HEAD, including the domain registry browser gate.
+- `rc-qa` must PASS on the same final HEAD.
 - iPhone/device verification remains separate and required for visual/photo acceptance.
 
-Do not report Platform Architecture v1 as complete until the same latest HEAD has both automated gates green.
+Do not report Platform Architecture v1 as complete until the same final HEAD has both automated gates green.
 
 ## Next migration phases
 
