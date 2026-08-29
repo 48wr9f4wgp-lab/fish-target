@@ -122,7 +122,7 @@ Confirmed green checkpoints:
 - Method Registry-inclusive regression SHA `d04d6cc4a6135e8d20594ccf81a8147977f59431`: `rc-qa` PASS.
 
 Final branch gate:
-- code and architecture scope are frozen at this checkpoint
+- implementation scope is frozen at this checkpoint
 - require `rc-qa` PASS on the final HEAD
 - require `rc-browser-qa` PASS on the same final HEAD, including domain registry browser QA
 - require iPhone/device verification separately for visual/photo acceptance
