@@ -26,6 +26,14 @@ async function openTarget(page,name){
   assert.equal(await text(page,'#rname'),name);
 }
 
+async function selectMethod(page,id){
+  const picker=page.locator('#methodPickerV1');
+  const change=page.locator('#ux23MethodChange');
+  if(await change.count()&&!(await picker.isVisible()))await change.click();
+  await picker.waitFor({state:'visible'});
+  await page.locator(`#methodPickerV1 [data-method-id="${id}"]`).click();
+}
+
 async function backHome(page){
   const dockHome=page.locator('#resultDockV20 [data-action="home"]');
   if(await dockHome.count()&&await dockHome.isVisible())await dockHome.click();
@@ -79,7 +87,7 @@ async function runViewport(browser,{width,height}){
     await page.locator('#clearSearch').click();
   }
 
-  // Legacy exact propagation + MY TACKLE gate.
+  // Legacy exact propagation + MY TACKLE gate through the current UX23 method-change path.
   await openTarget(page,'サバ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),4,`${width}: サバ method count`);
   assert.equal(await text(page,'#pmethod'),'サビキ釣り',`${width}: default method`);
@@ -87,9 +95,9 @@ async function runViewport(browser,{width,height}){
     rods:[{id:'qa-lure-rod',source:'manual',name:'QA 7.5ft L',length:7.5,power:'L',maxLure:20}],
     reels:[{id:'qa-lure-reel',source:'manual',name:'QA 2500 PE0.6',size:2500,lineType:'PE',lineNo:0.6}]
   })));
-  await page.locator('#methodPickerV1 [data-method-id="default"]').click();
+  await selectMethod(page,'default');
   assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'買い足し候補あり',`${width}: default MY TACKLE baseline`);
-  await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
+  await selectMethod(page,'lure');
   assert.equal(await text(page,'#pmethod'),'ライトゲーム/小型メタルジグ',`${width}: alternate method selected`);
   assert.equal(await text(page,'#firstBait'),'小型メタルジグ',`${width}: FIRST CAST`);
   assert.equal(await text(page,'#gear .gearItem:nth-child(1) b'),'7〜8ft / L〜ML',`${width}: rod`);
@@ -122,7 +130,7 @@ async function runViewport(browser,{width,height}){
   // V1 -> V2 cross-phase regression.
   await openTarget(page,'カレイ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="choinage"]').count(),1,`${width}: karei cross-phase method`);
-  await page.locator('#methodPickerV1 [data-method-id="choinage"]').click();
+  await selectMethod(page,'choinage');
   assert.equal(await text(page,'#pmethod'),'ちょい投げ',`${width}: karei choinage selectable`);
   await backHome(page);
 
@@ -130,7 +138,7 @@ async function runViewport(browser,{width,height}){
   await openTarget(page,'ウグイ');
   assert.ok(await page.locator('#methodPickerV1 [data-method-id]').count()>=3,`${width}: ugui method density`);
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="lure"]').count(),1,`${width}: ugui V3 lure attached`);
-  await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
+  await selectMethod(page,'lure');
   assert.equal(await text(page,'#pmethod'),'ウグイルアー',`${width}: ugui V3 lure selectable`);
   assert.equal(await text(page,'#firstBait'),'小型スプーン/ミノー',`${width}: ugui FIRST CAST bait`);
   assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'緩流部と流れの境を探す',`${width}: ugui V3 step1`);
@@ -139,7 +147,7 @@ async function runViewport(browser,{width,height}){
   // True TARGET3 fish remains healthy.
   await openTarget(page,'ニゴイ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: nigoi methods`);
-  await page.locator('#methodPickerV1 [data-method-id="lure"]').click();
+  await selectMethod(page,'lure');
   assert.equal(await text(page,'#pmethod'),'ニゴイルアー',`${width}: nigoi lure`);
   assert.equal(await text(page,'#firstBait'),'小型スプーン/スピナー',`${width}: nigoi FIRST CAST bait`);
   assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'トロ場・淵・カケアガリへ投げる',`${width}: nigoi step1`);
@@ -149,7 +157,7 @@ async function runViewport(browser,{width,height}){
   // TARGET4 exact propagation gate: canonical Ayu receives a distinct lure Game Plan.
   await openTarget(page,'アユ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="ayuing"]').count(),1,`${width}: ayuing attached`);
-  await page.locator('#methodPickerV1 [data-method-id="ayuing"]').click();
+  await selectMethod(page,'ayuing');
   assert.equal(await text(page,'#pmethod'),'アユイング',`${width}: ayuing selected`);
   assert.equal(await text(page,'#firstBait'),'アユイング用ルアー',`${width}: ayuing FIRST CAST bait`);
   assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'遊漁規則とアユルアー可能区間を確認する',`${width}: ayuing rule step`);
@@ -178,7 +186,7 @@ async function runViewport(browser,{width,height}){
   await openTarget(page,'カサゴ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="saguri"]').count(),1,`${width}: kasago saguri attached`);
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="boat_doutuki"]').count(),1,`${width}: kasago boat doutuki attached`);
-  await page.locator('#methodPickerV1 [data-method-id="boat_doutuki"]').click();
+  await selectMethod(page,'boat_doutuki');
   assert.equal(await text(page,'#pmethod'),'船カサゴ胴突き',`${width}: kasago boat method selectable`);
   assert.equal(await text(page,'#firstBait'),'魚切身/虫エサ',`${width}: kasago boat FIRST CAST`);
   await backHome(page);
@@ -186,7 +194,7 @@ async function runViewport(browser,{width,height}){
   // V2 -> V3 persistence regression remains intact.
   await openTarget(page,'ワカサギ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id="ice"]').count(),1,`${width}: wakasagi TARGET3 ice attached`);
-  await page.locator('#methodPickerV1 [data-method-id="ice"]').click();
+  await selectMethod(page,'ice');
   assert.equal(await text(page,'#pmethod'),'氷上穴釣り',`${width}: wakasagi ice selectable`);
   assert.equal(await text(page,'#steps .step:nth-child(1) .st'),'解禁・氷厚・立入範囲を必ず確認する',`${width}: wakasagi safety step`);
 
@@ -207,7 +215,7 @@ async function runViewport(browser,{width,height}){
   // TARGET2 representative remains healthy after four composition layers.
   await openTarget(page,'コウイカ');
   assert.equal(await page.locator('#methodPickerV1 [data-method-id]').count(),3,`${width}: kouika methods`);
-  await page.locator('#methodPickerV1 [data-method-id="tera"]').click();
+  await selectMethod(page,'tera');
   assert.equal(await text(page,'#pmethod'),'テーラ探り釣り',`${width}: kouika method`);
   assert.equal(await page.locator('#steps .step').count(),3,`${width}: kouika three steps`);
   await noOverflow(page,width,`${width} TARGET2 regression`);
@@ -230,7 +238,7 @@ async function runViewport(browser,{width,height}){
     await page.locator('button.fish[data-fish="アユ"]').click();
     await page.locator('#result.on').waitFor({state:'visible'});
     assert.equal(await page.locator('#methodPickerV1 [data-method-id="ayuing"]').count(),1,'offline TARGET4 ayuing available');
-    await page.locator('#methodPickerV1 [data-method-id="ayuing"]').click();
+    await selectMethod(page,'ayuing');
     assert.equal(await text(page,'#pmethod'),'アユイング','offline TARGET4 method usable');
     await context.setOffline(false);
   }
