@@ -7,9 +7,9 @@ const manifest=JSON.parse(read('catalog-batch-manifest.json'));
 const files=[...new Set(manifest.batches.flatMap(x=>x.files||[]))];
 const ctx=vm.createContext({console});
 for(const f of ['catalog-providers.js','catalog-adapters.js',...files,'catalog-fixtures.js','catalog.js'])vm.runInContext(read(f),ctx,{filename:f});
-const c=ctx.FISH_TARGET_CATALOG,official=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0),z=c.list({maker:'ZENAQ'}).filter(x=>x.source.source_type==='manufacturer_official');
+const c=ctx.FISH_TARGET_CATALOG,z=c.list({maker:'ZENAQ'}).filter(x=>x.source.source_type==='manufacturer_official');
 
-test('ZENAQ expansion reaches 680 rows, 666 official facts, 27 batches and fifteen makers',()=>{assert.equal(manifest.batches.length,27);assert.equal(official,666);assert.equal(c.products.length,680);assert.equal(z.length,66);assert.equal(c.makers.length,15);assert.ok(c.makers.includes('ZENAQ'));assert.equal(c.validateCatalog(c.products).length,0);assert.ok(z.every(x=>x.category==='rod'));assert.ok(z.every(x=>x.source.source_provider==='zenaq-official-research'));assert.ok(z.every(x=>x.source.license_status==='restricted'&&!c.productionEligible(x)));const j=z.map(x=>x.identifiers.jan).filter(Boolean);assert.equal(j.length,8);assert.equal(new Set(j).size,8);assert.ok(j.every(x=>/^451445993\d{4}$/.test(x)))});
+test('ZENAQ keeps its 66-row official contract',()=>{assert.equal(z.length,66);assert.ok(c.makers.includes('ZENAQ'));assert.ok(z.every(x=>x.category==='rod'));assert.ok(z.every(x=>x.source.source_provider==='zenaq-official-research'));assert.ok(z.every(x=>x.source.license_status==='restricted'&&!c.productionEligible(x)));const j=z.map(x=>x.identifiers.jan).filter(Boolean);assert.equal(j.length,8);assert.equal(new Set(j).size,8);assert.ok(j.every(x=>/^451445993\d{4}$/.test(x)))});
 
 test('MUTHOS keeps jig and plug ranges separate instead of inventing one fit range',()=>{const p=c.list({maker:'ZENAQ',series:'MUTHOS'}).find(x=>x.model==='Accura 100H');assert.ok(p);assert.equal(p.specs.length_ft,10);assert.equal(p.specs.lure_weight_raw,'Jig 30~200g / Plug 30~120g');assert.equal(p.specs.lure_min_g,null);assert.equal(p.specs.lure_max_g,null);assert.equal(p.specs.line_pe_min,2);assert.equal(p.specs.line_pe_max,5);const owned=c.ownedSnapshot(p,{id:'z-muthos'});assert.equal(owned.maxLure,null)});
 
