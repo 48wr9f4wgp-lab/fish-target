@@ -26,7 +26,7 @@ html,body{background:linear-gradient(180deg,#eaf2f2 0,#f4f8f8 28%,#eef4f4 100%)!
 #result .ux23AnswerTitle small{padding-left:0!important}
 
 /* surfaces: one material system, not isolated white cards */
-#result .planCard,#result #tackleFitCard,#result #gear,#result .steps>.card,#result .refine{
+#result .planCard,#result #tackleFitCard,#result #gear,#result section.card:has(>#steps),#result .refine{
   background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(243,248,248,.92))!important;
   border:1px solid var(--v25-line)!important;
   box-shadow:var(--v25-shadow)!important;
@@ -62,7 +62,7 @@ html,body{background:linear-gradient(180deg,#eaf2f2 0,#f4f8f8 28%,#eef4f4 100%)!
 #result #gear .gearItem+ .gearItem{border-top-color:rgba(110,145,150,.13)!important}
 
 /* field steps: one coherent panel */
-#result .steps>.card{padding:14px!important}
+#result section.card:has(>#steps){padding:14px!important}
 #result .step{align-items:start!important}
 #result .num{width:30px!important;height:30px!important;border-radius:10px!important;background:linear-gradient(145deg,#072a32,#0d4550)!important;box-shadow:0 8px 16px rgba(5,36,44,.14)!important}
 #result .st{font-size:13px!important;line-height:1.55!important;color:#1b3339!important}
@@ -90,9 +90,9 @@ html,body{background:linear-gradient(180deg,#eaf2f2 0,#f4f8f8 28%,#eef4f4 100%)!
 
 @media(max-width:699px){
   #result .ux23AnswerTitle,#result .sectionTitle{padding-left:10px!important}
-  #result .planCard,#result #tackleFitCard,#result #gear,#result .steps>.card,#result .refine{border-radius:19px!important}
+  #result .planCard,#result #tackleFitCard,#result #gear,#result section.card:has(>#steps),#result .refine{border-radius:19px!important}
   #result .st{font-size:12.5px!important}
 }
 @media(prefers-reduced-motion:no-preference){
-  #result .planCard,#result #tackleFitCard,#result #gear,#result .steps>.card{transition:box-shadow .18s ease,transform .18s ease}
+  #result .planCard,#result #tackleFitCard,#result #gear,#result section.card:has(>#steps){transition:box-shadow .18s ease,transform .18s ease}
 }
