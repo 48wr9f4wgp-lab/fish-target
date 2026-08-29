@@ -42,11 +42,19 @@ assert.match((await reel.textContent())||'',/今巻いているライン種類�
 assert.match((await page.locator('.fitV20Details>summary em').textContent())||'',/見直し:/,'detail summary names concrete review causes');
 assert.equal(await page.locator('.fitV20DetailBody').isVisible(),false,'technical rationale stays collapsed');
 
+const answerTitle=(await page.locator('#result .ux23AnswerTitle').textContent())||'';
+assert.match(answerTitle,/まずこれを投げる/,'answer heading is plain-language action');
+assert.doesNotMatch(answerTitle,/FIRST CAST/,'FIRST CAST label is not duplicated in the section heading');
+assert.match((await page.locator('#firstCastKicker').textContent())||'',/FIRST CAST/,'FIRST CAST identity remains on the answer card');
+assert.equal(((await page.locator('#result .rotationLabel').textContent())||'').trim(),'反応がなければ →','rotation is demoted to a simple next-step label');
+
 const first=page.locator('#result .firstCast'),plan=page.locator('#result .planCard'),fit=page.locator('#tackleFitCard'),gear=page.locator('#gear');
 const firstBox=await first.boundingBox(),planBox=await plan.boundingBox(),fitBox=await fit.boundingBox(),gearBox=await gear.boundingBox();
 assert.ok(firstBox&&planBox&&firstBox.y<planBox.y,'FIRST CAST is the first answer before method controls');
 assert.ok(fitBox&&gearBox&&fitBox.y<gearBox.y,'MY TACKLE decision comes before generic required tackle');
 assert.ok((await page.locator('#firstBait').boundingBox())?.y<470,'FIRST CAST answer is visible in the opening decision window');
+assert.ok(firstBox&&firstBox.height<=390,`FIRST CAST density stays bounded: ${firstBox?.height}`);
+assert.ok(planBox&&planBox.height<=240,`method card density stays bounded: ${planBox?.height}`);
 assert.equal(await page.locator('#methodPickerV1').isVisible(),false,'method chooser is collapsed by default');
 const methodChange=page.locator('#ux23MethodChange');
 const changeBox=await methodChange.boundingBox();assert.ok(changeBox&&changeBox.height>=44,'method change target meets 44px minimum');
@@ -58,13 +66,17 @@ await methodChange.click();assert.equal(await page.locator('#methodPickerV1').is
 
 assert.equal(await page.locator('#v19Conditions .planOptions').count(),1,'basic conditions unified into the single conditions group');
 assert.equal(await page.locator('#result .planCard .planOptions').count(),0,'duplicate top-level condition control removed');
-assert.match((await page.locator('#favoriteBtn').textContent())||'',/魚をお気に入り/,'favorite and plan save use distinct language');
-const favoriteBox=await page.locator('#favoriteBtn').boundingBox();assert.ok(favoriteBox&&favoriteBox.height>=44,'favorite target meets 44px minimum');
+const favorite=page.locator('#favoriteBtn');
+assert.match(((await favorite.textContent())||'').trim(),/^[☆★]$/,'favorite is a low-noise star icon');
+assert.match((await favorite.getAttribute('aria-label'))||'',/お気に入り/,'favorite remains explicitly named for assistive tech');
+assert.equal(await favorite.evaluate(el=>el.parentElement?.classList.contains('planTop')),true,'favorite moves into method header instead of consuming a full row');
+const favoriteBox=await favorite.boundingBox();assert.ok(favoriteBox&&favoriteBox.width>=44&&favoriteBox.height>=44,'favorite target meets 44px minimum');
 const backBox=await page.locator('#back').boundingBox();assert.ok(backBox&&backBox.width>=44&&backBox.height>=44,'back target meets 44px minimum');
 
 assert.equal(await page.locator('#resultDockV20').isVisible(),true,'result action dock visible');
 assert.equal(await page.locator('#resultDockV20 [data-action="home"]').isVisible(),false,'redundant fish-list dock action removed');
 assert.equal(await page.locator('#resultDockV20 button:visible').count(),2,'dock exposes only save and field mode');
+const dockBox=await page.locator('#resultDockV20').boundingBox();assert.ok(dockBox&&dockBox.height<=56,`dock chrome stays thin while preserving targets: ${dockBox?.height}`);
 const dockButtons=await page.locator('#resultDockV20 button:visible').evaluateAll(btns=>btns.map(b=>b.getBoundingClientRect().height));
 assert.ok(dockButtons.every(h=>h>=44),`dock targets meet 44px minimum: ${dockButtons.join(',')}`);
 assert.equal(await page.locator('.nav').isVisible(),false,'generic nav hidden on result');
@@ -75,6 +87,8 @@ assert.ok(gearMetrics.height<=230,`required tackle list stays compact: ${gearMet
 assert.ok(gearMetrics.children.every(h=>h>=44),`required tackle rows stay readable/tappable scale: ${gearMetrics.children.join(',')}`);
 const activeRotation=page.locator('#rotation button.on');if(await activeRotation.count())assert.equal(await activeRotation.isVisible(),false,'current FIRST CAST is not repeated as its own alternative');
 assert.equal(await page.locator('#switchRule').isVisible(),false,'10-15 cast switching rule leaves the primary result flow');
+const rotationTargets=await page.locator('#rotation button:visible').evaluateAll(btns=>btns.map(b=>({h:b.getBoundingClientRect().height,bg:getComputedStyle(b).backgroundColor})));
+assert.ok(rotationTargets.every(x=>x.h>=44),`alternative touch targets stay accessible: ${JSON.stringify(rotationTargets)}`);
 
 const x=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
 assert.ok(x.doc<=391&&x.body<=391&&x.viewport===390,'no result overflow');
@@ -116,4 +130,4 @@ assert.match((await page.locator('.fitV20Details>summary em').textContent())||''
 assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
 assert.deepEqual(consoleErrors,[],`console errors: ${consoleErrors.join('\n')}`);
 await browser.close();
-console.log('RESULT_UX_V23_BROWSER_QA_PASS');
+console.log('RESULT_UX_V23_DENSITY_BROWSER_QA_PASS');
