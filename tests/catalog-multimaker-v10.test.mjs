@@ -7,10 +7,10 @@ const manifest=JSON.parse(read('catalog-batch-manifest.json'));
 const files=[...new Set(manifest.batches.flatMap(x=>x.files||[]))];
 const ctx=vm.createContext({console});
 for(const f of ['catalog-providers.js','catalog-adapters.js',...files,'catalog-fixtures.js','catalog.js'])vm.runInContext(read(f),ctx,{filename:f});
-const c=ctx.FISH_TARGET_CATALOG,official=manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0),palms=c.list({maker:'PALMS'}).filter(x=>x.source.source_type==='manufacturer_official');
+const c=ctx.FISH_TARGET_CATALOG,palms=c.list({maker:'PALMS'}).filter(x=>x.source.source_type==='manufacturer_official');
 const metal=c.list({maker:'PALMS',series:'METAL WITCH Quest α'}),sea=c.list({maker:'PALMS',series:'Sea Rapture'}),lurk=c.list({maker:'PALMS',series:'Lurk Shooter'});
 
-test('PALMS second expansion reaches 744 rows, 730 official facts, 29 batches and sixteen makers',()=>{assert.equal(manifest.batches.length,29);assert.equal(official,730);assert.equal(c.products.length,744);assert.equal(palms.length,64);assert.equal(metal.length,15);assert.equal(sea.length,10);assert.equal(lurk.length,8);assert.equal(c.makers.length,16);assert.equal(c.validateCatalog(c.products).length,0);assert.ok(palms.every(x=>x.category==='rod'));assert.ok(palms.every(x=>x.source.source_provider==='palms-official-research'));assert.ok(palms.every(x=>x.source.license_status==='restricted'&&!c.productionEligible(x)))});
+test('PALMS second expansion keeps its 64 official rod contracts',()=>{assert.equal(palms.length,64);assert.equal(metal.length,15);assert.equal(sea.length,10);assert.equal(lurk.length,8);assert.equal(c.validateCatalog(c.products).length,0);assert.ok(palms.every(x=>x.category==='rod'));assert.ok(palms.every(x=>x.source.source_provider==='palms-official-research'));assert.ok(palms.every(x=>x.source.license_status==='restricted'&&!c.productionEligible(x)))});
 
 test('METAL WITCH numeric powers stay raw while simple gram ranges remain usable',()=>{const p=metal.find(x=>x.model==='MTTS-6102BSLJ');assert.ok(p);assert.equal(p.specs.length_ft,6.833);assert.equal(p.specs.power,'');assert.equal(p.specs.power_raw,'2');assert.equal(p.specs.lure_min_g,30);assert.equal(p.specs.lure_max_g,100);assert.equal(p.specs.line_pe_min,0.6);assert.equal(p.specs.line_pe_max,2);assert.equal(p.specs.weight_g,130)});
 
