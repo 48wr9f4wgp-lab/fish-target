@@ -19,11 +19,6 @@
     row('SHIMANO','reel','DEMO SW','v23-demo','6000HG',{reel_size:6000,gear_ratio:5.7,max_drag_kg:14}),
     row('SHIMANO','reel','DEMO UNKNOWN','v23-demo','5000X',{reel_size:5000,gear_ratio:5.8,max_drag_kg:12},'unknown')
   ];
-  const daiwaPoc=Array.isArray(globalThis.FISH_TARGET_DAIWA_POC_ROWS)?globalThis.FISH_TARGET_DAIWA_POC_ROWS:[];
-  const shimanoPoc=Array.isArray(globalThis.FISH_TARGET_SHIMANO_POC_ROWS)?globalThis.FISH_TARGET_SHIMANO_POC_ROWS:[];
-  const registry=Array.isArray(globalThis.FISH_TARGET_CATALOG_BATCH_ROWS)?globalThis.FISH_TARGET_CATALOG_BATCH_ROWS:[];
-  const registryRows=registry.flatMap(batch=>Array.isArray(batch?.rows)?batch.rows:[]);
-  const combined=[...raw,...daiwaPoc,...shimanoPoc,...registryRows];
-  globalThis.FISH_TARGET_CATALOG_FIXTURES=Object.freeze(combined.map(x=>adapters.byMaker(x.maker).normalize(x)));
-  globalThis.FISH_TARGET_CATALOG_COMPOSITION=Object.freeze({synthetic:raw.length,daiwaPoc:daiwaPoc.length,shimanoPoc:shimanoPoc.length,batches:registry.length,batchRows:registryRows.length,total:combined.length});
+  globalThis.FISH_TARGET_CATALOG_FIXTURES=Object.freeze(raw.map(x=>adapters.byMaker(x.maker).normalize(x)));
+  globalThis.FISH_TARGET_CATALOG_FIXTURE_COMPOSITION=Object.freeze({synthetic:raw.length,total:raw.length});
 })();

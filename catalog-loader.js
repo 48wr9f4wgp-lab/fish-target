@@ -2,7 +2,7 @@
   const BUILD=document.documentElement.dataset.build||'dev';
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const coreAssets=['catalog-providers.js','catalog-adapters.js'];
-  const tailAssets=['catalog-fixtures.js','catalog.js'];
+  const tailAssets=['catalog-research.js','catalog-fixtures.js','catalog.js'];
   const MAKERS=['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX','FISHMAN','YAMAGA BLANKS','TENRYU','TICT','GAMAKATSU','ZENAQ','PALMS','APIA','JACKALL','SMITH'];
   let runtime=null,loading=null,manifest=null;
   const state={status:'idle',productCount:0,batchCount:0,error:null,assets:[]};
