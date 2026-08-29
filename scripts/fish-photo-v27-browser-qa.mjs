@@ -10,10 +10,11 @@ const page=await context.newPage();
 const errors=[];const consoleErrors=[];let wikiHits=0,commonsHits=0,imageHits=0;
 page.on('pageerror',e=>errors.push(String(e)));
 page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+const cors={'access-control-allow-origin':'*','cache-control':'no-store'};
 
-await page.route('https://ja.wikipedia.org/**',route=>{wikiHits++;return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({query:{pages:{1:{pageid:1,title:'サバ',pageimage:'Saba.jpg'}}}})})});
-await page.route('https://commons.wikimedia.org/**',route=>{commonsHits++;return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({query:{pages:{2:{imageinfo:[{thumburl:'https://upload.wikimedia.org/fake/saba.png',url:'https://upload.wikimedia.org/fake/saba.png',extmetadata:{LicenseShortName:{value:'CC BY-SA 4.0'},Artist:{value:'Test Photographer'}}}]}}}})})});
-await page.route('https://upload.wikimedia.org/**',route=>{imageHits++;return route.fulfill({status:200,contentType:'image/png',body:PNG})});
+await page.route('https://ja.wikipedia.org/**',route=>{wikiHits++;return route.fulfill({status:200,headers:{...cors,'content-type':'application/json'},body:JSON.stringify({query:{pages:{1:{pageid:1,title:'サバ',pageimage:'Saba.jpg'}}}})})});
+await page.route('https://commons.wikimedia.org/**',route=>{commonsHits++;return route.fulfill({status:200,headers:{...cors,'content-type':'application/json'},body:JSON.stringify({query:{pages:{2:{imageinfo:[{thumburl:'https://upload.wikimedia.org/fake/saba.png',url:'https://upload.wikimedia.org/fake/saba.png',extmetadata:{LicenseShortName:{value:'CC BY-SA 4.0'},Artist:{value:'Test Photographer'}}}]}}}})})});
+await page.route('https://upload.wikimedia.org/**',route=>{imageHits++;return route.fulfill({status:200,headers:{'cache-control':'no-store','content-type':'image/png'},body:PNG})});
 
 await page.goto(QA_URL,{waitUntil:'domcontentloaded',timeout:30000});
 await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),null,{timeout:20000});
