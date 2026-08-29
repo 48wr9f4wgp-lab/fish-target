@@ -27,7 +27,9 @@ async function openTarget(page,name){
 }
 
 async function backHome(page){
-  await page.locator('#back').click();
+  const dockHome=page.locator('#resultDockV20 [data-action="home"]');
+  if(await dockHome.count()&&await dockHome.isVisible())await dockHome.click();
+  else await page.locator('#back').click();
   await page.locator('#home.on').waitFor({state:'visible'});
 }
 
@@ -114,8 +116,7 @@ async function runViewport(browser,{width,height}){
     await restoreSaved(page,'サバ');
     assert.equal(await text(page,'#pmethod'),'ライトゲーム/小型メタルジグ','legacy saved method restored');
     assert.equal(await text(page,'#tackleFitBody .fitSummary b'),'手持ちで組みやすい','legacy saved fit restored');
-    await page.locator('.nav button[data-v="home"]').click();
-    await page.locator('#home.on').waitFor({state:'visible'});
+    await backHome(page);
   }else await backHome(page);
 
   // V1 -> V2 cross-phase regression.
@@ -170,8 +171,7 @@ async function runViewport(browser,{width,height}){
     await restoreSaved(page,'アユ');
     assert.equal(await text(page,'#pmethod'),'アユイング','TARGET4 saved method restored');
     assert.equal(await text(page,'#firstBait'),'アユイング用ルアー','TARGET4 saved FIRST CAST restored');
-    await page.locator('.nav button[data-v="home"]').click();
-    await page.locator('#home.on').waitFor({state:'visible'});
+    await backHome(page);
   }else await backHome(page);
 
   // V1 fish receiving V4 boat/shore methods must not lose its original plans.
@@ -201,8 +201,7 @@ async function runViewport(browser,{width,height}){
     assert.equal(saved.find(x=>x.fish==='ワカサギ')?.methodKey,'ice','TARGET3 saved methodKey');
     await restoreSaved(page,'ワカサギ');
     assert.equal(await text(page,'#pmethod'),'氷上穴釣り','TARGET3 saved method restored');
-    await page.locator('.nav button[data-v="home"]').click();
-    await page.locator('#home.on').waitFor({state:'visible'});
+    await backHome(page);
   }else await backHome(page);
 
   // TARGET2 representative remains healthy after four composition layers.
@@ -214,7 +213,7 @@ async function runViewport(browser,{width,height}){
   await noOverflow(page,width,`${width} TARGET2 regression`);
 
   if(width===390){
-    await page.locator('.nav button[data-v="home"]').click();
+    await backHome(page);
     await page.locator('.v19TackleShortcut').click();
     await page.locator('#tackleSheet').waitFor({state:'visible'});
     assert.ok(await page.locator('#rodCatalogMaker option').count()>=2,'catalog maker selector survives TARGET4');
