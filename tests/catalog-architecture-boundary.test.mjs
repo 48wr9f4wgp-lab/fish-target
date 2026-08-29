@@ -56,3 +56,12 @@ test('legacy direct-load path composes identical runtime without re-mixing fixtu
   assert.equal(legacy.FISH_TARGET_CATALOG_COMPOSITION.synthetic,expectedSynthetic);
   assert.equal(legacy.FISH_TARGET_CATALOG_COMPOSITION.total,expectedResearch+expectedSynthetic);
 });
+
+test('catalog research layer ships as lazy runtime asset before fixtures and runtime',()=>{
+  const build=read('scripts/build.mjs');
+  const loader=read('catalog-loader.js');
+  assert.match(build,/lazyRuntimeAssets=\['catalog-providers\.js','catalog-adapters\.js',\.\.\.batchFiles,'catalog-research\.js','catalog-fixtures\.js','catalog\.js'\]/,'build must ship research layer in lazy runtime order');
+  assert.match(loader,/tailAssets=\['catalog-research\.js','catalog-fixtures\.js','catalog\.js'\]/,'loader must execute research before fixtures/runtime');
+  assert.equal(read('dist/catalog-research.js'),read('catalog-research.js'),'build must copy catalog-research.js verbatim');
+  assert.ok(!read('dist/sw.js').includes('./catalog-research.js'),'research catalog stays out of install-time PWA shell');
+});
