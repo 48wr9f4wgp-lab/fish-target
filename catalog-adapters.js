@@ -17,9 +17,12 @@
       };
     }
     return {
-      reel_size:finite(specs.reel_size),weight_g:finite(specs.weight_g),gear_ratio:finite(specs.gear_ratio),
-      retrieve_cm:finite(specs.retrieve_cm),max_drag_kg:finite(specs.max_drag_kg),
-      pe_capacity_raw:text(specs.pe_capacity_raw),line_capacity_raw:text(specs.line_capacity_raw)||text(specs.pe_capacity_raw)
+      reel_size:finite(specs.reel_size),reel_size_raw:text(specs.reel_size_raw),weight_g:finite(specs.weight_g),gear_ratio:finite(specs.gear_ratio),
+      retrieve_cm:finite(specs.retrieve_cm),max_drag_kg:finite(specs.max_drag_kg),allowable_strength_kg:finite(specs.allowable_strength_kg),
+      drag_type_raw:text(specs.drag_type_raw),application_raw:text(specs.application_raw),nylon_capacity_raw:text(specs.nylon_capacity_raw),
+      pe_capacity_raw:text(specs.pe_capacity_raw),line_capacity_raw:text(specs.line_capacity_raw)||text(specs.pe_capacity_raw),
+      spool_diameter_mm:finite(specs.spool_diameter_mm),spool_stroke_mm:finite(specs.spool_stroke_mm),handle_length_mm:finite(specs.handle_length_mm),
+      bearings_raw:text(specs.bearings_raw),product_code:text(specs.product_code)
     };
   }
 
