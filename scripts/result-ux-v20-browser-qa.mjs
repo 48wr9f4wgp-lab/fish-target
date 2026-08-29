@@ -42,16 +42,23 @@ assert.match((await reel.textContent())||'',/SURF LEADER SD 35 HYOUJYUN/,'surf r
 assert.match((await reel.textContent())||'',/△ 要確認/,'missing installed line remains explicit soft check');
 assert.match((await reel.textContent())||'',/今巻いているライン種類を登録/,'reel explains only missing user data');
 assert.equal((await page.locator('#tackleFitCard').textContent()||'').includes('NEXT BUY'),false,'duplicate NEXT BUY removed');
-assert.equal(await page.locator('#tackleFitBody .fitSummary').isVisible(),false,'legacy summary never leaks into UX21');
+assert.equal(await page.locator('#tackleFitBody .fitSummary').isVisible(),false,'legacy summary never leaks into UX22');
 assert.equal(await page.locator('.fitV20DetailBody').isVisible(),false,'technical rationale stays collapsed');
 assert.equal(await page.locator('#resultDockV20').isVisible(),true,'result action dock visible');
 assert.equal(await page.locator('.nav').isVisible(),false,'generic nav hidden on result');
 assert.equal((await page.locator('#result .toprow .brand').textContent()).trim(),'FISH TARGET · GAME PLAN','internal build string removed from result chrome');
 
 const dockBox=await page.locator('#resultDockV20').boundingBox();
-assert.ok(dockBox&&dockBox.height<=58,`device dock compact: ${dockBox?.height}`);
+assert.ok(dockBox&&dockBox.height<=46,`UX22 device dock compact: ${dockBox?.height}`);
 const heroBox=await page.locator('#result .resultHero').boundingBox();
-assert.ok(heroBox&&heroBox.height<=220,`result hero compact: ${heroBox?.height}`);
+assert.ok(heroBox&&heroBox.height<=190,`UX22 result hero compact: ${heroBox?.height}`);
+const planBox=await page.locator('#result .planCard').boundingBox();
+assert.ok(planBox&&planBox.height<=350,`UX22 plan card compact: ${planBox?.height}`);
+assert.equal(await page.locator('#result .quickPromise').isVisible(),false,'redundant quick promise hidden on mobile');
+const favoriteBox=await page.locator('#result #favoriteBtn').boundingBox();
+assert.ok(favoriteBox&&favoriteBox.height<=34&&favoriteBox.width<180,`favorite is compact utility: ${favoriteBox?.width}x${favoriteBox?.height}`);
+const firstNameBox=await page.locator('#result #firstBait').boundingBox();
+assert.ok(firstNameBox&&firstNameBox.y<760,`FIRST CAST choice enters opening decision window: y=${firstNameBox?.y}`);
 const gearBox=await page.locator('#gear').boundingBox();
 assert.ok(gearBox&&gearBox.height<=190,`four tackle cards compact: ${gearBox?.height}`);
 
@@ -96,9 +103,11 @@ assert.equal((await page.locator('.fitV20Summary b').textContent()).trim(),'こ�
 assert.match((await page.locator('.fitV20Summary small').textContent())||'',/パワー・番手が推奨より不足/,'aggregate reason names the two core gaps');
 assert.equal((await page.locator('.fitV20Details>summary em').textContent()).trim(),'要確認 2件','detail count uses human wording');
 assert.equal(await page.locator('#tackleFitBody .fitSummary').isVisible(),false,'no duplicate legacy decision on real-device scenario');
+const buriPlan=await page.locator('#result .planCard').boundingBox();assert.ok(buriPlan&&buriPlan.height<=350,`buri plan stays compact: ${buriPlan?.height}`);
+const buriFirst=await page.locator('#result #firstBait').boundingBox();assert.ok(buriFirst&&buriFirst.y<760,`buri FIRST CAST visible early: ${buriFirst?.y}`);
 const buriGear=await page.locator('#gear').boundingBox();assert.ok(buriGear&&buriGear.height<=190,`buri tackle cards compact: ${buriGear?.height}`);
 
 assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
 assert.deepEqual(consoleErrors,[],`console errors: ${consoleErrors.join('\n')}`);
 await browser.close();
-console.log('RESULT_UX_V21_BROWSER_QA_PASS');
+console.log('RESULT_UX_V22_BROWSER_QA_PASS');
