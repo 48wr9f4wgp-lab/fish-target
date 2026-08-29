@@ -121,10 +121,11 @@ Confirmed green checkpoints:
 - Catalog scale gate: PASS at 1k / 5k / 10k products.
 - Method Registry-inclusive regression SHA `d04d6cc4a6135e8d20594ccf81a8147977f59431`: `rc-qa` PASS.
 
-Latest-head requirements:
-- `rc-browser-qa` must PASS on the final branch HEAD, including the domain registry browser gate.
-- `rc-qa` must PASS on the same final HEAD.
-- iPhone/device verification remains separate and required for visual/photo acceptance.
+Final branch gate:
+- freeze code/docs at this checkpoint
+- require `rc-qa` PASS on the final HEAD
+- require `rc-browser-qa` PASS on the same final HEAD, including domain registry browser QA
+- require iPhone/device verification separately for visual/photo acceptance
 
 Do not report Platform Architecture v1 as complete until the same final HEAD has both automated gates green.
 
