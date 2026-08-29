@@ -86,7 +86,6 @@
 
   apply();
   if(typeof renderResult==='function'){const prev=renderResult;renderResult=function(...args){const out=prev.apply(this,args);apply();return out}}
-  const app=document.querySelector('.app');if(app)new MutationObserver(()=>{if(document.getElementById('result')?.classList.contains('on'))apply();else document.body.classList.remove('ux23ResultActive')}).observe(app,{subtree:true,attributes:true,attributeFilter:['class']});
   window.addEventListener('pageshow',apply);
-  globalThis.FISH_TARGET_RESULT_UX_V23=Object.freeze({version:'V23',render:apply});
+  globalThis.FISH_TARGET_RESULT_UX_V23=Object.freeze({version:'V23R1',render:apply});
 })();
