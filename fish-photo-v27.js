@@ -2,6 +2,7 @@
   const PARAMS=new URLSearchParams(location.search);
   const REMOTE_ENABLED=location.protocol==='https:'||PARAMS.get('fishPhotoRemote')==='on';
   const EAGER=PARAMS.get('fishPhotoEager')==='on';
+  const QA_AUTOLOAD=PARAMS.get('fishPhotoQaAutoLoad')==='on'&&location.hostname==='127.0.0.1';
   const LOCAL=new Set(globalThis.FISH_TARGET_REAL_FISH?.species||[]);
   const pending=new Map();
   const cacheKey=name=>`ft-fish-photo-v27:${name}`;
@@ -54,6 +55,13 @@
     delete host.dataset.fishPhotoName;
   }
   function creditText(v){return [v.source,v.license,v.artist].filter(Boolean).join(' · ')}
+  function commitPhoto(host,name,v,img){
+    if(host.dataset.fishPhotoName!==name)return;
+    host.querySelectorAll(':scope>.fishPhotoV27,:scope>.fishPhotoCreditV27').forEach(el=>el.remove());
+    host.appendChild(img);
+    const credit=document.createElement('span');credit.className='fishPhotoCreditV27';credit.textContent=creditText(v);credit.title=`${credit.textContent}${v.article?` · ${v.article}`:''}`;host.appendChild(credit);
+    host.classList.add('fishPhotoMountedV27');host.dataset.fishAsset='wikimedia-licensed-photo';
+  }
   function mount(host,name){
     if(!REMOTE_ENABLED||!navigator.onLine||!host||!name)return;
     if(LOCAL.has(name)){if(host.dataset.fishPhotoName)clearHost(host);return}
@@ -65,19 +73,15 @@
     task.then(v=>{
       if(!v||!host.isConnected||host.dataset.fishPhotoName!==name)return;
       const img=document.createElement('img');
-      img.className='fishPhotoV27';img.alt=`${name}の実写`;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.src=v.url;
-      img.addEventListener('load',()=>{
-        if(host.dataset.fishPhotoName!==name)return;
-        host.querySelectorAll(':scope>.fishPhotoV27,:scope>.fishPhotoCreditV27').forEach(el=>el.remove());
-        host.appendChild(img);
-        const credit=document.createElement('span');credit.className='fishPhotoCreditV27';credit.textContent=creditText(v);credit.title=`${credit.textContent}${v.article?` · ${v.article}`:''}`;host.appendChild(credit);
-        host.classList.add('fishPhotoMountedV27');host.dataset.fishAsset='wikimedia-licensed-photo';
-      },{once:true});
+      img.className='fishPhotoV27';img.alt=`${name}の実写`;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
+      if(QA_AUTOLOAD){img.src=v.url;queueMicrotask(()=>commitPhoto(host,name,v,img));return}
+      img.addEventListener('load',()=>commitPhoto(host,name,v,img),{once:true});
       img.addEventListener('error',()=>{
         pending.delete(name);
         try{localStorage.removeItem(cacheKey(name))}catch{}
         if(host.dataset.fishPhotoName===name)delete host.dataset.fishPhotoName;
       },{once:true});
+      img.src=v.url;
     });
   }
   const seen=new WeakSet();
@@ -110,5 +114,5 @@
     window.addEventListener('pageshow',schedule);window.addEventListener('online',schedule);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({version:'V27',provider:'Wikimedia Commons',policy:'licensed-photo-only-with-svg-offline-fallback',enabled:REMOTE_ENABLED,eager:EAGER,localSpecies:Object.freeze([...LOCAL]),aliases:titleAlias});
+  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({version:'V27',provider:'Wikimedia Commons',policy:'licensed-photo-only-with-svg-offline-fallback',enabled:REMOTE_ENABLED,eager:EAGER,qaAutoLoad:QA_AUTOLOAD,localSpecies:Object.freeze([...LOCAL]),aliases:titleAlias});
 })();
