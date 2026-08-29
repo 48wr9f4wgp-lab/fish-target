@@ -35,9 +35,15 @@ async function selectMethod(page,id){
 }
 
 async function backHome(page){
+  if(await page.locator('#home.on').count())return;
   const dockHome=page.locator('#resultDockV20 [data-action="home"]');
   if(await dockHome.count()&&await dockHome.isVisible())await dockHome.click();
-  else await page.locator('#back').click();
+  else if(await page.locator('#back').isVisible())await page.locator('#back').click();
+  await page.waitForTimeout(80);
+  if(!(await page.locator('#home.on').count())){
+    const homeNav=page.locator('.nav button[data-v="home"]');
+    if(await homeNav.count()&&await homeNav.isVisible())await homeNav.click();
+  }
   await page.locator('#home.on').waitFor({state:'visible'});
 }
 
