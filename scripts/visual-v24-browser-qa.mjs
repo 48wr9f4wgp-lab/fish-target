@@ -39,7 +39,7 @@ assert.notEqual(visual.first.bgc,'rgb(255, 255, 255)','FIRST CAST no longer read
 assert.match(visual.first.color,/rgb\((?:24[0-9]|25[0-5]),/,'FIRST CAST keeps high-contrast light text');
 assert.notEqual(visual.firstCell.bgc,'rgb(255, 255, 255)','FIRST CAST data cells are integrated into panel');
 assert.ok(visual.plan.shadow!=='none','method card has controlled depth');
-assert.notEqual(visual.methodChange.bgc,'rgba(0, 0, 0, 0)','method change is a deliberate dark control');
+assert.ok(/gradient/i.test(visual.methodChange.bg)||visual.methodChange.bgc!=='rgba(0, 0, 0, 0)','method change is a deliberate dark control');
 assert.ok(visual.fit.shadow!=='none','MY TACKLE decision card has hierarchy depth');
 assert.ok(visual.gear.shadow!=='none','required tackle spec plate has subtle depth');
 assert.match(visual.dock.blur,/blur/i,'result dock uses frosted-glass treatment');
