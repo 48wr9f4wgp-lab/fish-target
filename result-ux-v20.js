@@ -119,11 +119,13 @@
   function ensureDock(){
     let dock=document.getElementById('resultDockV20');
     if(!dock){
-      document.body.insertAdjacentHTML('beforeend','<div class="resultDockV20" id="resultDockV20" hidden><button data-action="home" type="button">魚一覧</button><button data-action="save" type="button">保存</button></div>');
+      document.body.insertAdjacentHTML('beforeend','<div class="resultDockV20" id="resultDockV20" hidden><button data-action="home" type="button">魚一覧</button></div>');
       dock=document.getElementById('resultDockV20');
       dock.querySelector('[data-action="home"]').onclick=()=>typeof show==='function'&&show('home');
-      dock.querySelector('[data-action="save"]').onclick=()=>document.getElementById('save')?.click();
     }
+    const staleSave=dock.querySelector('[data-action="save"]:not(#save)');if(staleSave)staleSave.remove();
+    const save=document.getElementById('save');
+    if(save&&save.parentElement!==dock){save.dataset.action='save';save.textContent='保存';dock.appendChild(save)}
     const field=document.getElementById('fieldModeBtn');
     if(field&&field.parentElement!==dock){field.classList.add('primary');field.dataset.action='field';field.textContent='現場モード';dock.appendChild(field)}
     return dock;
