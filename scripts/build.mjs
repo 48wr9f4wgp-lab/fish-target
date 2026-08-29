@@ -24,7 +24,7 @@ for(const batch of catalogManifest.batches){
 const lazyRuntimeAssets=['catalog-providers.js','catalog-adapters.js',...batchFiles,'catalog-fixtures.js','catalog.js'];
 const copiedAssets=[
   'style.css','quick-plan.css','field-mode.css','pwa.css',
-  'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','visual-v8.css','result-ux-v20.css','result-ux-v23.css',
+  'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','visual-v8.css','result-ux-v20.css','result-ux-v23.css','visual-v24.css',
   'data.js','products.js','app.js','field-mode.js','pwa.js',
   'continuity.js',
   'target-method-data-v1-part1.js','target-method-data-v1-part2.js','target-method-data-v1-part3.js','target-method-data-v1-part4.js','target-method-data-v1-part5.js','target-method-data-v1.js',
