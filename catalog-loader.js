@@ -3,7 +3,7 @@
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const coreAssets=['catalog-providers.js','catalog-adapters.js'];
   const tailAssets=['catalog-fixtures.js','catalog.js'];
-  const MAKERS=['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX','FISHMAN','YAMAGA BLANKS','TENRYU','TICT','GAMAKATSU','ZENAQ','PALMS','APIA','JACKALL'];
+  const MAKERS=['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX','FISHMAN','YAMAGA BLANKS','TENRYU','TICT','GAMAKATSU','ZENAQ','PALMS','APIA','JACKALL','SMITH'];
   let runtime=null,loading=null,manifest=null;
   const state={status:'idle',productCount:0,batchCount:0,error:null,assets:[]};
   const statusInfo=status=>({current:{label:'現行',selectable:true,needsReview:false},discontinued:{label:'廃番',selectable:true,needsReview:true},legacy:{label:'旧モデル',selectable:true,needsReview:true},unknown:{label:'状態不明',selectable:true,needsReview:true}})[status]||{label:'状態不明',selectable:true,needsReview:true};
