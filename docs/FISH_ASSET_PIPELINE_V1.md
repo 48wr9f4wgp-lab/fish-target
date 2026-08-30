@@ -11,10 +11,10 @@ Current product composition:
 - 60 canonical fishing targets
 - 19 currently bundled sprite targets
 - 41 non-bundled targets in the derived rights queue
-- 33 reviewed image candidates eligible for intake planning
-- 8 targets blocked by taxonomy review
+- 35 reviewed image candidates eligible for intake planning
+- 6 targets blocked by taxonomy review
 
-The first safe image milestone is therefore 52/60 bundled targets: current 19 plus 33 verified candidates. The 8 taxonomy-review targets remain remote/fallback until their product taxon is explicitly resolved.
+The first safe image milestone is therefore 54/60 bundled targets: current 19 plus 35 verified candidates. The 6 taxonomy-review targets remain remote/fallback until their product taxon is explicitly resolved.
 
 ## Canonical pipeline
 
@@ -75,8 +75,6 @@ A direct bundled fish image must not become publication-ready unless all of the 
 
 Do not bind one arbitrary species image to these product labels until product intent is resolved:
 - カレイ
-- アナゴ
-- ベラ
 - エソ
 - オニカサゴ
 - マルイカ
@@ -84,6 +82,10 @@ Do not bind one arbitrary species image to these product labels until product in
 - タナゴ
 
 These are intentionally fail-closed. A visually plausible image is not sufficient evidence.
+
+Resolved candidate taxonomy notes:
+- アナゴ is treated as マアナゴ (`Conger myriaster`) for candidate research based on the DAIWA Fish Field Guide.
+- ベラ is treated as キュウセン (`Parajulis poecilepterus`) for candidate research: DAIWA lists ベラ as a vernacular name for キュウセン, FishBase accepts `Parajulis poecilepterus`, and the selected Commons photo is author-released public domain.
 
 ## External-impact approval boundary
 
@@ -95,7 +97,7 @@ Likewise, do not merge PR #17 or `main` without explicit approval.
 
 ## First execution batch after approval
 
-Prefer the 33 verified candidates first. Do not block the first device-quality pass on the 8 ambiguous labels.
+Prefer the 35 verified candidates first. Do not block the first device-quality pass on the 6 ambiguous labels.
 
 After the first binary intake:
 1. verify every receipt and file hash
