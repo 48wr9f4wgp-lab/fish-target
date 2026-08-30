@@ -1,172 +1,194 @@
 # FISH TARGET Platform Architecture v1
 
+Status: core migration layers implemented; latest implementation checkpoint dual-Green
+Date: 2026-08-30
+
 ## Goal
 Turn FISH TARGET from feature-by-feature growth into a scalable decision-engine platform where product, species, method, asset, and resolver changes can be added through validated data pipelines instead of repeated UI/code surgery.
 
-## Baseline
+Canonical decision flow:
+
+`Species -> Method/AUTO -> FIRST CAST -> Requirements -> MY TACKLE fit -> Product Match -> Field steps -> FIELD MODE`
+
+## Baseline and boundaries
 - Rollback baseline: `4080f509db63e2dcd03d1480cbc5a427f1cb0bbc`
 - Work branch: `chatgpt/platform-architecture-v1`
-- Production/main merge: prohibited until explicit approval and full quality gates
-- Manufacturer official catalog rows: research/internal testing only; production publication remains blocked
-
-## Target architecture
-
-### Catalog
-`source/raw -> normalize -> validate -> review -> approved runtime -> resolver`
-
-Boundaries:
-- provider policy
-- adapters/normalization
-- factual research rows
-- synthetic development fixtures
-- runtime composition
-- production eligibility
-
-### Decision domain
-`Species Registry -> Method Registry -> Requirements -> Resolver -> MY TACKLE/Product Match -> UI`
-
-### Assets
-`Species Registry -> Asset Manifest -> bundled verified asset -> attribution/license -> safe fallback`
+- PR: #17, Draft
+- `main` merge is prohibited without explicit approval.
+- Manufacturer-official catalog rows remain research/internal-testing data unless rights/terms are separately cleared.
+- Third-party fish-image binary download + commit/re-distribution requires explicit approval.
+- Automated browser Green does not replace 390x844 iPhone/PWA visual verification.
 
 ## Completed migration layers
 
 ### A. Architecture audit
-- Repository structure inventoried.
-- Main scalability risks identified: large legacy `data.js`, staged target-method generations, catalog files/tests growing per vendor/series, runtime/domain responsibilities mixed with UI.
+Repository responsibilities and scalability risks were inventoried. The main risks were large legacy domain files, staged method generations, per-vendor catalog growth, UI/domain coupling, and unstable fish-image provenance.
 
 ### B. Catalog boundary cleanup
-- Factual research catalog separated from synthetic fixtures.
-- `catalog-research.js` owns factual research composition.
-- `catalog-fixtures.js` owns synthetic development fixtures only.
-- `catalog.js` composes both for the current development runtime.
-- Legacy direct-load compatibility retained without repopulating fixture boundary with factual rows.
-- `catalog-research.js` is shipped as a lazy runtime asset and remains outside install-time PWA shell.
+- `catalog-research.js`: factual research rows only.
+- `catalog-fixtures.js`: synthetic development fixtures only.
+- `catalog.js`: development runtime composition without re-mixing the source boundary.
+- `catalog-loader.js`: lazy runtime; catalog data does not boot-load with the PWA shell.
+- Legacy direct-load compatibility remains available.
 
-### C. Generic Catalog Contract Gate
-`scripts/catalog-contract-qa.mjs` validates all catalog batches through one central contract:
-- manifest/batch integrity
-- expected row counts
-- maker consistency
-- source/license requirements
-- duplicate canonical product keys
-- JAN format/uniqueness
-- provider-policy leakage
-- user-owned/current-line leakage into catalog facts
-- research/fixture/runtime composition consistency
-- runtime validation
-- production publication remains fail-closed
-
-Verified scale baseline:
+Current composition:
 - 41 batches
 - 19 makers
 - 946 factual research rows
 - 14 synthetic fixtures
-- 960 runtime products
+- 960 development runtime products
 - 516 JAN values
-- 1k / 5k / 10k scale QA passes
 
-### D. Species Registry compatibility layer
-`species-registry.js` exposes current targets as immutable records without changing legacy `F` authoring yet.
+### C. Generic Catalog Contract Gate
+`scripts/catalog-contract-qa.mjs` centrally validates:
+- manifest/batch integrity
+- expected row counts
+- source and license metadata
+- maker consistency
+- stable product IDs
+- duplicate canonical product keys
+- JAN format and uniqueness
+- provider-policy leakage
+- current/installed-line leakage into product facts
+- factual/fixture/runtime composition
+- publication fail-closed behavior
 
-Stable lookup fields:
-- `species_id`
-- canonical name
-- aliases
-- water
-- styles
-- tags
-- difficulty
-- default method
-- method IDs
-- plan count
+Scale QA remains Green at 1k / 5k / 10k products.
 
-Rules:
+### D. Species Registry
+`species-registry.js` exposes the current product targets as immutable resolver-facing records.
+
+Contract:
+- 60 canonical targets
+- stable `species_id`
+- canonical name + aliases
 - exact canonical name/ID wins
-- ambiguous aliases never guess
-- generated IDs are deterministic; future explicit IDs can override them
-- registry is shipped in the offline shell
+- ambiguous aliases fail closed
+- deterministic generated IDs with explicit-ID override support
 
-Current contract target: 60 species / 150 linked plans.
-
-### E. Method Registry compatibility layer
-`method-registry.js` projects current Fishing Plans into immutable resolver-facing records.
+### E. Method Registry
+`method-registry.js` projects the current Fishing Plans into immutable records.
 
 Stable identity:
+
 `plan_id = species_id + ':' + method_id`
 
-Each record exposes:
-- species identity
-- method identity
-- style/difficulty
-- rationale
-- tackle requirements
-- FIRST CAST fields
-- steps
-- places
-- mistakes
+Current contract:
+- 150 linked plans
+- globally unique plan IDs
+- requirements
+- FIRST CAST
+- steps / places / mistakes
 - source evidence
 
-Current contract target: 150 globally unique plan IDs.
+### F. Resolver Engine
+`resolver-engine.js` now owns the compatibility boundary for:
+- `resolveSpecies`
+- `resolveMethods`
+- `resolvePlan`
+- `resolveFirstCast`
+- `resolveRequirements`
+- `evaluateOwnedTackle`
+- `matchCatalog`
+- `rankCatalogMatches`
+
+MY TACKLE migration:
+- legacy fit remains the behavioral oracle
+- Resolver shadow parity is enforced
+- visible MY TACKLE candidate selection is Resolver-backed through `RESOLVER-TACKLE-UI-2`
+- current runtime plan/rotation context is preserved so goal/method/FIRST CAST changes do not drift
+
+Catalog Match shadow:
+- Catalog remains lazy; shadow does not trigger boot-time loading
+- default matching exposes production-eligible rows only
+- restricted research requires explicit `includeResearch:true`
+- synthetic fixtures require a separate explicit `includeSynthetic:true`
+- existing `rodFit` / `reelFit` logic is reused rather than creating a second fit engine
+- existing visible `PRODUCT_DB` cards are unchanged
+
+Verified Browser evidence at implementation checkpoint `173bdf4c7cb6d4d3efe7e1db813d3269b7050bd6`:
+- `rc-qa #565`: PASS
+- `rc-browser-qa #474`: PASS
+- Resolver Catalog Shadow for the ヒラメ test path evaluated 946 candidates
+- top shadow rod: `daiwa:rod:lateo:unknown:96m-k`
+- top shadow reel: `daiwa:reel:bg-sw:unknown:5000-h`
+- research-only candidates: 946
+- synthetic matches: 0
+- overlap with current static rod/reel recommendations: 1
+
+Interpretation:
+The resolver/catalog boundary works, but a visible Catalog consumer switch is intentionally blocked. The current factual catalog is research-only and the low overlap shows that product recommendation semantics still need an approved coverage/ranking policy before replacing the current static recommendation surface.
+
+### G. Validated species/method authoring pipeline
+The authoring/generation scaffold is implemented:
+- source validation
+- duplicate and cross-reference checks
+- generated runtime
+- registry/browser verification
+
+This does **not** mean the legacy 150-plan source set has been fully migrated out of staged `target-method-data-v1..v4` files. Migration remains incremental; new work should prefer the validated authoring path where practical.
+
+### H. Fish Asset Manifest and intake pipeline
+Bundled-first architecture is implemented with:
+- Species Registry linkage
+- Fish Asset Authoring
+- generated runtime
+- Fish Asset Manifest
+- stable Rights Queue IDs
+- research Candidate Registry
+- side-effect-free Intake Planner
+- Intake Receipt contract
+- source/output SHA-256 provenance
+- transformation history
+- Promotion Planner
+- publication-ready fail-closed checks
+- direct-file build hash verification
+
+Current image state:
+- 60 canonical targets
+- 19 currently bundled targets
+- 41 non-bundled rights-queue targets
+- 35 verified image candidates
+- 6 taxonomy-review targets
+- first approved binary-intake milestone: 54/60 bundled candidates (19 + 35)
+
+No third-party candidate binary has been downloaded, committed, redistributed, or promoted by this architecture work.
 
 ## CI architecture
-- Regression/build/catalog contract run in `rc-qa`.
-- Current browser suite routes PRs using `GITHUB_HEAD_REF`, avoiding stale branch detection from `refs/pull/*/merge`.
-- Domain registry browser QA validates actual 60-species / 150-plan runtime.
-- Workflow concurrency is enabled so future superseded PR runs are cancelled instead of accumulating indefinitely.
+- `rc-qa`: syntax, authoring contracts, build, regression, catalog contract, scale QA.
+- `rc-browser-qa`: boot, result UX, visual regression, asset manifest/photo, target/domain registry, Resolver, lazy Catalog, and manufacturer-specific regressions.
+- PR routing uses `GITHUB_HEAD_REF`.
+- Workflow concurrency cancels superseded PR runs.
 
-## QA state
-Confirmed green checkpoints:
-- Catalog architecture checkpoint: `rc-qa` PASS with 197/197 tests.
-- Generic catalog contract: PASS for 41 batches / 19 makers / 946 research / 14 synthetic / 960 runtime / 516 JAN.
-- Catalog scale gate: PASS at 1k / 5k / 10k products.
-- Method Registry-inclusive regression SHA `d04d6cc4a6135e8d20594ccf81a8147977f59431`: `rc-qa` PASS.
+## Current blockers / external gates
 
-Final branch gate:
-- implementation scope is frozen at this checkpoint
-- require `rc-qa` PASS on the final HEAD
-- require `rc-browser-qa` PASS on the same final HEAD, including domain registry browser QA
-- require iPhone/device verification separately for visual/photo acceptance
+### Catalog publication
+The 946 factual manufacturer research rows are not production eligible. Do not expose them as approved runtime recommendations until rights/terms and product recommendation policy are cleared.
 
-Do not report Platform Architecture v1 as complete until the same final HEAD has both automated gates green.
+### Fish-image binary intake
+Research metadata and intake machinery may proceed autonomously. Actual third-party binary acquisition plus commit/re-distribution requires explicit approval.
 
-## Next migration phases
+### Device acceptance
+PHOTO27R3 / bundled imagery is not visually complete until verified on the 390x844 iPhone/PWA path.
 
-### F. Resolver Engine boundary
-Extract pure resolver functions from UI mutation/render code:
-1. species + context -> selected plan
-2. plan -> requirements
-3. owned gear -> fit result
-4. catalog -> candidate products
-5. candidates -> ranked result
-
-No UI redesign during extraction. Existing FIRST CAST/MY TACKLE behavior remains the regression oracle.
-
-### G. Authoring pipeline for species/method additions
-Move from staged `target-method-data-v1..v4` growth to validated source records + generated runtime modules.
-
-Desired addition path:
-`new species/method source record -> schema/contract validation -> duplicate/alias/source checks -> generated registry/runtime -> regression/browser QA`
-
-Do not hand-edit multiple generation files for every future fish.
-
-### H. Fish Asset Manifest
-For each species maintain:
-- species_id
-- bundled asset
-- source
-- author
-- license
-- attribution
-- verification date
-
-Bundled-first remains the likely production architecture; SVG stays safe fallback.
+## Next execution gates
+1. Keep the Resolver Catalog Shadow as evidence; do not switch visible product recommendations yet.
+2. Resolve/clear Catalog publication rights and ranking/coverage policy before a consumer migration.
+3. Continue species/method legacy-source migration only where it reduces future authoring cost; avoid destructive big-bang rewrite.
+4. After explicit approval, intake the 35 verified fish-image candidates through receipt/hash/provenance gates.
+5. Run rc-qa + full Browser QA on every new exact HEAD.
+6. Perform iPhone/PWA device QA before image/PHOTO acceptance.
+7. Only after Release Candidate audit and explicit approval may `main` merge/public release be considered.
 
 ## Hard invariants
 - no fabricated unit conversions
-- no product spool-capacity/current-line mixing
-- no guessed lifecycle/JAN
-- restricted manufacturer rows do not become production-publishable
-- no ambiguous species alias guessing
+- no EGI/oz/lb/sinker conversion unless the manufacturer explicitly provides it
+- no spool-capacity/current-line mixing
+- no guessed lifecycle or JAN
+- MAX-only remains min=null / max=value
+- multi-context manufacturer ranges remain separate
+- restricted manufacturer rows never become production-publishable by inference
+- ambiguous species aliases/taxonomy never guess
 - no duplicate species IDs or plan IDs
-- no main merge without explicit approval
-- automated pass does not replace iPhone/device verification for visual/photo acceptance
+- no `main` merge without explicit approval
+- no unverified claim of completion/fix/Green
