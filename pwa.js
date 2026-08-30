@@ -39,7 +39,6 @@
       await loadScript('./catalog-loader.js','catalog-loader-js');
       await loadScript('./tackle.js','tackle-js');
       await loadScript('./resolver-shadow.js','resolver-shadow-js');
-      await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./fit-explain.js','fit-explain-js');
       await loadScript('./simplify.js','simplify-js');
       await loadScript('./visual-pass.js','visual-pass-js');
@@ -48,6 +47,7 @@
       await loadScript('./result-ux-v20.js','result-ux-v20-js');
       await loadScript('./result-ux-v21.js','result-ux-v21-js');
       await loadScript('./result-ux-v23.js','result-ux-v23-js');
+      await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./app-shell-v26.js','app-shell-v26-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
     }catch(err){console.error('extension bootstrap failed',err)}
