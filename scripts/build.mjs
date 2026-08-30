@@ -1,6 +1,7 @@
 import {cp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {generateRuntimeSource as generateFishAssetRuntimeSource,loadAuthoring as loadFishAssetAuthoring,validateAuthoring as validateFishAssetAuthoring} from './fish-asset-authoring.mjs';
 import {generateIcons} from './generate-icons.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -12,6 +13,15 @@ if(!/^V\d+(?:[.-][A-Za-z0-9]+)*$/.test(config.version))throw new Error('Invalid 
 if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldLive feature flag');
 const buildId=config.version.toLowerCase();
 
+const fishAssetAuthoring=await loadFishAssetAuthoring();
+const fishAssetErrors=validateFishAssetAuthoring(fishAssetAuthoring);
+if(fishAssetErrors.length)throw new Error(`Fish asset authoring invalid during build:\n- ${fishAssetErrors.join('\n- ')}`);
+const expectedFishAssetRuntime=generateFishAssetRuntimeSource(fishAssetAuthoring);
+const currentFishAssetRuntime=await readFile(path.join(root,'fish-asset-authoring-generated.js'),'utf8').catch(()=>null);
+if(currentFishAssetRuntime!==expectedFishAssetRuntime)throw new Error('Generated fish asset runtime is stale. Run npm run fish-assets:generate.');
+const fishAssetFiles=[...new Set(fishAssetAuthoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean))];
+if(!fishAssetFiles.length)throw new Error('Fish asset authoring has no bundled files');
+
 const catalogManifest=JSON.parse(await readFile(path.join(root,'catalog-batch-manifest.json'),'utf8'));
 if(!catalogManifest||!Array.isArray(catalogManifest.batches))throw new Error('Invalid catalog batch manifest');
 const batchIds=new Set(),batchFiles=[];
@@ -22,7 +32,7 @@ for(const batch of catalogManifest.batches){
   for(const file of batch.files){if(!batchFiles.includes(file))batchFiles.push(file)}
 }
 const lazyRuntimeAssets=['catalog-providers.js','catalog-adapters.js',...batchFiles,'catalog-research.js','catalog-fixtures.js','catalog.js'];
-const copiedAssets=[
+const copiedAssets=[...new Set([
   'style.css','quick-plan.css','field-mode.css','pwa.css',
   'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','fish-photo-v27.css','visual-v8.css','result-ux-v20.css','result-ux-v23.css','visual-v24.css','visual-v25.css','visual-v26.css',
   'data.js','products.js','app.js','field-mode.js','pwa.js',
@@ -32,9 +42,9 @@ const copiedAssets=[
   'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js',
   'target-method-data-v4-part1.js','target-method-data-v4-part2.js','target-method-data-v4-part3.js','target-method-data-v4-part4.js','target-method-data-v4-part5.js','target-method-data-v4.js','species-method-authoring-generated.js','species-method-authoring-runtime.js','target-methods-v1.js','species-registry.js','fish-asset-authoring-generated.js','fish-asset-manifest.js','method-registry.js','resolver-engine.js','resolver-shadow.js','resolver-tackle-ui.js',
   'catalog-batch-manifest.json','catalog-loader.js',...lazyRuntimeAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','fish-photo-v27.js','visual-v8.js','result-ux-v20.js','result-ux-v21.js','result-ux-v23.js','app-shell-v26.js',
-  'fish-real-v7.avif',
+  ...fishAssetFiles,
   'manifest.webmanifest','icon.svg'
-];
+])];
 const generatedAssets=['apple-touch-icon.png','icon-192.png','icon-512.png','icon-maskable-512.png'];
 const shellAssets=copiedAssets.filter(file=>!lazyRuntimeAssets.includes(file));
 const shell=['./','./index.html',...shellAssets.map(file=>`./${file}`),...generatedAssets.map(file=>`./${file}`)];
@@ -56,4 +66,4 @@ const worker=replaceBuildTokens(await readFile(path.join(root,'sw.js'),'utf8'))
   .replace('__SHELL_MANIFEST__',JSON.stringify(shell,null,2));
 await writeFile(path.join(output,'sw.js'),worker);
 
-console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${lazyRuntimeAssets.length} lazy runtime assets in ${catalogManifest.batches.length} batches)`);
+console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${fishAssetFiles.length} bundled fish asset files; ${lazyRuntimeAssets.length} lazy runtime assets in ${catalogManifest.batches.length} batches)`);
