@@ -8,8 +8,9 @@ try{
   const pageErrors=[];
   page.on('pageerror',error=>pageErrors.push(String(error)));
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
-  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_SPECIES_REGISTRY&&globalThis.FISH_TARGET_METHOD_REGISTRY&&globalThis.FISH_TARGET_METHOD_STATUS),{timeout:15000});
+  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_AUTHORING_STATUS&&globalThis.FISH_TARGET_SPECIES_REGISTRY&&globalThis.FISH_TARGET_METHOD_REGISTRY&&globalThis.FISH_TARGET_METHOD_STATUS),{timeout:15000});
   const snapshot=await page.evaluate(()=>{
+    const authoring=globalThis.FISH_TARGET_AUTHORING_STATUS;
     const species=globalThis.FISH_TARGET_SPECIES_REGISTRY;
     const methods=globalThis.FISH_TARGET_METHOD_REGISTRY;
     const methodStatus=globalThis.FISH_TARGET_METHOD_STATUS;
@@ -18,6 +19,10 @@ try{
     const hirame=species.resolve('平目');
     const hiramePlans=methods.plansForSpecies(hirame);
     return {
+      authoringVersion:authoring.version,
+      authoredTargets:authoring.authored_targets,
+      authoredExisting:authoring.authored_existing,
+      authoredPlans:authoring.authored_plans,
       speciesVersion:species.version,
       speciesCount:species.count,
       speciesIds,
@@ -35,6 +40,10 @@ try{
       methodsImmutable:methods.records.every(row=>Object.isFrozen(row)&&Object.isFrozen(row.requirements)&&Object.isFrozen(row.first_cast)&&Object.isFrozen(row.steps)&&Object.isFrozen(row.places)&&Object.isFrozen(row.mistakes)&&Object.isFrozen(row.source))
     };
   });
+  assert.equal(snapshot.authoringVersion,'SPECIES-METHOD-AUTHORING-RUNTIME-1');
+  assert.equal(snapshot.authoredTargets,0,'Phase G baseline adds no new species');
+  assert.equal(snapshot.authoredExisting,0,'Phase G baseline adds no new methods');
+  assert.equal(snapshot.authoredPlans,0,'Phase G baseline preserves current plan count');
   assert.equal(snapshot.speciesVersion,'SPECIES-REGISTRY-1');
   assert.equal(snapshot.speciesCount,60,'registry tracks every current target');
   assert.equal(new Set(snapshot.speciesIds).size,60,'species IDs are unique');
@@ -51,7 +60,7 @@ try{
   assert.equal(snapshot.speciesImmutable,true,'species records are immutable read models');
   assert.equal(snapshot.methodsImmutable,true,'method records are immutable read models');
   assert.deepEqual(pageErrors,[],'domain registry browser path must not throw');
-  console.log(`DOMAIN REGISTRY BROWSER QA PASS ${JSON.stringify({species:snapshot.speciesCount,plans:snapshot.methodCount})}`);
+  console.log(`DOMAIN REGISTRY BROWSER QA PASS ${JSON.stringify({species:snapshot.speciesCount,plans:snapshot.methodCount,authoring:snapshot.authoringVersion})}`);
 }finally{
   await browser.close();
 }
