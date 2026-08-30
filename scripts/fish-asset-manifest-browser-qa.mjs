@@ -8,9 +8,10 @@ try{
   const pageErrors=[];
   page.on('pageerror',error=>pageErrors.push(String(error)));
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
-  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_SPECIES_REGISTRY&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27),null,{timeout:20000});
+  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_AUTHORING&&globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_SPECIES_REGISTRY&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27),null,{timeout:20000});
 
   const snapshot=await page.evaluate(()=>{
+    const authoring=globalThis.FISH_TARGET_FISH_ASSET_AUTHORING;
     const manifest=globalThis.FISH_TARGET_FISH_ASSET_MANIFEST;
     const species=globalThis.FISH_TARGET_SPECIES_REGISTRY;
     const real=globalThis.FISH_TARGET_REAL_FISH;
@@ -19,14 +20,17 @@ try{
     const remote=manifest.remoteFallbackRecords;
     return {
       version:manifest.version,
+      authoringVersion:manifest.authoringVersion,
+      authoringAssets:authoring.assets.length,
       policy:manifest.policy,
       count:manifest.count,
       speciesCount:species.count,
       bundledCount:manifest.bundledCount,
       remoteFallbackCount:manifest.remoteFallbackCount,
+      publicationReadyCount:manifest.publicationReadyCount,
       speciesIds:manifest.records.map(row=>row.species_id),
       names:manifest.records.map(row=>row.species_name),
-      fieldsComplete:manifest.records.every(row=>['species_id','species_name','asset','source','author','license','attribution','verified_at','mode','rights_status','publication_ready'].every(key=>Object.prototype.hasOwnProperty.call(row,key))),
+      fieldsComplete:manifest.records.every(row=>['species_id','species_name','asset','source','source_url','author','license','attribution','verified_at','mode','rights_status','publication_ready'].every(key=>Object.prototype.hasOwnProperty.call(row,key))),
       recordsFrozen:Object.isFrozen(manifest.records)&&manifest.records.every(row=>Object.isFrozen(row)&&(!row.asset||Object.isFrozen(row.asset))),
       bundledSlots:bundled.map(row=>row.asset?.slot),
       bundledFiles:[...new Set(bundled.map(row=>row.asset?.file))],
@@ -43,7 +47,9 @@ try{
     };
   });
 
-  assert.equal(snapshot.version,'FISH-ASSET-MANIFEST-1');
+  assert.equal(snapshot.version,'FISH-ASSET-MANIFEST-2');
+  assert.equal(snapshot.authoringVersion,'FISH-ASSET-AUTHORING-1');
+  assert.equal(snapshot.authoringAssets,19,'runtime manifest is generated from current 19 authored bundled assets');
   assert.equal(snapshot.policy,'bundled-first-license-gated-remote-fallback');
   assert.equal(snapshot.count,60,'manifest covers every current fish species');
   assert.equal(snapshot.count,snapshot.speciesCount,'manifest and species registry stay synchronized');
@@ -58,6 +64,7 @@ try{
   assert.equal(snapshot.bundledRights,true,'existing bundled asset rights remain explicitly unverified');
   assert.equal(snapshot.remoteRights,true,'remote fallbacks remain runtime license gated');
   assert.equal(snapshot.publicationReady,0,'no asset is silently marked publication-ready without rights evidence');
+  assert.equal(snapshot.publicationReadyCount,0,'manifest publication-ready index stays fail closed');
   assert.equal(snapshot.hirame?.species_name,'ヒラメ','species aliases resolve through canonical registry');
   assert.equal(snapshot.aji?.mode,'bundled','local fish resolves to bundled asset');
   assert.equal(snapshot.aji?.asset?.file,'fish-real-v7.avif');
