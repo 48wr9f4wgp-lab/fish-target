@@ -89,7 +89,7 @@ try{
     ...source,
     assets:[...source.assets,{
       species_name:'サバ',
-      asset:{type:'file',file:'qa-fish-file.svg'},
+      asset:{type:'file',file:'icon.svg'},
       source:'browser-fixture',
       source_url:'https://example.com/fish-target-qa',
       author:null,
@@ -101,7 +101,6 @@ try{
   };
   const fixtureRuntime=generateRuntimeSource(fixtureAuthoring);
   await fixturePage.route('**/fish-asset-authoring-generated.js*',route=>route.fulfill({status:200,contentType:'application/javascript; charset=utf-8',body:fixtureRuntime}));
-  await fixturePage.route('**/qa-fish-file.svg*',route=>route.fulfill({status:200,contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="480" height="220" viewBox="0 0 480 220"><path fill="#667" d="M35 110c86-88 260-78 360-10l55-50-15 67 15 67-55-50c-104 67-278 74-360-24z"/><circle cx="330" cy="91" r="7" fill="#fff"/><circle cx="331" cy="91" r="3" fill="#111"/></svg>'}));
   await fixturePage.goto(BASE,{waitUntil:'networkidle',timeout:30000});
   await fixturePage.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27&&globalThis.FISH_TARGET_SPECIES_REGISTRY),null,{timeout:20000});
 
@@ -119,7 +118,7 @@ try{
   });
   assert.equal(preflight.mode,'bundled','file fixture becomes a bundled manifest record before rendering');
   assert.equal(preflight.type,'file');
-  assert.equal(preflight.file,'qa-fish-file.svg');
+  assert.equal(preflight.file,'icon.svg');
   assert.equal(preflight.publicationReady,true,'complete CC0 fixture derives publication readiness');
   assert.equal(preflight.prefetched,true,'direct file fixture loads through the production image loader');
 
@@ -156,7 +155,7 @@ try{
 
   assert.equal(fixtureSnapshot.record?.mode,'bundled');
   assert.equal(fixtureSnapshot.record?.asset?.type,'file');
-  assert.equal(fixtureSnapshot.record?.asset?.file,'qa-fish-file.svg');
+  assert.equal(fixtureSnapshot.record?.asset?.file,'icon.svg');
   assert.equal(fixtureSnapshot.record?.publication_ready,true);
   assert.equal(fixtureSnapshot.bundledCount,20);
   assert.equal(fixtureSnapshot.remoteCount,40);
