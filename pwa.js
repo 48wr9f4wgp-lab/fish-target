@@ -36,6 +36,7 @@
       await loadScript('./species-method-authoring-runtime.js','species-method-authoring-runtime-js');
       await loadScript('./target-methods-v1.js','target-methods-v1-js');
       await loadScript('./species-registry.js','species-registry-js');
+      await loadScript('./fish-asset-manifest.js','fish-asset-manifest-js');
       await loadScript('./method-registry.js','method-registry-js');
       await loadScript('./resolver-engine.js','resolver-engine-js');
       await loadScript('./catalog-loader.js','catalog-loader-js');
