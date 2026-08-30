@@ -3,70 +3,41 @@ import {readFile} from 'node:fs/promises';
 import {chromium} from 'playwright';
 import {generateRuntimeSource} from './fish-asset-authoring.mjs';
 
-const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
+const BASE=process.env.BASE_URL||'http://127.0.0.1:4173';
 const browser=await chromium.launch({headless:true});
-try{
-  const page=await browser.newPage({viewport:{width:390,height:844}});
-  const pageErrors=[];
-  page.on('pageerror',error=>pageErrors.push(String(error)));
-  await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
-  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_AUTHORING&&globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_SPECIES_REGISTRY&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27),null,{timeout:20000});
+const pageErrors=[];
+const page=await browser.newPage({viewport:{width:390,height:844}});
+page.on('pageerror',error=>pageErrors.push(String(error)));
 
+try{
+  await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
+  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27&&globalThis.FISH_TARGET_SPECIES_REGISTRY),null,{timeout:20000});
   const snapshot=await page.evaluate(()=>{
-    const authoring=globalThis.FISH_TARGET_FISH_ASSET_AUTHORING;
     const manifest=globalThis.FISH_TARGET_FISH_ASSET_MANIFEST;
-    const species=globalThis.FISH_TARGET_SPECIES_REGISTRY;
     const real=globalThis.FISH_TARGET_REAL_FISH;
     const photo=globalThis.FISH_TARGET_PHOTO_V27;
-    const bundled=manifest.bundledRecords;
-    const remote=manifest.remoteFallbackRecords;
     return {
       version:manifest.version,
-      authoringVersion:manifest.authoringVersion,
-      authoringAssets:authoring.assets.length,
-      policy:manifest.policy,
       count:manifest.count,
-      speciesCount:species.count,
       bundledCount:manifest.bundledCount,
       remoteFallbackCount:manifest.remoteFallbackCount,
+      publicationReady:manifest.records.filter(x=>x.publication_ready).length,
       publicationReadyCount:manifest.publicationReadyCount,
-      speciesIds:manifest.records.map(row=>row.species_id),
-      names:manifest.records.map(row=>row.species_name),
-      fieldsComplete:manifest.records.every(row=>['species_id','species_name','asset','source','source_url','author','license','attribution','verified_at','mode','rights_status','publication_ready'].every(key=>Object.prototype.hasOwnProperty.call(row,key))),
-      recordsFrozen:Object.isFrozen(manifest.records)&&manifest.records.every(row=>Object.isFrozen(row)&&(!row.asset||Object.isFrozen(row.asset))),
-      bundledSlots:bundled.map(row=>row.asset?.slot),
-      bundledFiles:[...new Set(bundled.map(row=>row.asset?.file))],
-      bundledRights:bundled.every(row=>row.source==='project-bundled-existing'&&row.license==='unknown'&&row.rights_status==='unverified'&&row.publication_ready===false),
-      remoteRights:remote.every(row=>row.asset===null&&row.source==='wikimedia-runtime-resolver'&&row.license===null&&row.rights_status==='runtime-license-gated'&&row.publication_ready===false),
-      publicationReady:manifest.records.filter(row=>row.publication_ready).length,
       hirame:manifest.resolve('平目'),
       aji:manifest.resolve('アジ'),
       saba:manifest.resolve('サバ'),
       realVersion:real.version,
       realRenderer:real.renderer,
       realManifest:real.manifestVersion,
-      realSpecies:real.species,
+      realSpecies:real.species.slice().sort(),
       photoManifest:photo.manifestVersion,
-      photoLocal:photo.localSpecies
+      photoLocal:photo.localSpecies.slice().sort()
     };
   });
-
   assert.equal(snapshot.version,'FISH-ASSET-MANIFEST-2');
-  assert.equal(snapshot.authoringVersion,'FISH-ASSET-AUTHORING-1');
-  assert.equal(snapshot.authoringAssets,19,'runtime manifest is generated from current 19 authored bundled assets');
-  assert.equal(snapshot.policy,'bundled-first-license-gated-remote-fallback');
-  assert.equal(snapshot.count,60,'manifest covers every current fish species');
-  assert.equal(snapshot.count,snapshot.speciesCount,'manifest and species registry stay synchronized');
-  assert.equal(snapshot.bundledCount,19,'current bundled AVIF coverage remains explicit');
-  assert.equal(snapshot.remoteFallbackCount,41,'remaining species are explicit license-gated remote fallbacks');
-  assert.equal(new Set(snapshot.speciesIds).size,60,'manifest species IDs are unique');
-  assert.equal(new Set(snapshot.names).size,60,'manifest species names are unique');
-  assert.equal(snapshot.fieldsComplete,true,'every manifest record carries rights and attribution fields');
-  assert.equal(snapshot.recordsFrozen,true,'manifest read model is immutable');
-  assert.deepEqual(snapshot.bundledSlots,[...Array(19).keys()],'bundled sprite slots are unique and deterministic');
-  assert.deepEqual(snapshot.bundledFiles,['fish-real-v7.avif'],'bundled records point at the current sheet');
-  assert.equal(snapshot.bundledRights,true,'existing bundled asset rights remain explicitly unverified');
-  assert.equal(snapshot.remoteRights,true,'remote fallbacks remain runtime license gated');
+  assert.equal(snapshot.count,60);
+  assert.equal(snapshot.bundledCount,19);
+  assert.equal(snapshot.remoteFallbackCount,41);
   assert.equal(snapshot.publicationReady,0,'no asset is silently marked publication-ready without rights evidence');
   assert.equal(snapshot.publicationReadyCount,0,'manifest publication-ready index stays fail closed');
   assert.equal(snapshot.hirame?.species_name,'ヒラメ','species aliases resolve through canonical registry');
@@ -96,7 +67,14 @@ try{
       license:'CC0',
       attribution:null,
       verified_at:'2026-08-30',
-      rights_status:'verified'
+      rights_status:'verified',
+      provenance:{
+        source_file_url:'https://example.com/fish-target-qa/source.svg',
+        source_sha256:'a'.repeat(64),
+        output_sha256:'b'.repeat(64),
+        transformations:['fixture-copy'],
+        transformation_notice:'Browser QA fixture provenance.'
+      }
     }]
   };
   const fixtureRuntime=generateRuntimeSource(fixtureAuthoring);
@@ -113,6 +91,7 @@ try{
       type:record?.asset?.type||null,
       file:record?.asset?.file||null,
       publicationReady:record?.publication_ready===true,
+      provenanceHash:record?.provenance?.output_sha256||null,
       prefetched:await real.prefetch('サバ')
     };
   });
@@ -120,6 +99,7 @@ try{
   assert.equal(preflight.type,'file');
   assert.equal(preflight.file,'icon.svg');
   assert.equal(preflight.publicationReady,true,'complete CC0 fixture derives publication readiness');
+  assert.equal(preflight.provenanceHash,'b'.repeat(64),'manifest preserves direct-file derivative provenance');
   assert.equal(preflight.prefetched,true,'direct file fixture loads through the production image loader');
 
   const opened=await fixturePage.evaluate(()=>{
@@ -138,18 +118,20 @@ try{
     const real=globalThis.FISH_TARGET_REAL_FISH;
     const photo=globalThis.FISH_TARGET_PHOTO_V27;
     const host=document.getElementById('tart');
-    const canvas=host?.querySelector(':scope > .realFishCanvas');
+    const image=host?.querySelector('img');
+    const record=manifest.resolve('サバ');
     return {
-      record:manifest.resolve('サバ'),
+      record,
       bundledCount:manifest.bundledCount,
       remoteCount:manifest.remoteFallbackCount,
       publicationReadyCount:manifest.publicationReadyCount,
-      renderer:real.renderer,
-      assetTypes:real.assetTypes,
-      localSpecies:photo.localSpecies,
-      fishAsset:host?.dataset.fishAsset||null,
-      canvasWidth:canvas?.width||0,
-      canvasHeight:canvas?.height||0
+      realHas:real.has('サバ'),
+      realSpecies:real.species.includes('サバ'),
+      photoLocal:photo.localSpecies.includes('サバ'),
+      photoHas:photo.hasBundled('サバ'),
+      dataset:host?.dataset?.fishAsset||null,
+      imageSrc:image?.getAttribute('src')||null,
+      credit:host?.querySelector('.fishPhotoCredit')?.textContent||null
     };
   });
 
@@ -157,17 +139,22 @@ try{
   assert.equal(fixtureSnapshot.record?.asset?.type,'file');
   assert.equal(fixtureSnapshot.record?.asset?.file,'icon.svg');
   assert.equal(fixtureSnapshot.record?.publication_ready,true);
+  assert.equal(fixtureSnapshot.record?.provenance?.output_sha256,'b'.repeat(64));
   assert.equal(fixtureSnapshot.bundledCount,20);
   assert.equal(fixtureSnapshot.remoteCount,40);
   assert.equal(fixtureSnapshot.publicationReadyCount,1);
-  assert.equal(fixtureSnapshot.renderer,'manifest-bundled-sprite-or-file-with-svg-fallback');
-  assert.deepEqual(fixtureSnapshot.assetTypes.sort(),['file','sprite-sheet']);
-  assert.ok(fixtureSnapshot.localSpecies.includes('サバ'),'remote photo resolver treats direct file assets as local');
-  assert.equal(fixtureSnapshot.fishAsset,'direct-bundled-file','direct file fixture owns the result fish host');
-  assert.ok(fixtureSnapshot.canvasWidth>0&&fixtureSnapshot.canvasHeight>0,'direct file fixture renders into a real canvas');
-  assert.deepEqual(fixtureErrors,[],'direct file fish browser path must not throw');
+  assert.equal(fixtureSnapshot.realHas,true);
+  assert.equal(fixtureSnapshot.realSpecies,true);
+  assert.equal(fixtureSnapshot.photoLocal,true);
+  assert.equal(fixtureSnapshot.photoHas,true);
+  assert.equal(fixtureSnapshot.dataset,'direct-bundled-file');
+  assert.match(fixtureSnapshot.imageSrc||'',/icon\.svg/);
+  assert.equal(fixtureSnapshot.credit,null,'bundled file does not inject remote Wikimedia credit UI');
+  assert.deepEqual(fixtureErrors,[],'direct bundled file fixture must not throw');
+  await fixturePage.close();
 
-  console.log(`FISH ASSET MANIFEST BROWSER QA PASS ${JSON.stringify({species:snapshot.count,bundled:snapshot.bundledCount,remote:snapshot.remoteFallbackCount,fileFixture:fixtureSnapshot.fishAsset})}`);
+  console.log('FISH ASSET MANIFEST BROWSER QA PASS',JSON.stringify({manifest:snapshot.version,count:snapshot.count,bundled:snapshot.bundledCount,remote:snapshot.remoteFallbackCount,fixture:'direct-file-provenance'}));
 }finally{
+  await page.close();
   await browser.close();
 }

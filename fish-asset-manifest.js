@@ -10,6 +10,7 @@
   }
 
   const freezeAsset=(asset,name)=>Object.freeze({...asset,species_name:name});
+  const freezeProvenance=provenance=>provenance?Object.freeze({...provenance,transformations:Object.freeze([...(provenance.transformations||[])])}):null;
   const records=speciesRegistry.records.map(species=>{
     const authored=authoredByName.get(species.name)||null;
     const bundled=Boolean(authored?.asset);
@@ -23,6 +24,7 @@
       license:bundled?authored.license:null,
       attribution:bundled?authored.attribution:null,
       verified_at:bundled?authored.verified_at:null,
+      provenance:bundled?freezeProvenance(authored.provenance):null,
       mode:bundled?'bundled':'remote-fallback',
       rights_status:bundled?authored.rights_status:'runtime-license-gated',
       publication_ready:bundled?authored.publication_ready===true:false
