@@ -229,6 +229,7 @@
     primary:PRIMARY,
     manifestVersion:MANIFEST.version,
     assetTypes:Object.freeze([...new Set(MANIFEST.bundledRecords.map(record=>record.asset?.type).filter(Boolean))]),
-    species:Object.freeze(MANIFEST.bundledRecords.map(record=>record.species_name))
+    species:Object.freeze(MANIFEST.bundledRecords.map(record=>record.species_name)),
+    prefetch:async name=>Boolean(await ensureAsset(name))
   });
 })();
