@@ -103,23 +103,25 @@ try{
   await fixturePage.route('**/fish-asset-authoring-generated.js*',route=>route.fulfill({status:200,contentType:'application/javascript; charset=utf-8',body:fixtureRuntime}));
   await fixturePage.route('**/qa-fish-file.svg*',route=>route.fulfill({status:200,contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="480" height="220" viewBox="0 0 480 220"><path fill="#667" d="M35 110c86-88 260-78 360-10l55-50-15 67 15 67-55-50c-104 67-278 74-360-24z"/><circle cx="330" cy="91" r="7" fill="#fff"/><circle cx="331" cy="91" r="3" fill="#111"/></svg>'}));
   await fixturePage.goto(BASE,{waitUntil:'networkidle',timeout:30000});
-  await fixturePage.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27),null,{timeout:20000});
-  await fixturePage.evaluate(()=>{
-    const card=[...document.querySelectorAll('#grid .fish[data-fish]')].find(node=>node.dataset.fish==='サバ');
-    card?.scrollIntoView({block:'center'});
+  await fixturePage.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27&&globalThis.FISH_TARGET_SPECIES_REGISTRY),null,{timeout:20000});
+  const opened=await fixturePage.evaluate(()=>{
+    const species=globalThis.FISH_TARGET_SPECIES_REGISTRY.resolve('サバ');
+    const runtimeFish=globalThis.FISH_TARGET_SPECIES_REGISTRY.runtimeFish(species);
+    if(!runtimeFish||typeof openFish!=='function')return false;
+    openFish(runtimeFish);
+    if(typeof renderResult==='function')renderResult();
+    return true;
   });
-  await fixturePage.waitForFunction(()=>{
-    const card=[...document.querySelectorAll('#grid .fish[data-fish]')].find(node=>node.dataset.fish==='サバ');
-    return card?.querySelector('.art')?.dataset.fishAsset==='direct-bundled-file';
-  },null,{timeout:10000});
+  assert.equal(opened,true,'file fixture species opens through the production result path');
+  await fixturePage.waitForFunction(()=>document.getElementById('tart')?.dataset.fishAsset==='direct-bundled-file',null,{timeout:10000});
 
   const fixtureSnapshot=await fixturePage.evaluate(()=>{
     const manifest=globalThis.FISH_TARGET_FISH_ASSET_MANIFEST;
     const real=globalThis.FISH_TARGET_REAL_FISH;
     const photo=globalThis.FISH_TARGET_PHOTO_V27;
-    const card=[...document.querySelectorAll('#grid .fish[data-fish]')].find(node=>node.dataset.fish==='サバ');
-    const host=card?.querySelector('.art');
+    const host=document.getElementById('tart');
     const canvas=host?.querySelector(':scope > .realFishCanvas');
+    const card=[...document.querySelectorAll('#grid .fish[data-fish]')].find(node=>node.dataset.fish==='サバ');
     return {
       record:manifest.resolve('サバ'),
       bundledCount:manifest.bundledCount,
@@ -129,6 +131,7 @@ try{
       assetTypes:real.assetTypes,
       localSpecies:photo.localSpecies,
       fishAsset:host?.dataset.fishAsset||null,
+      gridFishAsset:card?.querySelector('.art')?.dataset.fishAsset||null,
       canvasWidth:canvas?.width||0,
       canvasHeight:canvas?.height||0
     };
@@ -144,7 +147,7 @@ try{
   assert.equal(fixtureSnapshot.renderer,'manifest-bundled-sprite-or-file-with-svg-fallback');
   assert.deepEqual(fixtureSnapshot.assetTypes.sort(),['file','sprite-sheet']);
   assert.ok(fixtureSnapshot.localSpecies.includes('サバ'),'remote photo resolver treats direct file assets as local');
-  assert.equal(fixtureSnapshot.fishAsset,'direct-bundled-file','direct file fixture owns the rendered fish host');
+  assert.equal(fixtureSnapshot.fishAsset,'direct-bundled-file','direct file fixture owns the result fish host');
   assert.ok(fixtureSnapshot.canvasWidth>0&&fixtureSnapshot.canvasHeight>0,'direct file fixture renders into a real canvas');
   assert.deepEqual(fixtureErrors,[],'direct file fish browser path must not throw');
 
