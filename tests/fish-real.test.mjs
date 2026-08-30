@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const js=readFileSync(new URL('../fish-real.js',import.meta.url),'utf8');
 const manifest=readFileSync(new URL('../fish-asset-manifest.js',import.meta.url),'utf8');
+const authoring=JSON.parse(readFileSync(new URL('../authoring/fish-assets.v1.json',import.meta.url),'utf8'));
 const css=readFileSync(new URL('../fish-real.css',import.meta.url),'utf8');
 const build=readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
 const assetName='fish-real-v7.avif';
@@ -13,13 +14,16 @@ const species=[
   'クロダイ','マダイ','シロギス','カワハギ','ブラックバス','ニジマス','アユ','コイ','ヤマメ・イワナ'
 ];
 
-test('REAL8 maps all 19 targets through the fish asset manifest and loads the direct AVIF grid',()=>{
+test('REAL8 maps all 19 targets through generated fish asset authoring and loads the direct AVIF grid',()=>{
   assert.match(js,/version:'V23-REAL8'/);
   assert.match(js,/renderer:'direct-avif-grid-with-svg-fallback'/);
   assert.match(js,/FISH_TARGET_FISH_ASSET_MANIFEST/);
   assert.match(js,/const ASSET=MANIFEST\.bundledSheet\|\|'fish-real-v7\.avif'/);
-  assert.match(manifest,/const SHEET='fish-real-v7\.avif'/);
-  for(const name of species)assert.ok(manifest.includes(`'${name}'`),`missing manifest bundled fish mapping: ${name}`);
+  assert.match(manifest,/FISH_TARGET_FISH_ASSET_AUTHORING/);
+  assert.match(manifest,/const SHEET=authoring\.bundled_sheet/);
+  assert.equal(authoring.bundled_sheet,assetName);
+  assert.equal(authoring.assets.length,19);
+  assert.deepEqual(authoring.assets.map(record=>record.species_name),species);
   assert.match(js,/image\.naturalWidth<1000\|\|image\.naturalHeight<700/);
   assert.match(js,/naturalHeight\/position\.rows/);
   assert.match(js,/naturalWidth\/position\.columns/);
