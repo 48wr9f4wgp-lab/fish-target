@@ -1,12 +1,8 @@
 (()=>{
   const BUILD=document.documentElement.dataset.build||'dev';
-  const ASSET='fish-real-v7.avif';
-  const ORDER=Object.freeze({
-    'ブリ・ワラサ':0,'カンパチ':1,'サワラ':2,'シーバス':3,'ヒラメ':4,
-    'マゴチ':5,'アジ':6,'メバル':7,'アオリイカ':8,'タチウオ':9,
-    'クロダイ':10,'マダイ':11,'シロギス':12,'カワハギ':13,'ブラックバス':14,
-    'ニジマス':15,'アユ':16,'コイ':17,'ヤマメ・イワナ':18
-  });
+  const MANIFEST=globalThis.FISH_TARGET_FISH_ASSET_MANIFEST;
+  if(!MANIFEST)return;
+  const ASSET=MANIFEST.bundledSheet||'fish-real-v7.avif';
   const cropCache=new Map();
   const observedHosts=new WeakSet();
   let sheet=null;
@@ -15,9 +11,15 @@
   let started=false;
 
   const slot=name=>{
-    const index=ORDER[name];
-    if(index===undefined)return null;
-    return {index,row:Math.floor(index/5),col:index%5};
+    const asset=MANIFEST.assetFor(name);
+    if(!asset||asset.type!=='sprite-sheet'||asset.file!==ASSET)return null;
+    return {
+      index:asset.slot,
+      row:Math.floor(asset.slot/asset.columns),
+      col:asset.slot%asset.columns,
+      columns:asset.columns,
+      rows:asset.rows
+    };
   };
 
   const loadImage=url=>new Promise((resolve,reject)=>{
@@ -45,8 +47,8 @@
   function cellFor(name){
     const position=slot(name);
     if(!position||!sheet)return null;
-    const cellWidth=Math.floor(sheet.naturalWidth/5);
-    const cellHeight=Math.floor(sheet.naturalHeight/4);
+    const cellWidth=Math.floor(sheet.naturalWidth/position.columns);
+    const cellHeight=Math.floor(sheet.naturalHeight/position.rows);
     return {image:sheet,sx:position.col*cellWidth,sy:position.row*cellHeight,cellWidth,cellHeight};
   }
 
@@ -163,6 +165,10 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   globalThis.FISH_TARGET_REAL_FISH=Object.freeze({
-    version:'V23-REAL8',renderer:'direct-avif-grid-with-svg-fallback',primary:ASSET,species:Object.freeze(Object.keys(ORDER))
+    version:'V23-REAL8',
+    renderer:'direct-avif-grid-with-svg-fallback',
+    primary:ASSET,
+    manifestVersion:MANIFEST.version,
+    species:Object.freeze(MANIFEST.bundledRecords.map(record=>record.species_name))
   });
 })();
