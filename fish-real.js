@@ -2,26 +2,16 @@
   const BUILD=document.documentElement.dataset.build||'dev';
   const MANIFEST=globalThis.FISH_TARGET_FISH_ASSET_MANIFEST;
   if(!MANIFEST)return;
-  const ASSET=MANIFEST.bundledSheet||'fish-real-v7.avif';
+  const PRIMARY=MANIFEST.bundledSheet||null;
   const cropCache=new Map();
+  const imageCache=new Map();
+  const loadCache=new Map();
   const observedHosts=new WeakSet();
-  let sheet=null;
-  let ready=false;
+  const lazyHosts=new WeakSet();
   let scheduled=false;
   let started=false;
 
-  const slot=name=>{
-    const asset=MANIFEST.assetFor(name);
-    if(!asset||asset.type!=='sprite-sheet'||asset.file!==ASSET)return null;
-    return {
-      index:asset.slot,
-      row:Math.floor(asset.slot/asset.columns),
-      col:asset.slot%asset.columns,
-      columns:asset.columns,
-      rows:asset.rows
-    };
-  };
-
+  const assetFor=name=>MANIFEST.assetFor(name);
   const loadImage=url=>new Promise((resolve,reject)=>{
     const image=new Image();
     image.onload=()=>resolve(image);
@@ -29,34 +19,77 @@
     image.src=url;
   });
 
-  async function loadSource(){
-    try{
-      const image=await loadImage(`./${ASSET}?v=${BUILD}`);
-      if(image.naturalWidth<1000||image.naturalHeight<700){
+  function validateImage(asset,image){
+    if(asset.type==='sprite-sheet'){
+      if(asset.file===PRIMARY&&(image.naturalWidth<1000||image.naturalHeight<700)){
         throw new Error(`fish sheet is unexpectedly small: ${image.naturalWidth}x${image.naturalHeight}`);
       }
-      sheet=image;
-      ready=true;
-      document.documentElement.classList.add('realFishReady','realFishV8');
-      schedule();
-    }catch(error){
-      console.warn('real fish AVIF unavailable; keeping SVG fallback',error);
+      if(image.naturalWidth<asset.columns||image.naturalHeight<asset.rows){
+        throw new Error(`fish sprite sheet grid is invalid: ${asset.file}`);
+      }
+      return;
     }
+    if(asset.type==='file'){
+      if(image.naturalWidth<2||image.naturalHeight<2)throw new Error(`fish image is unexpectedly small: ${asset.file}`);
+      return;
+    }
+    throw new Error(`unsupported fish asset type: ${asset.type}`);
+  }
+
+  function ensureAsset(name){
+    const asset=assetFor(name);
+    if(!asset)return Promise.resolve(null);
+    if(imageCache.has(asset.file))return Promise.resolve(imageCache.get(asset.file));
+    if(loadCache.has(asset.file))return loadCache.get(asset.file);
+    const task=loadImage(`./${asset.file}?v=${BUILD}`)
+      .then(image=>{
+        validateImage(asset,image);
+        imageCache.set(asset.file,image);
+        document.documentElement.classList.add('realFishReady','realFishV9');
+        schedule();
+        return image;
+      })
+      .catch(error=>{
+        loadCache.delete(asset.file);
+        console.warn(`real fish asset unavailable: ${asset.file}; keeping SVG fallback`,error);
+        return null;
+      });
+    loadCache.set(asset.file,task);
+    return task;
   }
 
   function cellFor(name){
-    const position=slot(name);
-    if(!position||!sheet)return null;
-    const cellWidth=Math.floor(sheet.naturalWidth/position.columns);
-    const cellHeight=Math.floor(sheet.naturalHeight/position.rows);
-    return {image:sheet,sx:position.col*cellWidth,sy:position.row*cellHeight,cellWidth,cellHeight};
+    const asset=assetFor(name);
+    if(!asset)return null;
+    const image=imageCache.get(asset.file);
+    if(!image)return null;
+    if(asset.type==='file')return {asset,image,sx:0,sy:0,cellWidth:image.naturalWidth,cellHeight:image.naturalHeight};
+    if(asset.type!=='sprite-sheet')return null;
+    const position={
+      index:asset.slot,
+      row:Math.floor(asset.slot/asset.columns),
+      col:asset.slot%asset.columns,
+      columns:asset.columns,
+      rows:asset.rows
+    };
+    const cellWidth=Math.floor(image.naturalWidth/position.columns);
+    const cellHeight=Math.floor(image.naturalHeight/position.rows);
+    return {asset,image,sx:position.col*cellWidth,sy:position.row*cellHeight,cellWidth,cellHeight};
   }
 
   function cropFor(name){
-    if(cropCache.has(name))return cropCache.get(name);
+    const asset=assetFor(name);
+    if(!asset)return null;
+    const key=`${name}:${asset.file}:${asset.type==='sprite-sheet'?asset.slot:'file'}`;
+    if(cropCache.has(key))return cropCache.get(key);
     const cell=cellFor(name);
     if(!cell)return null;
     const {image,sx,sy,cellWidth,cellHeight}=cell;
+    if(asset.type==='file'){
+      const direct={image,sx,sy,sw:cellWidth,sh:cellHeight};
+      cropCache.set(key,direct);
+      return direct;
+    }
     const probe=document.createElement('canvas');
     probe.width=cellWidth;
     probe.height=cellHeight;
@@ -84,13 +117,14 @@
           sh:Math.min(cellHeight-1,bottom+pad)-Math.max(0,top-pad)+1
         }
       : {image,sx,sy,sw:cellWidth,sh:cellHeight};
-    cropCache.set(name,crop);
+    cropCache.set(key,crop);
     return crop;
   }
 
   function render(canvas,host,name){
     const crop=cropFor(name);
-    if(!crop)return;
+    const asset=assetFor(name);
+    if(!crop||!asset)return;
     const rect=canvas.getBoundingClientRect();
     if(rect.width<2||rect.height<2)return;
     const dpr=Math.min(Math.max(window.devicePixelRatio||1,1),3);
@@ -113,15 +147,39 @@
     const dy=(height-drawHeight)/2;
     context.drawImage(crop.image,crop.sx,crop.sy,crop.sw,crop.sh,dx,dy,drawWidth,drawHeight);
     host.classList.add('realFishMounted');
-    host.dataset.fishAsset='direct-avif-grid';
+    host.dataset.fishAsset=asset.type==='file'?'direct-bundled-file':'direct-avif-grid';
   }
 
-  const resizeObserver='ResizeObserver' in window?new ResizeObserver(schedule):null;
+  const resizeObserver='ResizeObserver'in window?new ResizeObserver(schedule):null;
+  const lazyObserver='IntersectionObserver'in window?new IntersectionObserver(entries=>entries.forEach(entry=>{
+    if(!entry.isIntersecting)return;
+    const host=entry.target;
+    const name=host.dataset.realFishName||host.closest('.fish[data-fish]')?.dataset.fish;
+    if(name)ensureAsset(name);
+    lazyObserver.unobserve(host);
+  }),{rootMargin:'220px 0px'}):null;
+
+  function shouldLoadNow(host,name,asset){
+    if(imageCache.has(asset.file))return true;
+    const detail=host.id==='tart'||Boolean(host.closest('#result'));
+    if(detail||asset.file===PRIMARY||!lazyObserver)return true;
+    if(!lazyHosts.has(host)){
+      lazyHosts.add(host);
+      host.dataset.realFishName=name;
+      lazyObserver.observe(host);
+    }
+    return false;
+  }
 
   function mount(host,name){
-    if(!host||!slot(name))return;
+    const asset=assetFor(name);
+    if(!host||!asset)return;
     host.classList.add('realFishHost');
-    if(!ready)return;
+    if(!shouldLoadNow(host,name,asset))return;
+    if(!imageCache.has(asset.file)){
+      ensureAsset(name);
+      return;
+    }
     host.querySelectorAll(':scope > .realFishSprite').forEach(element=>element.remove());
     let canvas=host.querySelector(':scope > .realFishCanvas');
     if(!canvas){
@@ -153,8 +211,9 @@
   function start(){
     if(started)return;
     started=true;
+    const primaryRecord=MANIFEST.bundledRecords.find(record=>record.asset?.type==='sprite-sheet'&&record.asset.file===PRIMARY);
+    if(primaryRecord)ensureAsset(primaryRecord.species_name);
     sync();
-    loadSource();
     const observer=new MutationObserver(schedule);
     [document.getElementById('grid'),document.getElementById('result')]
       .filter(Boolean)
@@ -165,10 +224,11 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   globalThis.FISH_TARGET_REAL_FISH=Object.freeze({
-    version:'V23-REAL8',
-    renderer:'direct-avif-grid-with-svg-fallback',
-    primary:ASSET,
+    version:'V23-REAL9',
+    renderer:'manifest-bundled-sprite-or-file-with-svg-fallback',
+    primary:PRIMARY,
     manifestVersion:MANIFEST.version,
+    assetTypes:Object.freeze([...new Set(MANIFEST.bundledRecords.map(record=>record.asset?.type).filter(Boolean))]),
     species:Object.freeze(MANIFEST.bundledRecords.map(record=>record.species_name))
   });
 })();
