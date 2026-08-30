@@ -15,6 +15,7 @@ const HTTP=/^https?:\/\//i;
 const STYLES=new Set(['bait','lure']);
 const WATERS=new Set(['salt','fresh']);
 const CONFIDENCE=new Set(['A','B','C']);
+const SEASONS=['春','夏','秋','冬'];
 
 const hasText=(value,label,errors)=>{if(!text(value))errors.push(`${label} is required`)};
 const hasArray=(value,label,errors,min=1)=>{if(!Array.isArray(value)||value.length<min)errors.push(`${label} must contain at least ${min}`)};
@@ -70,9 +71,12 @@ export function validateAuthoring(data){
     hasText(name,`${label}.name`,errors);
     if(names.has(name))errors.push(`duplicate species name: ${name}`);else if(name)names.add(name);
     if(!WATERS.has(text(target.water)))errors.push(`${label}.water must be salt or fresh`);
+    hasText(target.shape,`${label}.shape`,errors);
     hasArray(target.tags,`${label}.tags`,errors,1);
     if(target.aliases!=null&&!Array.isArray(target.aliases))errors.push(`${label}.aliases must be an array`);
     hasText(target.difficulty,`${label}.difficulty`,errors);
+    if(!target.season||typeof target.season!=='object'||Array.isArray(target.season))errors.push(`${label}.season is required`);
+    else for(const season of SEASONS)hasText(target.season[season],`${label}.season.${season}`,errors);
     const targetAliases=[name,...(Array.isArray(target.aliases)?target.aliases:[])].map(text).filter(Boolean);
     for(const alias of targetAliases){
       const key=canonical(alias),owner=aliases.get(key);
@@ -132,9 +136,11 @@ export function toRuntimePayload(data){
     species_id:text(target.species_id),
     name:text(target.name),
     water:text(target.water),
+    shape:text(target.shape),
     tags:[...target.tags],
     syn:[...(target.aliases||[])],
     difficulty:text(target.difficulty),
+    season:{...target.season},
     methods:[flattenMethod(target.default_method,'default'),...(target.methods||[]).map(method=>flattenMethod(method,text(method.id)))]
   }));
   const existing={};
