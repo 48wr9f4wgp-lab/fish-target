@@ -39,6 +39,7 @@
       await loadScript('./catalog-loader.js','catalog-loader-js');
       await loadScript('./tackle.js','tackle-js');
       await loadScript('./resolver-shadow.js','resolver-shadow-js');
+      await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./fit-explain.js','fit-explain-js');
       await loadScript('./simplify.js','simplify-js');
       await loadScript('./visual-pass.js','visual-pass-js');
