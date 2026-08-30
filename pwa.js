@@ -32,6 +32,8 @@
       await loadScript('./target-method-data-v3.js','target-method-data-v3-js');
       for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v4-part${i}.js`,`target-method-data-v4-part${i}-js`);
       await loadScript('./target-method-data-v4.js','target-method-data-v4-js');
+      await loadScript('./species-method-authoring-generated.js','species-method-authoring-generated-js');
+      await loadScript('./species-method-authoring-runtime.js','species-method-authoring-runtime-js');
       await loadScript('./target-methods-v1.js','target-methods-v1-js');
       await loadScript('./species-registry.js','species-registry-js');
       await loadScript('./method-registry.js','method-registry-js');
