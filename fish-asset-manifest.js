@@ -1,40 +1,31 @@
 (()=>{
   const speciesRegistry=globalThis.FISH_TARGET_SPECIES_REGISTRY;
-  if(!speciesRegistry?.records)return;
+  const authoring=globalThis.FISH_TARGET_FISH_ASSET_AUTHORING;
+  if(!speciesRegistry?.records||!authoring?.assets)return;
 
-  const SHEET='fish-real-v7.avif';
-  const BUNDLED_ORDER=Object.freeze([
-    'ブリ・ワラサ','カンパチ','サワラ','シーバス','ヒラメ',
-    'マゴチ','アジ','メバル','アオリイカ','タチウオ',
-    'クロダイ','マダイ','シロギス','カワハギ','ブラックバス',
-    'ニジマス','アユ','コイ','ヤマメ・イワナ'
-  ]);
-  const bundledIndex=new Map(BUNDLED_ORDER.map((name,index)=>[name,index]));
+  const SHEET=authoring.bundled_sheet;
+  const authoredByName=new Map(authoring.assets.map(record=>[record.species_name,record]));
+  for(const authored of authoring.assets){
+    if(!speciesRegistry.resolve(authored.species_name))throw new Error(`Authored fish asset species is not registered: ${authored.species_name}`);
+  }
 
-  const freezeAsset=(name,index)=>Object.freeze({
-    type:'sprite-sheet',
-    file:SHEET,
-    slot:index,
-    columns:5,
-    rows:4,
-    species_name:name
-  });
-
+  const freezeAsset=(asset,name)=>Object.freeze({...asset,species_name:name});
   const records=speciesRegistry.records.map(species=>{
-    const index=bundledIndex.get(species.name);
-    const bundled=index!==undefined;
+    const authored=authoredByName.get(species.name)||null;
+    const bundled=Boolean(authored?.asset);
     return Object.freeze({
       species_id:species.species_id,
       species_name:species.name,
-      asset:bundled?freezeAsset(species.name,index):null,
-      source:bundled?'project-bundled-existing':'wikimedia-runtime-resolver',
-      author:null,
-      license:bundled?'unknown':null,
-      attribution:null,
-      verified_at:null,
+      asset:bundled?freezeAsset(authored.asset,species.name):null,
+      source:bundled?authored.source:'wikimedia-runtime-resolver',
+      source_url:bundled?authored.source_url:null,
+      author:bundled?authored.author:null,
+      license:bundled?authored.license:null,
+      attribution:bundled?authored.attribution:null,
+      verified_at:bundled?authored.verified_at:null,
       mode:bundled?'bundled':'remote-fallback',
-      rights_status:bundled?'unverified':'runtime-license-gated',
-      publication_ready:false
+      rights_status:bundled?authored.rights_status:'runtime-license-gated',
+      publication_ready:bundled?authored.publication_ready===true:false
     });
   });
 
@@ -49,6 +40,7 @@
 
   const bundledRecords=Object.freeze(records.filter(record=>record.mode==='bundled'));
   const remoteFallbackRecords=Object.freeze(records.filter(record=>record.mode==='remote-fallback'));
+  const publicationReadyRecords=Object.freeze(records.filter(record=>record.publication_ready));
   const get=speciesId=>byId.get(String(speciesId??'').trim())||null;
   const bySpeciesName=name=>byName.get(String(name??'').trim())||null;
   const resolve=value=>{
@@ -60,17 +52,20 @@
   const assetFor=value=>resolve(value)?.asset||null;
 
   if(records.length!==speciesRegistry.count)throw new Error(`Fish asset manifest coverage mismatch: ${records.length}/${speciesRegistry.count}`);
-  if(bundledRecords.length!==BUNDLED_ORDER.length)throw new Error(`Fish asset bundled coverage mismatch: ${bundledRecords.length}/${BUNDLED_ORDER.length}`);
+  if(bundledRecords.length!==authoring.assets.length)throw new Error(`Fish asset bundled coverage mismatch: ${bundledRecords.length}/${authoring.assets.length}`);
 
   globalThis.FISH_TARGET_FISH_ASSET_MANIFEST=Object.freeze({
-    version:'FISH-ASSET-MANIFEST-1',
-    policy:'bundled-first-license-gated-remote-fallback',
+    version:'FISH-ASSET-MANIFEST-2',
+    authoringVersion:authoring.version,
+    policy:authoring.policy,
     count:records.length,
     bundledCount:bundledRecords.length,
     remoteFallbackCount:remoteFallbackRecords.length,
+    publicationReadyCount:publicationReadyRecords.length,
     records:Object.freeze(records.slice()),
     bundledRecords,
     remoteFallbackRecords,
+    publicationReadyRecords,
     get,
     bySpeciesName,
     resolve,
