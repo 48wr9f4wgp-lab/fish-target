@@ -8,7 +8,7 @@ try{
   const pageErrors=[];
   page.on('pageerror',error=>pageErrors.push(String(error)));
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
-  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_RESOLVER&&globalThis.FISH_TARGET_TACKLE_LOGIC),{timeout:15000});
+  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_RESOLVER&&globalThis.FISH_TARGET_TACKLE_LOGIC&&globalThis.FISH_TARGET_RESOLVER_SHADOW),{timeout:15000});
   const out=await page.evaluate(()=>{
     const r=globalThis.FISH_TARGET_RESOLVER;
     const species=r.resolveSpecies('平目');
@@ -16,11 +16,21 @@ try{
     const plan=r.resolvePlan(species,'default');
     const first=r.resolveFirstCast(plan);
     const req=r.resolveRequirements(plan);
-    const fit=r.evaluateOwnedTackle(plan,'default',{
-      rods:[{name:'test rod',length:9.6,power:'M',maxLure:60}],
-      reels:[{name:'test reel',size:4000,lineType:'PE',lineNo:1.5}]
-    });
+    const owned={
+      rods:[{id:'shadow-rod',name:'test rod',length:9.6,power:'M',maxLure:60}],
+      reels:[{id:'shadow-reel',name:'test reel',size:4000,lineType:'PE',lineNo:1.5}]
+    };
+    const fit=r.evaluateOwnedTackle(plan,'default',owned);
     const ranked=r.rankCatalogMatches([{id:'a',score:1},{id:'b',score:3},{id:'c',score:2}]);
+    localStorage.setItem('fish_target_v17_tackle',JSON.stringify(owned));
+    const runtimeFish=globalThis.FISH_TARGET_SPECIES_REGISTRY.runtimeFish(species);
+    openFish(runtimeFish);
+    state.goal='大物狙い';
+    state.methodKey='default';
+    state.rotation=0;
+    state.rotationManual=false;
+    renderResult();
+    const shadow=globalThis.FISH_TARGET_RESOLVER_SHADOW.check();
     return {
       version:r.version,
       species:species?.name||null,
@@ -31,7 +41,8 @@ try{
       fitReady:fit?.ready,
       fitPlanId:fit?.plan_id||null,
       ranked:ranked.map(x=>x.id),
-      methodTotal:globalThis.FISH_TARGET_METHOD_REGISTRY?.count
+      methodTotal:globalThis.FISH_TARGET_METHOD_REGISTRY?.count,
+      shadow
     };
   });
   assert.equal(out.version,'RESOLVER-ENGINE-1');
@@ -44,8 +55,14 @@ try{
   assert.equal(out.fitPlanId,out.planId);
   assert.deepEqual(out.ranked,['b','c','a']);
   assert.equal(out.methodTotal,150);
+  assert.equal(out.shadow?.version,'RESOLVER-SHADOW-1');
+  assert.equal(out.shadow?.ready,true);
+  assert.equal(out.shadow?.parity,true);
+  assert.equal(out.shadow?.rod_parity,true);
+  assert.equal(out.shadow?.reel_parity,true);
+  assert.ok(out.shadow?.plan_id?.endsWith(':default'));
   assert.deepEqual(pageErrors,[],'resolver browser path must not throw');
-  console.log(`RESOLVER ENGINE BROWSER QA PASS ${JSON.stringify({species:out.species,plans:out.methodTotal})}`);
+  console.log(`RESOLVER ENGINE BROWSER QA PASS ${JSON.stringify({species:out.species,plans:out.methodTotal,shadow:out.shadow?.parity})}`);
 }finally{
   await browser.close();
 }

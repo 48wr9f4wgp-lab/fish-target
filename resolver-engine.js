@@ -21,17 +21,25 @@
     return plan?plan.requirements:null;
   };
   const best=(items,fitFn)=>items.map(item=>Object.freeze({item,fit:freeze(fitFn(item))})).sort((a,b)=>(a.fit?.level??99)-(b.fit?.level??99))[0]||null;
-  const evaluateOwnedTackle=(speciesValue,methodId='default',ownedTackle={})=>{
+  const evaluateOwnedTackle=(speciesValue,methodId='default',ownedTackle={},context={})=>{
     const plan=asPlan(speciesValue)||resolvePlan(speciesValue,methodId);
     if(!plan)return null;
     const logic=globalThis.FISH_TARGET_TACKLE_LOGIC;
     if(!logic?.rodFit||!logic?.reelFit)return Object.freeze({plan_id:plan.plan_id,ready:false,reason:'tackle-logic-unavailable',rod:null,reel:null});
     const runtimeFish=speciesRegistry.runtimeFish(plan.species_id);
-    const rotation={size:plan.first_cast?.size||''};
+    const fitPlan={
+      ...runtimeFish,
+      ...plan.requirements,
+      style:plan.style,
+      method:plan.method,
+      size:plan.first_cast?.size||'',
+      ...(context?.plan&&typeof context.plan==='object'?context.plan:{})
+    };
+    const rotation={size:plan.first_cast?.size||'',...(context?.rotation&&typeof context.rotation==='object'?context.rotation:{})};
     const rods=Array.isArray(ownedTackle?.rods)?ownedTackle.rods:[];
     const reels=Array.isArray(ownedTackle?.reels)?ownedTackle.reels:[];
-    const rod=best(rods,item=>logic.rodFit(item,{...runtimeFish,...plan.requirements,style:plan.style,method:plan.method,size:plan.first_cast?.size||''},rotation));
-    const reel=best(reels,item=>logic.reelFit(item,{...runtimeFish,...plan.requirements,style:plan.style,method:plan.method}));
+    const rod=best(rods,item=>logic.rodFit(item,fitPlan,rotation));
+    const reel=best(reels,item=>logic.reelFit(item,fitPlan));
     return Object.freeze({plan_id:plan.plan_id,ready:true,rod,reel});
   };
   const matchCatalog=(speciesValue,methodId='default',catalogContext={})=>{
