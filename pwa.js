@@ -35,6 +35,7 @@
       await loadScript('./target-methods-v1.js','target-methods-v1-js');
       await loadScript('./species-registry.js','species-registry-js');
       await loadScript('./method-registry.js','method-registry-js');
+      await loadScript('./resolver-engine.js','resolver-engine-js');
       await loadScript('./catalog-loader.js','catalog-loader-js');
       await loadScript('./tackle.js','tackle-js');
       await loadScript('./fit-explain.js','fit-explain-js');
