@@ -3,7 +3,8 @@
   const REMOTE_ENABLED=location.protocol==='https:'||PARAMS.get('fishPhotoRemote')==='on';
   const EAGER=PARAMS.get('fishPhotoEager')==='on';
   const QA_AUTOLOAD=PARAMS.get('fishPhotoQaAutoLoad')==='on'&&location.hostname==='127.0.0.1';
-  const LOCAL=new Set(globalThis.FISH_TARGET_REAL_FISH?.species||[]);
+  const MANIFEST=globalThis.FISH_TARGET_FISH_ASSET_MANIFEST||null;
+  const LOCAL=new Set(MANIFEST?.bundledRecords?.map(record=>record.species_name)||globalThis.FISH_TARGET_REAL_FISH?.species||[]);
   const pending=new Map();
   const cacheKey=name=>`ft-fish-photo-v27r3:${name}`;
   const titleAlias=Object.freeze({
@@ -13,6 +14,12 @@
   const allowed=/^(CC0|Public domain|CC BY(?:-[A-Z]+)?(?: \d(?:\.\d)?)?|CC BY-SA(?: \d(?:\.\d)?)?)$/i;
   const clean=s=>String(s||'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
   const candidates=name=>[titleAlias[name],name,String(name).split(/[・／/]/)[0]].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  const manifestRecord=name=>MANIFEST?.resolve?.(name)||null;
+  const remoteEligible=name=>{
+    if(!MANIFEST)return !LOCAL.has(name);
+    const record=manifestRecord(name);
+    return Boolean(record&&record.mode==='remote-fallback'&&!record.asset);
+  };
   async function json(url){
     const ctl=new AbortController();
     const timer=setTimeout(()=>ctl.abort(),6500);
@@ -32,21 +39,8 @@
     const info=Object.values(meta?.query?.pages||{})[0]?.imageinfo?.[0];
     return licensedValue(info,source,article);
   }
-  async function resolveTitle(title){
-    const wp=`https://ja.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=name&titles=${encodeURIComponent(title)}`;
-    const page=await json(wp);
-    const p=Object.values(page?.query?.pages||{})[0];
-    const file=p?.pageimage;
-    if(!file)return null;
-    try{
-      const local=await imageInfo('https://ja.wikipedia.org/w/api.php',file,'Wikipedia / Wikimedia',title);
-      if(local)return local;
-    }catch{}
-    try{
-      return await imageInfo('https://commons.wikimedia.org/w/api.php',file,'Wikimedia Commons',title);
-    }catch{return null}
-  }
   async function resolve(name){
+    if(!remoteEligible(name))throw new Error(`remote photo not eligible: ${name}`);
     try{
       const stored=localStorage.getItem(cacheKey(name));
       if(stored){const v=JSON.parse(stored);if(v?.url&&v?.license&&allowed.test(v.license))return v}
@@ -60,6 +54,20 @@
       }catch{}
     }
     throw new Error(`no licensed photo: ${name}`);
+  }
+  async function resolveTitle(title){
+    const wp=`https://ja.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=name&titles=${encodeURIComponent(title)}`;
+    const page=await json(wp);
+    const p=Object.values(page?.query?.pages||{})[0];
+    const file=p?.pageimage;
+    if(!file)return null;
+    try{
+      const local=await imageInfo('https://ja.wikipedia.org/w/api.php',file,'Wikipedia / Wikimedia',title);
+      if(local)return local;
+    }catch{}
+    try{
+      return await imageInfo('https://commons.wikimedia.org/w/api.php',file,'Wikimedia Commons',title);
+    }catch{return null}
   }
   function clearHost(host){
     if(!host)return;
@@ -78,7 +86,10 @@
   }
   function mount(host,name){
     if(!REMOTE_ENABLED||!navigator.onLine||!host||!name)return;
-    if(LOCAL.has(name)){if(host.dataset.fishPhotoName)clearHost(host);return}
+    if(!remoteEligible(name)){
+      if(host.dataset.fishPhotoName)clearHost(host);
+      return;
+    }
     if(host.dataset.fishPhotoName===name&&host.classList.contains('fishPhotoMountedV27'))return;
     if(host.dataset.fishPhotoName&&host.dataset.fishPhotoName!==name)clearHost(host);
     host.dataset.fishPhotoName=name;
@@ -128,5 +139,15 @@
     window.addEventListener('pageshow',schedule);window.addEventListener('online',schedule);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({version:'V27R3',provider:'Wikimedia',policy:'licensed-photo-only-with-svg-offline-fallback',enabled:REMOTE_ENABLED,eager:EAGER,qaAutoLoad:QA_AUTOLOAD,localSpecies:Object.freeze([...LOCAL]),aliases:titleAlias});
+  globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({
+    version:'V27R3',
+    provider:'Wikimedia',
+    policy:'licensed-photo-only-with-svg-offline-fallback',
+    manifestVersion:MANIFEST?.version||null,
+    enabled:REMOTE_ENABLED,
+    eager:EAGER,
+    qaAutoLoad:QA_AUTOLOAD,
+    localSpecies:Object.freeze([...LOCAL]),
+    aliases:titleAlias
+  });
 })();
