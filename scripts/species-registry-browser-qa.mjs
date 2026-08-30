@@ -1,8 +1,21 @@
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
+import {generateRuntimeSource} from './species-method-authoring.mjs';
 
 const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
 const browser=await chromium.launch({headless:true});
+const method=(id=null,style='lure')=>({
+  ...(id?{id}:{}),method:id?'統合テスト別釣法':'統合テストルアー',style,why:'Phase Gの経路を実ブラウザで検証するfixture。',
+  requirements:{rod:'8ft / M',reel:'3000番',line:'PE 1号',leader:'20lb',rig:'PE→リーダー→ルアー'},
+  first_cast:{bait:style==='bait'?'オキアミ':'ミノー',size:'10cm',color:'ナチュラル',bait_action:'ただ巻き',range:'中層',action:'一定速',time:'朝夕'},
+  steps:['場所を選ぶ','投入する','反応に合わせて調整する'],places:['堤防'],mistakes:['同じレンジだけに固定する'],
+  source:{provider:'TEST',url:'https://example.com/phase-g-fixture',reviewed_at:'2026-08-30',evidence:'integration-fixture',confidence:'A'}
+});
+const fixture={
+  version:'SPECIES-METHOD-AUTHORING-1',
+  targets:[{species_id:'species-pipeline-fixture',name:'パイプライン魚',aliases:['統合テスト魚'],water:'salt',shape:'small',tags:['テスト'],difficulty:'初級',season:{春:'春のfixture',夏:'夏のfixture',秋:'秋のfixture',冬:'冬のfixture'},default_method:method(),methods:[method('alt_bait','bait')]}],
+  existing:[{species:'ヒラメ',methods:[method('authoring_extra')]}]
+};
 try{
   const page=await browser.newPage({viewport:{width:390,height:844}});
   const pageErrors=[];
@@ -60,7 +73,54 @@ try{
   assert.equal(snapshot.speciesImmutable,true,'species records are immutable read models');
   assert.equal(snapshot.methodsImmutable,true,'method records are immutable read models');
   assert.deepEqual(pageErrors,[],'domain registry browser path must not throw');
-  console.log(`DOMAIN REGISTRY BROWSER QA PASS ${JSON.stringify({species:snapshot.speciesCount,plans:snapshot.methodCount,authoring:snapshot.authoringVersion})}`);
+  await page.close();
+
+  const fixturePage=await browser.newPage({viewport:{width:390,height:844}});
+  const fixtureErrors=[];
+  fixturePage.on('pageerror',error=>fixtureErrors.push(String(error)));
+  await fixturePage.route('**/species-method-authoring-generated.js*',route=>route.fulfill({status:200,contentType:'application/javascript',body:generateRuntimeSource(fixture)}));
+  await fixturePage.goto(BASE,{waitUntil:'networkidle',timeout:30000});
+  await fixturePage.waitForFunction(()=>globalThis.FISH_TARGET_AUTHORING_STATUS?.authored_targets===1&&globalThis.FISH_TARGET_SPECIES_REGISTRY?.count===61&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===153,{timeout:15000});
+  const integrated=await fixturePage.evaluate(()=>{
+    const authoring=globalThis.FISH_TARGET_AUTHORING_STATUS;
+    const species=globalThis.FISH_TARGET_SPECIES_REGISTRY;
+    const methods=globalThis.FISH_TARGET_METHOD_REGISTRY;
+    const resolver=globalThis.FISH_TARGET_RESOLVER;
+    const pipeline=species.resolve('統合テスト魚');
+    return {
+      authoredTargets:authoring.authored_targets,
+      authoredExisting:authoring.authored_existing,
+      authoredPlans:authoring.authored_plans,
+      speciesCount:species.count,
+      methodCount:methods.count,
+      controllerPlans:globalThis.FISH_TARGET_METHOD_STATUS?.plans,
+      alias:pipeline?.name||null,
+      speciesId:pipeline?.species_id||null,
+      planCount:methods.plansForSpecies(pipeline).length,
+      defaultMethod:methods.resolve('パイプライン魚','default')?.method||null,
+      altMethod:methods.resolve('パイプライン魚','alt_bait')?.method||null,
+      existingMethod:methods.resolve('ヒラメ','authoring_extra')?.method||null,
+      resolverMethods:resolver.resolveMethods('統合テスト魚').length,
+      gridCard:Boolean(document.querySelector('button.fish[data-fish="パイプライン魚"]'))
+    };
+  });
+  assert.equal(integrated.authoredTargets,1);
+  assert.equal(integrated.authoredExisting,1);
+  assert.equal(integrated.authoredPlans,3);
+  assert.equal(integrated.speciesCount,61,'fixture target reaches Species Registry');
+  assert.equal(integrated.methodCount,153,'fixture plans reach Method Registry');
+  assert.equal(integrated.controllerPlans,153,'fixture plans reach method controller');
+  assert.equal(integrated.alias,'パイプライン魚','authored alias resolves');
+  assert.equal(integrated.speciesId,'species-pipeline-fixture','explicit authored species_id is preserved');
+  assert.equal(integrated.planCount,2,'new target owns default and alternate plans');
+  assert.equal(integrated.defaultMethod,'統合テストルアー');
+  assert.equal(integrated.altMethod,'統合テスト別釣法');
+  assert.equal(integrated.existingMethod,'統合テスト別釣法','existing target receives authored method');
+  assert.equal(integrated.resolverMethods,2,'Resolver sees authored target methods');
+  assert.equal(integrated.gridCard,true,'authored target reaches home discovery UI');
+  assert.deepEqual(fixtureErrors,[],'authored fixture browser path must not throw');
+  await fixturePage.close();
+  console.log(`DOMAIN REGISTRY BROWSER QA PASS ${JSON.stringify({species:snapshot.speciesCount,plans:snapshot.methodCount,authoring:snapshot.authoringVersion,fixtureSpecies:integrated.speciesCount,fixturePlans:integrated.methodCount})}`);
 }finally{
   await browser.close();
 }
