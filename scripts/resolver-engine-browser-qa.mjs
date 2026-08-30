@@ -8,7 +8,7 @@ try{
   const pageErrors=[];
   page.on('pageerror',error=>pageErrors.push(String(error)));
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
-  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_RESOLVER&&globalThis.FISH_TARGET_TACKLE_LOGIC&&globalThis.FISH_TARGET_RESOLVER_SHADOW&&globalThis.FISH_TARGET_RESOLVER_TACKLE_UI),{timeout:15000});
+  await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_RESOLVER&&globalThis.FISH_TARGET_TACKLE_LOGIC&&globalThis.FISH_TARGET_RESOLVER_SHADOW&&globalThis.FISH_TARGET_RESOLVER_TACKLE_UI&&globalThis.FISH_TARGET_RESULT_UX_V23),{timeout:15000});
   const out=await page.evaluate(()=>{
     const r=globalThis.FISH_TARGET_RESOLVER;
     const species=r.resolveSpecies('平目');
@@ -47,8 +47,9 @@ try{
       shadow,ui,
       uiSource:body?.dataset.fitSource||null,
       uiMarker:body?.querySelectorAll('[data-resolver-render-marker]').length||0,
-      uiSummary:body?.querySelector('.fitSummary b')?.textContent||'',
-      breakdown:Boolean(body?.querySelector('#fitBreakdown'))
+      uiSummary:body?.querySelector('.fitV20Summary b')?.textContent||'',
+      uiDetails:Boolean(body?.querySelector('.fitV20Details')),
+      legacySummaryHidden:body?.querySelector('.fitSummary')?.hidden??false
     };
   });
   assert.equal(out.version,'RESOLVER-ENGINE-1');
@@ -67,7 +68,7 @@ try{
   assert.equal(out.shadow?.rod_parity,true);
   assert.equal(out.shadow?.reel_parity,true);
   assert.ok(out.shadow?.plan_id?.endsWith(':default'));
-  assert.equal(out.ui?.version,'RESOLVER-TACKLE-UI-1');
+  assert.equal(out.ui?.version,'RESOLVER-TACKLE-UI-2');
   assert.equal(out.ui?.ready,true);
   assert.equal(out.ui?.source,'resolver');
   assert.equal(out.ui?.plan_id,out.shadow?.plan_id);
@@ -76,7 +77,8 @@ try{
   assert.equal(out.uiSource,'resolver');
   assert.equal(out.uiMarker,1);
   assert.ok(out.uiSummary.length>0);
-  assert.equal(out.breakdown,false,'direct resolver render owns base fit before explanation layer appends');
+  assert.equal(out.uiDetails,true,'resolver render preserves V20 detail UI');
+  assert.equal(out.legacySummaryHidden,true,'legacy compatibility summary stays hidden');
   assert.deepEqual(pageErrors,[],'resolver browser path must not throw');
   console.log(`RESOLVER ENGINE BROWSER QA PASS ${JSON.stringify({species:out.species,plans:out.methodTotal,shadow:out.shadow?.parity,ui:out.uiSource})}`);
 }finally{
