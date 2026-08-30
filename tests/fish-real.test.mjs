@@ -8,7 +8,7 @@ const manifest=readFileSync(new URL('../fish-asset-manifest.js',import.meta.url)
 const authoring=JSON.parse(readFileSync(new URL('../authoring/fish-assets.v1.json',import.meta.url),'utf8'));
 const css=readFileSync(new URL('../fish-real.css',import.meta.url),'utf8');
 const build=readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
-const assetName='fish-real-v7.avif';
+const assetName=authoring.bundled_sheet;
 const species=[
   'ブリ・ワラサ','カンパチ','サワラ','シーバス','ヒラメ','マゴチ','アジ','メバル','アオリイカ','タチウオ',
   'クロダイ','マダイ','シロギス','カワハギ','ブラックバス','ニジマス','アユ','コイ','ヤマメ・イワナ'
@@ -21,7 +21,7 @@ test('REAL8 maps all 19 targets through generated fish asset authoring and loads
   assert.match(js,/const ASSET=MANIFEST\.bundledSheet\|\|'fish-real-v7\.avif'/);
   assert.match(manifest,/FISH_TARGET_FISH_ASSET_AUTHORING/);
   assert.match(manifest,/const SHEET=authoring\.bundled_sheet/);
-  assert.equal(authoring.bundled_sheet,assetName);
+  assert.equal(assetName,'fish-real-v7.avif');
   assert.equal(authoring.assets.length,19);
   assert.deepEqual(authoring.assets.map(record=>record.species_name),species);
   assert.match(js,/image\.naturalWidth<1000\|\|image\.naturalHeight<700/);
@@ -32,14 +32,19 @@ test('REAL8 maps all 19 targets through generated fish asset authoring and loads
   assert.match(js,/host\.dataset\.fishAsset='direct-avif-grid'/);
 });
 
-test('verified 1200x768 AVIF ships as a direct binary asset',()=>{
+test('verified 1200x768 AVIF ships through data-driven build assets',()=>{
   const assetUrl=new URL(`../${assetName}`,import.meta.url);
   assert.equal(existsSync(assetUrl),true,'direct AVIF asset missing');
   const bytes=readFileSync(assetUrl);
   assert.equal(bytes.length,28472,'AVIF byte length mismatch');
   assert.equal(bytes.subarray(4,12).toString('ascii'),'ftypavif','asset is not AVIF');
   assert.equal(createHash('sha256').update(bytes).digest('hex'),'446ac81286e0e107205957dbb87ed74de78a5d0e48102aed98b2f668e53c2559','AVIF hash mismatch');
-  assert.ok(build.includes(`'${assetName}'`),`${assetName} missing from build assets`);
+  assert.deepEqual([...new Set(authoring.assets.map(record=>record.asset.file))],[assetName]);
+  assert.match(build,/loadFishAssetAuthoring/);
+  assert.match(build,/validateFishAssetAuthoring/);
+  assert.match(build,/const fishAssetFiles=\[\.\.\.new Set/);
+  assert.match(build,/\.\.\.fishAssetFiles/);
+  assert.doesNotMatch(build,/'fish-real-v7\.avif'/,'build must not hardcode the current fish asset filename');
 });
 
 test('release fish path contains no runtime Base64 reconstruction',()=>{
