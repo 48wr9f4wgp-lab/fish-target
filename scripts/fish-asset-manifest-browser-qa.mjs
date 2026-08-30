@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {chromium} from 'playwright';
+import {generateRuntimeSource} from './fish-asset-authoring.mjs';
 
 const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
 const browser=await chromium.launch({headless:true});
@@ -40,6 +42,8 @@ try{
       hirame:manifest.resolve('平目'),
       aji:manifest.resolve('アジ'),
       saba:manifest.resolve('サバ'),
+      realVersion:real.version,
+      realRenderer:real.renderer,
       realManifest:real.manifestVersion,
       realSpecies:real.species,
       photoManifest:photo.manifestVersion,
@@ -70,11 +74,81 @@ try{
   assert.equal(snapshot.aji?.asset?.file,'fish-real-v7.avif');
   assert.equal(snapshot.saba?.mode,'remote-fallback','non-bundled fish resolves to remote fallback');
   assert.equal(snapshot.saba?.asset,null);
+  assert.equal(snapshot.realVersion,'V23-REAL9');
+  assert.equal(snapshot.realRenderer,'manifest-bundled-sprite-or-file-with-svg-fallback');
   assert.equal(snapshot.realManifest,snapshot.version,'bundled renderer consumes manifest');
   assert.deepEqual(snapshot.realSpecies,snapshot.photoLocal,'bundled renderer and remote photo resolver agree on local priority set');
   assert.equal(snapshot.photoManifest,snapshot.version,'remote photo resolver consumes manifest');
   assert.deepEqual(pageErrors,[],'asset manifest browser path must not throw');
-  console.log(`FISH ASSET MANIFEST BROWSER QA PASS ${JSON.stringify({species:snapshot.count,bundled:snapshot.bundledCount,remote:snapshot.remoteFallbackCount})}`);
+
+  const fixturePage=await browser.newPage({viewport:{width:390,height:844}});
+  const fixtureErrors=[];
+  fixturePage.on('pageerror',error=>fixtureErrors.push(String(error)));
+  const source=JSON.parse(await readFile(new URL('../authoring/fish-assets.v1.json',import.meta.url),'utf8'));
+  const fixtureAuthoring={
+    ...source,
+    assets:[...source.assets,{
+      species_name:'サバ',
+      asset:{type:'file',file:'qa-fish-file.svg'},
+      source:'browser-fixture',
+      source_url:'https://example.com/fish-target-qa',
+      author:null,
+      license:'CC0',
+      attribution:null,
+      verified_at:'2026-08-30',
+      rights_status:'verified'
+    }]
+  };
+  const fixtureRuntime=generateRuntimeSource(fixtureAuthoring);
+  await fixturePage.route('**/fish-asset-authoring-generated.js*',route=>route.fulfill({status:200,contentType:'application/javascript; charset=utf-8',body:fixtureRuntime}));
+  await fixturePage.route('**/qa-fish-file.svg*',route=>route.fulfill({status:200,contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="480" height="220" viewBox="0 0 480 220"><path fill="#667" d="M35 110c86-88 260-78 360-10l55-50-15 67 15 67-55-50c-104 67-278 74-360-24z"/><circle cx="330" cy="91" r="7" fill="#fff"/><circle cx="331" cy="91" r="3" fill="#111"/></svg>'}));
+  await fixturePage.goto(BASE,{waitUntil:'networkidle',timeout:30000});
+  await fixturePage.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_FISH_ASSET_MANIFEST&&globalThis.FISH_TARGET_REAL_FISH&&globalThis.FISH_TARGET_PHOTO_V27),null,{timeout:20000});
+  await fixturePage.evaluate(()=>{
+    const card=[...document.querySelectorAll('#grid .fish[data-fish]')].find(node=>node.dataset.fish==='サバ');
+    card?.scrollIntoView({block:'center'});
+  });
+  await fixturePage.waitForFunction(()=>{
+    const card=[...document.querySelectorAll('#grid .fish[data-fish]')].find(node=>node.dataset.fish==='サバ');
+    return card?.querySelector('.art')?.dataset.fishAsset==='direct-bundled-file';
+  },null,{timeout:10000});
+
+  const fixtureSnapshot=await fixturePage.evaluate(()=>{
+    const manifest=globalThis.FISH_TARGET_FISH_ASSET_MANIFEST;
+    const real=globalThis.FISH_TARGET_REAL_FISH;
+    const photo=globalThis.FISH_TARGET_PHOTO_V27;
+    const card=[...document.querySelectorAll('#grid .fish[data-fish]')].find(node=>node.dataset.fish==='サバ');
+    const host=card?.querySelector('.art');
+    const canvas=host?.querySelector(':scope > .realFishCanvas');
+    return {
+      record:manifest.resolve('サバ'),
+      bundledCount:manifest.bundledCount,
+      remoteCount:manifest.remoteFallbackCount,
+      publicationReadyCount:manifest.publicationReadyCount,
+      renderer:real.renderer,
+      assetTypes:real.assetTypes,
+      localSpecies:photo.localSpecies,
+      fishAsset:host?.dataset.fishAsset||null,
+      canvasWidth:canvas?.width||0,
+      canvasHeight:canvas?.height||0
+    };
+  });
+
+  assert.equal(fixtureSnapshot.record?.mode,'bundled','file fixture becomes a bundled manifest record');
+  assert.equal(fixtureSnapshot.record?.asset?.type,'file');
+  assert.equal(fixtureSnapshot.record?.asset?.file,'qa-fish-file.svg');
+  assert.equal(fixtureSnapshot.record?.publication_ready,true,'complete CC0 fixture derives publication readiness');
+  assert.equal(fixtureSnapshot.bundledCount,20);
+  assert.equal(fixtureSnapshot.remoteCount,40);
+  assert.equal(fixtureSnapshot.publicationReadyCount,1);
+  assert.equal(fixtureSnapshot.renderer,'manifest-bundled-sprite-or-file-with-svg-fallback');
+  assert.deepEqual(fixtureSnapshot.assetTypes.sort(),['file','sprite-sheet']);
+  assert.ok(fixtureSnapshot.localSpecies.includes('サバ'),'remote photo resolver treats direct file assets as local');
+  assert.equal(fixtureSnapshot.fishAsset,'direct-bundled-file','direct file fixture owns the rendered fish host');
+  assert.ok(fixtureSnapshot.canvasWidth>0&&fixtureSnapshot.canvasHeight>0,'direct file fixture renders into a real canvas');
+  assert.deepEqual(fixtureErrors,[],'direct file fish browser path must not throw');
+
+  console.log(`FISH ASSET MANIFEST BROWSER QA PASS ${JSON.stringify({species:snapshot.count,bundled:snapshot.bundledCount,remote:snapshot.remoteFallbackCount,fileFixture:fixtureSnapshot.fishAsset})}`);
 }finally{
   await browser.close();
 }
