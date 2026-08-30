@@ -32,7 +32,7 @@ test('REAL9 maps current 19 sprite targets through generated fish asset authorin
   assert.match(js,/host\.dataset\.fishAsset=asset\.type==='file'\?'direct-bundled-file':'direct-avif-grid'/);
 });
 
-test('REAL9 supports direct bundled files and lazy-loads non-primary local assets',()=>{
+test('REAL9 supports direct bundled files, lazy loading, and explicit prefetch',()=>{
   assert.match(js,/asset\.type==='file'/);
   assert.match(js,/direct-bundled-file/);
   assert.match(js,/IntersectionObserver/);
@@ -40,6 +40,7 @@ test('REAL9 supports direct bundled files and lazy-loads non-primary local asset
   assert.match(js,/asset\.file===PRIMARY/);
   assert.match(js,/host\.id==='tart'\|\|Boolean\(host\.closest\('#result'\)\)/);
   assert.match(js,/ensureAsset\(name\)/);
+  assert.match(js,/prefetch:async name=>Boolean\(await ensureAsset\(name\)\)/);
 });
 
 test('verified 1200x768 AVIF ships through data-driven build assets',()=>{
