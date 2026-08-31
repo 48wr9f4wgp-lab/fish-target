@@ -35,6 +35,14 @@
     return `<div class="fitV20DetailGroup"><b>${kind}</b>${candidate.rows.map(x=>`<div class="fitV20Check level${x.level}"><span>${mark(x.level)}</span><div><b>${esc(x.name)}</b><small>${esc(x.owned)} → 推奨 ${esc(x.target)} · ${esc(x.note)}</small></div></div>`).join('')}</div>`;
   };
   const keyOf=candidate=>candidate?.item?.id||candidate?.item?.product_id||candidate?.item?.name||null;
+  let lastEvaluationEvent=null;
+  const trackEvaluation=payload=>{
+    if(typeof track!=='function')return;
+    const signature=[payload.species,payload.method_id,payload.plan_id,payload.rod,payload.reel,payload.decision_level].join('|');
+    if(signature===lastEvaluationEvent)return;
+    lastEvaluationEvent=signature;
+    track('my_tackle_evaluate',payload);
+  };
   const publish=statusValue=>{
     globalThis.FISH_TARGET_RESOLVER_TACKLE_UI_STATUS=Object.freeze(statusValue);
     return globalThis.FISH_TARGET_RESOLVER_TACKLE_UI_STATUS;
@@ -61,7 +69,9 @@
     const legacySummary=d.level===0?'手持ちで組みやすい':'買い足し候補あり';
     body.innerHTML=`<div class="fitSummary" hidden><b>${legacySummary}</b></div><div class="fitV20Summary level${d.level}" data-resolver-fit="1"><span>${mark(d.level)}</span><div><b>${esc(d.title)}</b><small>${esc(d.sub)}</small></div></div><div class="fitV20Items">${itemMarkup('ROD',rod,rodTarget)}${itemMarkup('REEL',reel,reelTarget)}</div><details class="fitV20Details"><summary><span>判定の詳細</span><em>${esc(detailBadge)}</em></summary><div class="fitV20DetailBody">${detailRows('ROD',rod)}${detailRows('REEL',reel)}<p>商品糸巻量と実際に巻いているラインは別扱い。cm / inch / エギ号数 / lbを無理に別単位へ変換しない。</p></div></details><span data-resolver-render-marker hidden></span>`;
     body.dataset.fitSource='resolver';
-    return publish({version:'RESOLVER-TACKLE-UI-2',ready:true,source:'resolver',species:cur.name,method_id:methodId,plan_id:fit.plan_id,rod:keyOf(fit.rod),reel:keyOf(fit.reel),decision_level:d.level});
+    const statusValue={version:'RESOLVER-TACKLE-UI-2',ready:true,source:'resolver',species:cur.name,method_id:methodId,plan_id:fit.plan_id,rod:keyOf(fit.rod),reel:keyOf(fit.reel),decision_level:d.level};
+    trackEvaluation({species:statusValue.species,method_id:statusValue.method_id,plan_id:statusValue.plan_id,rod:statusValue.rod,reel:statusValue.reel,decision_level:statusValue.decision_level,source:'resolver'});
+    return publish(statusValue);
   };
   if(typeof renderResult==='function'){
     const previous=renderResult;
