@@ -29,6 +29,20 @@ try{
       .normalize('NFKC')
       .toLowerCase()
       .replace(/[\s·・\-_/().（）]+/g,'');
+
+    // Explicit legacy-name aliases are evidence-backed only. These bridge the
+    // current Japanese PRODUCT_DB labels to canonical manufacturer-series names
+    // already present in the factual Catalog; they do not create product facts.
+    const legacyAliases=new Map([
+      [normalize('コルトスナイパー BB S96MH'),'COLTSNIPER BB S96MH'],
+      [normalize('ナスキー 4000XG'),'NASCI 4000XG'],
+      [normalize('ホリデー イソ'),'HOLIDAY ISO'],
+      [normalize('ホリデー イソ 1.5-530'),'HOLIDAY ISO 1.5-530'],
+      [normalize('ホリデー イソ 4-530PTS'),'HOLIDAY ISO 4-530PTS'],
+      [normalize('ライトゲーム BB'),'LIGHTGAME BB'],
+      [normalize('ライトゲーム BB 73MH230'),'LIGHTGAME BB 73MH230']
+    ]);
+
     const products=globalThis.FISH_TARGET_CATALOG_RUNTIME.products||[];
     const catalog=products.map(product=>({
       product,
@@ -38,12 +52,20 @@ try{
         normalize(`${product.maker||''}${product.series||''}${product.model||''}`)
       ].filter(Boolean)
     }));
-    const findMatch=name=>{
+    const findDirectMatch=name=>{
       const target=normalize(name);
       if(target.length<4)return null;
       return catalog.find(entry=>entry.keys.some(key=>
         key.length>=4&&(target===key||target.includes(key)||key.includes(target))
       ))||null;
+    };
+    const findMatch=name=>{
+      const direct=findDirectMatch(name);
+      if(direct)return {entry:direct,match_kind:'direct',alias_target:null};
+      const aliasTarget=legacyAliases.get(normalize(name));
+      if(!aliasTarget)return null;
+      const aliased=findDirectMatch(aliasTarget);
+      return aliased?{entry:aliased,match_kind:'alias',alias_target:aliasTarget}:null;
     };
 
     const planLinks=[];
@@ -69,13 +91,16 @@ try{
     const unique=[...uniqueMap.values()];
     const resolved=unique.map(row=>{
       const match=findMatch(row.name);
+      const product=match?.entry?.product||null;
       return {
         ...row,
-        matched:Boolean(match),
-        product_id:match?.product?.product_id||null,
-        production_eligible:match?Boolean(globalThis.FISH_TARGET_CATALOG_RUNTIME.productionEligible(match.product)):false,
-        source_type:match?.product?.source?.source_type||null,
-        license_status:match?.product?.source?.license_status||null
+        matched:Boolean(product),
+        match_kind:match?.match_kind||null,
+        alias_target:match?.alias_target||null,
+        product_id:product?.product_id||null,
+        production_eligible:product?Boolean(globalThis.FISH_TARGET_CATALOG_RUNTIME.productionEligible(product)):false,
+        source_type:product?.source?.source_type||null,
+        license_status:product?.source?.license_status||null
       };
     });
 
@@ -83,18 +108,23 @@ try{
     const matchedPlanLinks=planLinks.filter(row=>matchedNameSet.has(`${row.type}|${normalize(row.name)}`)).length;
     const matched=resolved.filter(x=>x.matched);
     const unmatched=resolved.filter(x=>!x.matched);
+    const directMatched=matched.filter(x=>x.match_kind==='direct');
+    const aliasMatched=matched.filter(x=>x.match_kind==='alias');
     return {
       plans:globalThis.FISH_TARGET_METHOD_REGISTRY.count,
       catalog_products:products.length,
       plan_links:planLinks.length,
       unique_recommendations:unique.length,
       matched_unique:matched.length,
+      direct_matched_unique:directMatched.length,
+      alias_matched_unique:aliasMatched.length,
       unmatched_unique:unmatched.length,
       matched_plan_links:matchedPlanLinks,
       production_eligible_unique:matched.filter(x=>x.production_eligible).length,
       research_only_unique:matched.filter(x=>!x.production_eligible).length,
       match_rate_unique:unique.length?Number((matched.length/unique.length).toFixed(4)):0,
       match_rate_plan_links:planLinks.length?Number((matchedPlanLinks/planLinks.length).toFixed(4)):0,
+      alias_matches:aliasMatched.map(x=>({name:x.name,alias_target:x.alias_target})).sort((a,b)=>a.name.localeCompare(b.name,'ja')),
       unmatched_names:unmatched.map(x=>x.name).sort(),
       matched_names:matched.map(x=>x.name).sort()
     };
@@ -105,6 +135,8 @@ try{
   assert.ok(coverage.plan_links>0,'legacy product recommendations must exist');
   assert.ok(coverage.unique_recommendations>0,'unique legacy product recommendations must exist');
   assert.equal(coverage.matched_unique+coverage.unmatched_unique,coverage.unique_recommendations);
+  assert.equal(coverage.direct_matched_unique+coverage.alias_matched_unique,coverage.matched_unique);
+  assert.equal(coverage.alias_matches.length,coverage.alias_matched_unique);
   assert.ok(coverage.matched_unique>0,'coverage audit must resolve at least one legacy recommendation');
   assert.ok(coverage.matched_plan_links<=coverage.plan_links);
   assert.ok(coverage.production_eligible_unique<=coverage.matched_unique);
