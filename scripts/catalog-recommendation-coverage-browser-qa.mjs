@@ -4,7 +4,11 @@ import {chromium} from 'playwright';
 
 const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
 const manifest=JSON.parse(readFileSync(new URL('../catalog-batch-manifest.json',import.meta.url),'utf8'));
+const recommendationTargetRegistry=JSON.parse(readFileSync(new URL('../authoring/recommendation-targets.v1.json',import.meta.url),'utf8'));
 const EXPECTED_PRODUCTS=14+manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
+
+assert.equal(recommendationTargetRegistry.registry_id,'RECOMMENDATION-TARGETS-1');
+assert.equal(recommendationTargetRegistry.targets.length,6);
 
 const browser=await chromium.launch({headless:true});
 try{
@@ -24,7 +28,7 @@ try{
     globalThis.FISH_TARGET_CATALOG_RUNTIME?.products?.length===expected
   ,EXPECTED_PRODUCTS,{timeout:15000});
 
-  const coverage=await page.evaluate(()=>{
+  const coverage=await page.evaluate(recommendationTargets=>{
     const normalize=value=>String(value??'')
       .normalize('NFKC')
       .toLowerCase()
@@ -42,6 +46,10 @@ try{
       [normalize('ライトゲーム BB'),'LIGHTGAME BB'],
       [normalize('ライトゲーム BB 73MH230'),'LIGHTGAME BB 73MH230']
     ]);
+    const familyTargets=new Map(recommendationTargets.map(target=>[
+      `${target.legacy_type}|${normalize(target.legacy_name)}`,
+      target
+    ]));
 
     const products=globalThis.FISH_TARGET_CATALOG_RUNTIME.products||[];
     const catalog=products.map(product=>({
@@ -90,7 +98,11 @@ try{
     }
     const unique=[...uniqueMap.values()];
     const resolved=unique.map(row=>{
-      const match=findMatch(row.name);
+      const semanticKey=`${row.type}|${normalize(row.name)}`;
+      const familyTarget=familyTargets.get(semanticKey)||null;
+      // Explicit family semantics take precedence over fuzzy Catalog matching so
+      // future SKU growth cannot silently collapse a family recommendation to one model.
+      const match=familyTarget?null:findMatch(row.name);
       const product=match?.entry?.product||null;
       return {
         ...row,
@@ -98,6 +110,12 @@ try{
         match_kind:match?.match_kind||null,
         alias_target:match?.alias_target||null,
         product_id:product?.product_id||null,
+        family_resolved:Boolean(familyTarget),
+        semantic_resolved:Boolean(product||familyTarget),
+        semantic_kind:familyTarget?'series_family':(match?.match_kind||null),
+        family_maker:familyTarget?.maker||null,
+        family_series:familyTarget?.official_series||null,
+        family_source_url:familyTarget?.source?.source_url||null,
         production_eligible:product?Boolean(globalThis.FISH_TARGET_CATALOG_RUNTIME.productionEligible(product)):false,
         source_type:product?.source?.source_type||null,
         license_status:product?.source?.license_status||null
@@ -105,11 +123,16 @@ try{
     });
 
     const matchedNameSet=new Set(resolved.filter(x=>x.matched).map(x=>`${x.type}|${normalize(x.name)}`));
+    const semanticNameSet=new Set(resolved.filter(x=>x.semantic_resolved).map(x=>`${x.type}|${normalize(x.name)}`));
     const matchedPlanLinks=planLinks.filter(row=>matchedNameSet.has(`${row.type}|${normalize(row.name)}`)).length;
+    const semanticResolvedPlanLinks=planLinks.filter(row=>semanticNameSet.has(`${row.type}|${normalize(row.name)}`)).length;
     const matched=resolved.filter(x=>x.matched);
     const unmatched=resolved.filter(x=>!x.matched);
     const directMatched=matched.filter(x=>x.match_kind==='direct');
     const aliasMatched=matched.filter(x=>x.match_kind==='alias');
+    const familyResolved=resolved.filter(x=>x.family_resolved);
+    const semanticResolved=resolved.filter(x=>x.semantic_resolved);
+    const semanticUnresolved=resolved.filter(x=>!x.semantic_resolved);
     return {
       plans:globalThis.FISH_TARGET_METHOD_REGISTRY.count,
       catalog_products:products.length,
@@ -120,15 +143,23 @@ try{
       alias_matched_unique:aliasMatched.length,
       unmatched_unique:unmatched.length,
       matched_plan_links:matchedPlanLinks,
+      family_resolved_unique:familyResolved.length,
+      semantic_resolved_unique:semanticResolved.length,
+      semantic_unresolved_unique:semanticUnresolved.length,
+      semantic_resolved_plan_links:semanticResolvedPlanLinks,
       production_eligible_unique:matched.filter(x=>x.production_eligible).length,
       research_only_unique:matched.filter(x=>!x.production_eligible).length,
       match_rate_unique:unique.length?Number((matched.length/unique.length).toFixed(4)):0,
       match_rate_plan_links:planLinks.length?Number((matchedPlanLinks/planLinks.length).toFixed(4)):0,
+      semantic_resolution_rate_unique:unique.length?Number((semanticResolved.length/unique.length).toFixed(4)):0,
+      semantic_resolution_rate_plan_links:planLinks.length?Number((semanticResolvedPlanLinks/planLinks.length).toFixed(4)):0,
       alias_matches:aliasMatched.map(x=>({name:x.name,alias_target:x.alias_target})).sort((a,b)=>a.name.localeCompare(b.name,'ja')),
+      family_targets:familyResolved.map(x=>({name:x.name,maker:x.family_maker,series:x.family_series,source_url:x.family_source_url})).sort((a,b)=>a.name.localeCompare(b.name,'ja')),
       unmatched_names:unmatched.map(x=>x.name).sort(),
+      semantic_unresolved_names:semanticUnresolved.map(x=>x.name).sort(),
       matched_names:matched.map(x=>x.name).sort()
     };
-  });
+  },recommendationTargetRegistry.targets);
 
   assert.equal(coverage.plans,150);
   assert.equal(coverage.catalog_products,EXPECTED_PRODUCTS);
@@ -137,6 +168,13 @@ try{
   assert.equal(coverage.matched_unique+coverage.unmatched_unique,coverage.unique_recommendations);
   assert.equal(coverage.direct_matched_unique+coverage.alias_matched_unique,coverage.matched_unique);
   assert.equal(coverage.alias_matches.length,coverage.alias_matched_unique);
+  assert.equal(coverage.family_resolved_unique,recommendationTargetRegistry.targets.length);
+  assert.equal(coverage.semantic_resolved_unique,coverage.matched_unique+coverage.family_resolved_unique);
+  assert.equal(coverage.semantic_resolved_unique+coverage.semantic_unresolved_unique,coverage.unique_recommendations);
+  assert.equal(coverage.semantic_unresolved_unique,0,'every legacy recommendation must resolve to an exact/alias product or explicit family target');
+  assert.equal(coverage.semantic_resolved_plan_links,coverage.plan_links);
+  assert.equal(coverage.semantic_resolution_rate_unique,1);
+  assert.equal(coverage.semantic_resolution_rate_plan_links,1);
   assert.ok(coverage.matched_unique>0,'coverage audit must resolve at least one legacy recommendation');
   assert.ok(coverage.matched_plan_links<=coverage.plan_links);
   assert.ok(coverage.production_eligible_unique<=coverage.matched_unique);
