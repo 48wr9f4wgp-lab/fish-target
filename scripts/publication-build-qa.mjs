@@ -23,6 +23,7 @@ try{
   runBuild(true);
   const html=await readFile(path.join(dist,'index.html'),'utf8');
   const runtimeExpected=productionBatches.length>0;
+  if(!html.includes('data-catalog-publication="on"'))throw new Error('publication build marker missing');
   if(!html.includes(`data-catalog-runtime="${runtimeExpected?'on':'off'}"`))throw new Error('publication catalog runtime marker mismatch');
   if(!(await exists('catalog-loader.js')))throw new Error('publication build must retain fail-closed catalog loader');
   if(!(await exists('tackle.js')))throw new Error('publication build must retain MY TACKLE manual fallback');
@@ -42,6 +43,7 @@ try{
   try{
     runBuild(false);
     const html=await readFile(path.join(dist,'index.html'),'utf8');
+    if(!html.includes('data-catalog-publication="off"'))throw new Error('research build restore publication marker mismatch');
     if(!html.includes('data-catalog-runtime="on"'))throw new Error('research build restore did not re-enable catalog runtime');
     if(!(await exists('catalog-batch-manifest.json')))throw new Error('research build restore missing catalog manifest');
   }catch(error){if(!primaryError)primaryError=error;else console.error(error)}
