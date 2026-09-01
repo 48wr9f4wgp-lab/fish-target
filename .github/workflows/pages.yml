@@ -28,6 +28,10 @@ jobs:
           node-version: 22
       - name: Test and build
         run: npm test
+      - name: Build publication-safe preview
+        env:
+          FISH_TARGET_PUBLICATION_BUILD: "1"
+        run: npm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
