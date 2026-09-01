@@ -13,6 +13,7 @@ if(!/^V\d+(?:[.-][A-Za-z0-9]+)*$/.test(config.version))throw new Error('Invalid 
 if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldLive feature flag');
 const buildId=config.version.toLowerCase();
 const publicationBuild=process.env.FISH_TARGET_PUBLICATION_BUILD==='1';
+const cacheBuildId=publicationBuild?`${buildId}-publication`:buildId;
 
 const fishAssetAuthoring=await loadFishAssetAuthoring();
 const fishAssetErrors=validateFishAssetAuthoring(fishAssetAuthoring);
@@ -71,6 +72,7 @@ await generateIcons(output);
 const replaceBuildTokens=source=>source
   .replaceAll('__BUILD_VERSION__',config.version)
   .replaceAll('__BUILD_ID__',buildId)
+  .replaceAll('__CACHE_BUILD_ID__',cacheBuildId)
   .replaceAll('__FIELD_LIVE_STATE__',config.features.fieldLive?'on':'off');
 
 const html=replaceBuildTokens(await readFile(path.join(root,'index.html'),'utf8'))
