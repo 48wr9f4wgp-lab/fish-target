@@ -69,7 +69,7 @@ const replaceBuildTokens=source=>source
   .replaceAll('__FIELD_LIVE_STATE__',config.features.fieldLive?'on':'off');
 
 const html=replaceBuildTokens(await readFile(path.join(root,'index.html'),'utf8'))
-  .replace('<html lang="ja"',`<html lang="ja" data-catalog-runtime="${catalogRuntimeEnabled?'on':'off'}"`);
+  .replace('<html lang="ja"',`<html lang="ja" data-catalog-runtime="${catalogRuntimeEnabled?'on':'off'}" data-catalog-publication="${publicationBuild?'on':'off'}"`);
 await writeFile(path.join(output,'index.html'),html);
 
 const worker=replaceBuildTokens(await readFile(path.join(root,'sw.js'),'utf8'))
