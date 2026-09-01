@@ -3,15 +3,17 @@ import path from 'node:path';
 import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
 import {GENERATED_PATH,generateRuntimeSource,loadAuthoring,validateAuthoring} from './species-method-authoring.mjs';
+import {loadCombinedAuthoring} from './species-method-fragments.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const text=value=>String(value??'').trim();
 const canonical=value=>text(value).normalize('NFKC').toLowerCase();
 const errors=[];
-const data=await loadAuthoring();
+const baseData=await loadAuthoring();
+const data=await loadCombinedAuthoring();
 errors.push(...validateAuthoring(data));
 const generated=await readFile(GENERATED_PATH,'utf8').catch(()=>null);
-if(generated!==generateRuntimeSource(data))errors.push('generated authoring payload is stale; run npm run authoring:generate');
+if(generated!==generateRuntimeSource(baseData))errors.push('base generated authoring payload is stale; run npm run authoring:generate');
 
 const context=vm.createContext({console});
 context.globalThis=context;
