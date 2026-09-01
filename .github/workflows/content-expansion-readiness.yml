@@ -1,0 +1,25 @@
+name: content-expansion-readiness
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Content expansion readiness
+        run: node scripts/content-expansion-readiness.mjs --check
+      - name: Coverage detail
+        run: node scripts/content-expansion-readiness.mjs --json
+      - name: One-command expansion gate dry run
+        run: node scripts/content-expansion-gate.mjs

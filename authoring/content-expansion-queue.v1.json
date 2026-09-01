@@ -1,0 +1,21 @@
+{
+  "version": "CONTENT-EXPANSION-QUEUE-1",
+  "state": "ready-for-input",
+  "baseline_lock": {
+    "species": 60,
+    "plans": 150,
+    "catalog_batches": 44,
+    "catalog_expected_rows": 964
+  },
+  "policy": {
+    "priority_values": ["P0", "P1", "P2"],
+    "publication_stage_default": "research",
+    "catalog_categories": ["rod", "reel"],
+    "require_evidence_urls": true,
+    "allow_runtime_mutation_before_review": false,
+    "allow_publication_by_inference": false
+  },
+  "species_candidates": [],
+  "method_candidates": [],
+  "catalog_candidates": []
+}
