@@ -9,7 +9,7 @@ permissions:
 jobs:
   readiness:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,3 +21,5 @@ jobs:
         run: node scripts/content-expansion-readiness.mjs --check
       - name: Coverage detail
         run: node scripts/content-expansion-readiness.mjs --json
+      - name: One-command expansion gate dry run
+        run: node scripts/content-expansion-gate.mjs
