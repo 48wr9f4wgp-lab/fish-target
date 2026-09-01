@@ -2,6 +2,8 @@ import {cp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {generateRuntimeSource as generateFishAssetRuntimeSource,loadAuthoring as loadFishAssetAuthoring,publicationReady as fishAssetPublicationReady,validateAuthoring as validateFishAssetAuthoring} from './fish-asset-authoring.mjs';
+import {generateRuntimeSource as generateSpeciesAuthoringRuntime} from './species-method-authoring.mjs';
+import {loadCombinedAuthoring} from './species-method-fragments.mjs';
 import {generateIcons} from './generate-icons.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -14,6 +16,9 @@ if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldL
 const buildId=config.version.toLowerCase();
 const publicationBuild=process.env.FISH_TARGET_PUBLICATION_BUILD==='1';
 const cacheBuildId=publicationBuild?`${buildId}-publication`:buildId;
+
+const combinedSpeciesAuthoring=await loadCombinedAuthoring();
+const combinedSpeciesAuthoringRuntime=generateSpeciesAuthoringRuntime(combinedSpeciesAuthoring);
 
 const fishAssetAuthoring=await loadFishAssetAuthoring();
 const fishAssetErrors=validateFishAssetAuthoring(fishAssetAuthoring);
@@ -82,6 +87,7 @@ const shell=['./','./index.html',...shellAssets.map(file=>`./${file}`),...genera
 await rm(output,{recursive:true,force:true});
 await mkdir(output,{recursive:true});
 await Promise.all(copiedAssets.map(file=>cp(path.join(root,file),path.join(output,file))));
+await writeFile(path.join(output,'species-method-authoring-generated.js'),combinedSpeciesAuthoringRuntime);
 if(catalogRuntimeEnabled){
   const distributionManifest={...catalogManifest,batches:selectedCatalogBatches};
   await writeFile(path.join(output,'catalog-batch-manifest.json'),JSON.stringify(distributionManifest,null,2));
@@ -106,4 +112,4 @@ const worker=replaceBuildTokens(await readFile(path.join(root,'sw.js'),'utf8'))
   .replace('__SHELL_MANIFEST__',JSON.stringify(shell,null,2));
 await writeFile(path.join(output,'sw.js'),worker);
 
-console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; fish assets ${publicationBuild?'publication':'research'} ${fishAssetFiles.length}/${sourceFishAssetFiles.length} files; catalog ${publicationBuild?'publication':'research'} ${selectedCatalogBatches.length}/${catalogManifest.batches.length} batches; lure catalog ${publicationBuild?'publication':'research'} ${selectedLureBatches.length}/${lureCatalogManifest.batches.length} batches; ${allLazyRuntimeAssets.length} lazy runtime assets)`);
+console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; species authoring ${combinedSpeciesAuthoring.targets.length} authored targets; fish assets ${publicationBuild?'publication':'research'} ${fishAssetFiles.length}/${sourceFishAssetFiles.length} files; catalog ${publicationBuild?'publication':'research'} ${selectedCatalogBatches.length}/${catalogManifest.batches.length} batches; lure catalog ${publicationBuild?'publication':'research'} ${selectedLureBatches.length}/${lureCatalogManifest.batches.length} batches; ${allLazyRuntimeAssets.length} lazy runtime assets)`);
