@@ -1,0 +1,7 @@
+{
+  "version": "LURE-CATALOG-1",
+  "batches": [
+    {"id":"daiwa-kamasu-light-2026","maker":"DAIWA","file":"lure-catalog-daiwa-kamasu-light-2026.js","expected_rows":3,"stage":"research","targets":["カマス"]},
+    {"id":"daiwa-sawara-blade-2026","maker":"DAIWA","file":"lure-catalog-daiwa-sawara-blade-2026.js","expected_rows":2,"stage":"research","targets":["サワラ"]}
+  ]
+}
