@@ -1,4 +1,11 @@
 (()=>{
+  const CATALOG_RUNTIME_ENABLED=document.documentElement.dataset.catalogRuntime!=='off';
+  if(!CATALOG_RUNTIME_ENABLED){
+    const state=Object.freeze({status:'disabled-publication',productCount:0,batchCount:0,error:null,assets:[]});
+    const disabled=async()=>{throw new Error('Catalog runtime disabled in publication build')};
+    globalThis.FISH_TARGET_CATALOG_LOADER=Object.freeze({disabled:true,state,ensureLoaded:disabled,loadManifest:async()=>Object.freeze({version:'PUBLICATION-CATALOG-OFF',batches:Object.freeze([])})});
+    return;
+  }
   const BUILD=document.documentElement.dataset.build||'dev';
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const coreAssets=['catalog-providers.js','catalog-adapters.js'];
