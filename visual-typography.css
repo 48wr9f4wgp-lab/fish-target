@@ -13,6 +13,10 @@ body{font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;text-ren
 .v19FilterDetails summary small,.v19TackleShortcut>small{font-size:11px;line-height:1.4}
 .nav button{font-size:11px;font-weight:900;letter-spacing:-.01em}
 
+/* RC touch-target floor */
+.back{width:44px;height:44px}
+.spotPresets button{min-height:44px}
+
 .fieldGuideArtReal{shape-rendering:geometricPrecision;filter:drop-shadow(0 7px 7px rgba(18,38,40,.19)) saturate(1.08) contrast(1.03)}
 .fieldGuideArtReal>path:first-of-type{vector-effect:non-scaling-stroke}
 .fieldGuideArtReal .detail{vector-effect:non-scaling-stroke}
@@ -53,7 +57,7 @@ body{font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;text-ren
   #home .head h2{font-size:23px;line-height:1.2}
   #home .head>span{font-size:11px}
   .quick{gap:8px}
-  .quick button{font-size:12px;min-height:43px;padding-inline:15px}
+  .quick button{font-size:12px;min-height:44px;padding-inline:15px}
   #home .visualFishCard{grid-template-columns:138px minmax(0,1fr);min-height:126px}
   #home .visualFishCard .art{min-height:126px}
   #home .visualFishCard .art svg{width:98%;height:98%}

@@ -1,4 +1,4 @@
-const CACHE='fish-target-shell-__BUILD_ID__';
+const CACHE='fish-target-shell-__CACHE_BUILD_ID__';
 const SHELL=__SHELL_MANIFEST__;
 
 self.addEventListener('install',event=>{

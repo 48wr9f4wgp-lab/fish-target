@@ -4,6 +4,8 @@ import {existsSync,readFileSync} from 'node:fs';
 import test from 'node:test';
 
 const js=readFileSync(new URL('../fish-real.js',import.meta.url),'utf8');
+const manifest=readFileSync(new URL('../fish-asset-manifest.js',import.meta.url),'utf8');
+const authoring=JSON.parse(readFileSync(new URL('../authoring/fish-assets.v1.json',import.meta.url),'utf8'));
 const css=readFileSync(new URL('../fish-real.css',import.meta.url),'utf8');
 const build=readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
 const assetName='fish-real-v7.avif';
@@ -12,27 +14,44 @@ const species=[
   'クロダイ','マダイ','シロギス','カワハギ','ブラックバス','ニジマス','アユ','コイ','ヤマメ・イワナ'
 ];
 
-test('REAL8 maps all 19 targets and loads the direct AVIF grid',()=>{
-  assert.match(js,/version:'V23-REAL8'/);
-  assert.match(js,/renderer:'direct-avif-grid-with-svg-fallback'/);
-  assert.match(js,/const ASSET='fish-real-v7\.avif'/);
-  for(const name of species)assert.ok(js.includes(`'${name}'`),`missing real fish mapping: ${name}`);
+test('REAL9 maps current 19 sprite targets through generated fish asset authoring',()=>{
+  assert.match(js,/version:'V23-REAL9'/);
+  assert.match(js,/renderer:'manifest-bundled-sprite-or-file-with-svg-fallback'/);
+  assert.match(js,/FISH_TARGET_FISH_ASSET_MANIFEST/);
+  assert.match(manifest,/FISH_TARGET_FISH_ASSET_AUTHORING/);
+  assert.match(manifest,/const SHEET=authoring\.bundled_sheet/);
+  assert.equal(authoring.bundled_sheet,assetName);
+  assert.equal(authoring.assets.length,19);
+  assert.deepEqual(authoring.assets.map(record=>record.species_name),species);
+  assert.ok(authoring.assets.every(record=>record.asset.type==='sprite-sheet'));
   assert.match(js,/image\.naturalWidth<1000\|\|image\.naturalHeight<700/);
-  assert.match(js,/naturalHeight\/4/);
-  assert.match(js,/naturalWidth\/5/);
+  assert.match(js,/image\.naturalHeight\/position\.rows/);
+  assert.match(js,/image\.naturalWidth\/position\.columns/);
   assert.match(js,/devicePixelRatio/);
   assert.match(js,/imageSmoothingQuality='high'/);
-  assert.match(js,/host\.dataset\.fishAsset='direct-avif-grid'/);
+  assert.match(js,/host\.dataset\.fishAsset=asset\.type==='file'\?'direct-bundled-file':'direct-avif-grid'/);
 });
 
-test('verified 1200x768 AVIF ships as a direct binary asset',()=>{
+test('REAL9 supports direct bundled files, lazy loading, and explicit prefetch',()=>{
+  assert.match(js,/asset\.type==='file'/);
+  assert.match(js,/direct-bundled-file/);
+  assert.match(js,/IntersectionObserver/);
+  assert.match(js,/rootMargin:'220px 0px'/);
+  assert.match(js,/asset\.file===PRIMARY/);
+  assert.match(js,/host\.id==='tart'\|\|Boolean\(host\.closest\('#result'\)\)/);
+  assert.match(js,/ensureAsset\(name\)/);
+  assert.match(js,/prefetch:async name=>Boolean\(await ensureAsset\(name\)\)/);
+});
+
+test('verified 1200x768 AVIF ships through data-driven build assets',()=>{
   const assetUrl=new URL(`../${assetName}`,import.meta.url);
   assert.equal(existsSync(assetUrl),true,'direct AVIF asset missing');
   const bytes=readFileSync(assetUrl);
   assert.equal(bytes.length,28472,'AVIF byte length mismatch');
   assert.equal(bytes.subarray(4,12).toString('ascii'),'ftypavif','asset is not AVIF');
   assert.equal(createHash('sha256').update(bytes).digest('hex'),'446ac81286e0e107205957dbb87ed74de78a5d0e48102aed98b2f668e53c2559','AVIF hash mismatch');
-  assert.ok(build.includes(`'${assetName}'`),`${assetName} missing from build assets`);
+  assert.match(build,/fishAssetFiles/);
+  assert.match(build,/fishAssetAuthoring\.assets/);
 });
 
 test('release fish path contains no runtime Base64 reconstruction',()=>{
@@ -41,7 +60,7 @@ test('release fish path contains no runtime Base64 reconstruction',()=>{
   assert.match(js,/keeping SVG fallback/);
 });
 
-test('REAL8 preserves safe-frame SVG fallback and reduced-motion behavior',()=>{
+test('REAL9 preserves safe-frame SVG fallback and reduced-motion behavior',()=>{
   assert.match(css,/\.realFishCanvas\{/);
   assert.match(css,/width:100%/);
   assert.match(css,/#result \.tart \.realFishCanvas\{width:104%;height:104%\}/);

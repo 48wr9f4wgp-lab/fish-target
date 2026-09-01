@@ -1,8 +1,16 @@
 (()=>{
+  const CATALOG_RUNTIME_ENABLED=document.documentElement.dataset.catalogRuntime!=='off';
+  const PUBLICATION_BUILD=document.documentElement.dataset.catalogPublication==='on';
+  if(!CATALOG_RUNTIME_ENABLED){
+    const state=Object.freeze({status:'disabled-publication',productCount:0,batchCount:0,error:null,assets:[]});
+    const disabled=async()=>{throw new Error('Catalog runtime disabled in publication build')};
+    globalThis.FISH_TARGET_CATALOG_LOADER=Object.freeze({disabled:true,state,ensureLoaded:disabled,loadManifest:async()=>Object.freeze({version:'PUBLICATION-CATALOG-OFF',batches:Object.freeze([])})});
+    return;
+  }
   const BUILD=document.documentElement.dataset.build||'dev';
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const coreAssets=['catalog-providers.js','catalog-adapters.js'];
-  const tailAssets=['catalog-fixtures.js','catalog.js'];
+  const tailAssets=['catalog-research.js',...(PUBLICATION_BUILD?[]:['catalog-fixtures.js']),'catalog.js'];
   const MAKERS=['DAIWA','SHIMANO','ABU GARCIA','PENN','OKUMA','MAJOR CRAFT','TAILWALK','JACKSON','PROX','FISHMAN','YAMAGA BLANKS','TENRYU','TICT','GAMAKATSU','ZENAQ','PALMS','APIA','JACKALL','SMITH'];
   let runtime=null,loading=null,manifest=null;
   const state={status:'idle',productCount:0,batchCount:0,error:null,assets:[]};
@@ -14,6 +22,6 @@
   const hiddenStub=()=>Object.freeze({items:[],total:0,offset:0,limit:100,hasMore:false,deferred:true});
   const facade={mode:'lazy',version:'V23-DEV2-LAZY2',makers:MAKERS.slice(),categories:['rod','reel'],statuses:['current','discontinued','legacy','unknown'],licenseStatuses:['synthetic','internal','permitted','licensed','restricted','unknown'],ensureLoaded,index:opts=>runtime?.index?.(opts)||null,makersFor:category=>runtime?.makersFor?.(category)||MAKERS.slice(),seriesFor:(maker,category)=>runtime?.seriesFor?.(maker,category)||[''],get:id=>runtime?.get?.(id)||null,statusInfo:status=>runtime?.statusInfo?.(status)||statusInfo(status),ownedSnapshot:(product,opts)=>runtime?.ownedSnapshot?.(product,opts)||null,productionEligible:product=>runtime?.productionEligible?.(product)||false,providerFor:maker=>runtime?.providerFor?.(maker)||null,productId:spec=>runtime?.productId?.(spec)||null,validateProduct:(product,opts)=>runtime?.validateProduct?.(product,opts)||['catalog not loaded'],validateCatalog:(items,opts)=>runtime?.validateCatalog?.(items,opts)||[{product_id:null,errors:['catalog not loaded']}],list:criteria=>runtime?.list?.(criteria)||[],search:criteria=>runtime?.search?.(criteria)||hiddenStub(),async loadPage(criteria={}){const sheet=document.getElementById('tackleSheet');if(!runtime&&(!sheet||sheet.hidden))return hiddenStub();try{return (await ensureLoaded()).loadPage(criteria)}catch{return hiddenStub()}}};
   Object.defineProperty(facade,'products',{enumerable:true,get:()=>runtime?.products||[]});Object.defineProperty(facade,'loaded',{enumerable:true,get:()=>Boolean(runtime)});Object.freeze(facade);globalThis.FISH_TARGET_CATALOG=facade;globalThis.FISH_TARGET_CATALOG_LOADER=Object.freeze({ensureLoaded,loadManifest,state,facade});
-  const refreshCatalogUi=()=>{document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent='CATALOG RESEARCH · 複数メーカー公式公開スペック。初回オープン時に読み込み、以後は端末キャッシュを利用。production利用は未承認。'});for(const [id,category] of [['rodCatalogMaker','rod'],['reelCatalogMaker','reel']]){const el=document.getElementById(id);if(!el)continue;const names=runtime?.index?.({category})?.makers?.map(x=>x.maker)||runtime?.makersFor?.(category)||MAKERS.slice(),current=el.value;el.replaceChildren(...names.map(name=>{const option=document.createElement('option');option.textContent=name;return option}));if(names.includes(current))el.value=current;el.dispatchEvent(new Event('change',{bubbles:true}))}};
+  const refreshCatalogUi=()=>{document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent=PUBLICATION_BUILD?'CATALOG · 公開許諾済みデータのみ':'CATALOG RESEARCH · 複数メーカー公式公開スペック。初回オープン時に読み込み、以後は端末キャッシュを利用。production利用は未承認。'});for(const [id,category] of [['rodCatalogMaker','rod'],['reelCatalogMaker','reel']]){const el=document.getElementById(id);if(!el)continue;const names=runtime?.index?.({category})?.makers?.map(x=>x.maker)||runtime?.makersFor?.(category)||MAKERS.slice(),current=el.value;el.replaceChildren(...names.map(name=>{const option=document.createElement('option');option.textContent=name;return option}));if(names.includes(current))el.value=current;el.dispatchEvent(new Event('change',{bubbles:true}))}};
   document.addEventListener('click',event=>{const trigger=event.target?.closest?.('#tackleManage,#tackleEditFromResult,.v19TackleShortcut');if(!trigger)return;ensureLoaded().then(refreshCatalogUi).catch(()=>{document.querySelectorAll('.catalogLoadState').forEach(el=>{el.textContent='Catalogを読み込めません。手入力は利用できます。'})})},true);
 })();

@@ -32,9 +32,17 @@
       await loadScript('./target-method-data-v3.js','target-method-data-v3-js');
       for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v4-part${i}.js`,`target-method-data-v4-part${i}-js`);
       await loadScript('./target-method-data-v4.js','target-method-data-v4-js');
+      await loadScript('./species-method-authoring-generated.js','species-method-authoring-generated-js');
+      await loadScript('./species-method-authoring-runtime.js','species-method-authoring-runtime-js');
       await loadScript('./target-methods-v1.js','target-methods-v1-js');
+      await loadScript('./species-registry.js','species-registry-js');
+      await loadScript('./fish-asset-authoring-generated.js','fish-asset-authoring-generated-js');
+      await loadScript('./fish-asset-manifest.js','fish-asset-manifest-js');
+      await loadScript('./method-registry.js','method-registry-js');
+      await loadScript('./resolver-engine.js','resolver-engine-js');
       await loadScript('./catalog-loader.js','catalog-loader-js');
       await loadScript('./tackle.js','tackle-js');
+      await loadScript('./resolver-shadow.js','resolver-shadow-js');
       await loadScript('./fit-explain.js','fit-explain-js');
       await loadScript('./simplify.js','simplify-js');
       await loadScript('./visual-pass.js','visual-pass-js');
@@ -43,6 +51,7 @@
       await loadScript('./result-ux-v20.js','result-ux-v20-js');
       await loadScript('./result-ux-v21.js','result-ux-v21-js');
       await loadScript('./result-ux-v23.js','result-ux-v23-js');
+      await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./app-shell-v26.js','app-shell-v26-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
     }catch(err){console.error('extension bootstrap failed',err)}

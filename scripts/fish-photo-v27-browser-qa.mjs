@@ -7,10 +7,15 @@ const MOCK_IMAGE='<svg xmlns="http://www.w3.org/2000/svg" width="32" height="16"
 const browser=await chromium.launch({headless:true});
 const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'});
 const page=await context.newPage();
-const errors=[];const consoleErrors=[];let wikiPageHits=0,wikiInfoHits=0,commonsHits=0;
+const errors=[];const consoleErrors=[];const wikiTitles=[];let wikiPageHits=0,wikiInfoHits=0,commonsHits=0;
 page.on('pageerror',e=>errors.push(String(e)));
 page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
 const cors={'access-control-allow-origin':'*','cache-control':'no-store'};
+
+await page.addInitScript(()=>{
+  localStorage.setItem('ft-fish-photo-v27r3:オニカサゴ',JSON.stringify({url:'https://upload.wikimedia.org/fake/stale.svg',license:'CC BY 4.0',artist:'Stale Test',source:'Wikimedia Commons',article:'オニカサゴ'}));
+  localStorage.setItem('ft-fish-photo-v27r3:マルイカ',JSON.stringify({url:'https://upload.wikimedia.org/fake/stale.svg',license:'CC BY 4.0',artist:'Stale Test',source:'Wikimedia Commons',article:'マルイカ'}));
+});
 
 await page.route('https://ja.wikipedia.org/**',route=>{
   const url=new URL(route.request().url());
@@ -20,7 +25,8 @@ await page.route('https://ja.wikipedia.org/**',route=>{
     return route.fulfill({status:200,headers:{...cors,'content-type':'application/json'},body:JSON.stringify({query:{pages:{2:{imageinfo:[{thumburl:'https://upload.wikimedia.org/fake/saba.svg',url:'https://upload.wikimedia.org/fake/saba.svg',extmetadata:{LicenseShortName:{value:'CC BY-SA 4.0'},Artist:{value:'Test Photographer'}}}]}}}})});
   }
   wikiPageHits++;
-  return route.fulfill({status:200,headers:{...cors,'content-type':'application/json'},body:JSON.stringify({query:{pages:{1:{pageid:1,title:'マサバ',pageimage:'Saba.jpg'}}}})});
+  const title=url.searchParams.get('titles');if(title)wikiTitles.push(title);
+  return route.fulfill({status:200,headers:{...cors,'content-type':'application/json'},body:JSON.stringify({query:{pages:{1:{pageid:1,title:title||'マサバ',pageimage:'Saba.jpg'}}}})});
 });
 await page.route('https://commons.wikimedia.org/**',route=>{commonsHits++;return route.fulfill({status:200,headers:{...cors,'content-type':'application/json'},body:JSON.stringify({query:{pages:{2:{imageinfo:[{thumburl:'https://upload.wikimedia.org/fake/saba.svg',url:'https://upload.wikimedia.org/fake/saba.svg',extmetadata:{LicenseShortName:{value:'CC BY-SA 4.0'},Artist:{value:'Test Photographer'}}}]}}}})})});
 await page.route('https://upload.wikimedia.org/**',route=>route.fulfill({status:200,headers:{'cache-control':'no-store','content-type':'image/svg+xml'},body:MOCK_IMAGE}));
@@ -30,6 +36,26 @@ await page.waitForFunction(()=>document.documentElement.classList.contains('ft-r
 assert.equal(await page.locator('link[data-extension="fish-photo-v27-css"]').count(),1,'V27 photo CSS loaded once');
 assert.equal(await page.locator('script[data-extension="fish-photo-v27-js"]').count(),1,'V27 photo JS loaded once');
 assert.deepEqual(await page.evaluate(()=>({version:globalThis.FISH_TARGET_PHOTO_V27?.version,provider:globalThis.FISH_TARGET_PHOTO_V27?.provider,enabled:globalThis.FISH_TARGET_PHOTO_V27?.enabled,eager:globalThis.FISH_TARGET_PHOTO_V27?.eager,qaAutoLoad:globalThis.FISH_TARGET_PHOTO_V27?.qaAutoLoad})),{version:'V27R3',provider:'Wikimedia',enabled:true,eager:true,qaAutoLoad:true},'V27R3 dedicated QA mode exposed');
+const aliases=await page.evaluate(()=>globalThis.FISH_TARGET_PHOTO_V27?.aliases||{});
+const canonicalAliases=await page.evaluate(()=>globalThis.FISH_TARGET_PHOTO_V27?.canonicalAliases||{});
+assert.equal(aliases['エソ'],'マエソ','エソ remote image lookup uses resolved マエソ taxon');
+assert.equal(aliases['オニカサゴ'],'イズカサゴ','オニカサゴ remote image lookup uses resolved イズカサゴ taxon');
+assert.equal(aliases['マルイカ'],'ケンサキイカ','マルイカ remote image lookup uses resolved ケンサキイカ taxon');
+assert.deepEqual(canonicalAliases,{'エソ':'マエソ','オニカサゴ':'イズカサゴ','マルイカ':'ケンサキイカ'},'canonical aliases stay explicit and closed');
+assert.equal(aliases['カレイ'],undefined,'generic カレイ must not collapse to one species');
+assert.equal(aliases['タナゴ'],undefined,'generic タナゴ must not collapse to one species');
+assert.equal(aliases['ヒイカ'],undefined,'generic ヒイカ must not collapse to one species');
+
+const onik=page.locator('#grid .fish[data-fish="オニカサゴ"]');
+const maruika=page.locator('#grid .fish[data-fish="マルイカ"]');
+await onik.locator('.art.fishPhotoMountedV27').waitFor({state:'attached',timeout:15000});
+await maruika.locator('.art.fishPhotoMountedV27').waitFor({state:'attached',timeout:15000});
+assert.ok(wikiTitles.includes('イズカサゴ'),'canonical オニカサゴ must query イズカサゴ');
+assert.ok(wikiTitles.includes('ケンサキイカ'),'canonical マルイカ must query ケンサキイカ');
+assert.ok(!wikiTitles.includes('オニカサゴ'),'canonical オニカサゴ must never fall back to the ambiguous product title');
+assert.ok(!wikiTitles.includes('マルイカ'),'canonical マルイカ must never fall back to the ambiguous product title');
+assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ft-fish-photo-v27r3:オニカサゴ')||'null')?.article),'イズカサゴ','stale オニカサゴ cache is replaced by canonical lookup');
+assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('ft-fish-photo-v27r3:マルイカ')||'null')?.article),'ケンサキイカ','stale マルイカ cache is replaced by canonical lookup');
 
 const saba=page.locator('#grid .fish[data-fish="サバ"]');
 await saba.waitFor({state:'attached',timeout:10000});

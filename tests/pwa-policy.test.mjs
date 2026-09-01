@@ -58,8 +58,17 @@ test('release build complies with direct-asset deployment policy',()=>{
   const policy=text('docs/DEPLOYMENT_POLICY.md');
   const fish=text('fish-real.js');
   const build=text('scripts/build.mjs');
+  const authoring=JSON.parse(text('authoring/fish-assets.v1.json'));
+  const fishAssetFiles=[...new Set(authoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean))];
+  const worker=dist('sw.js');
   assert.match(policy,/Do not use Base64\/gzip reconstruction/);
   assert.doesNotMatch(fish,/\.b64|data:image|base64|loadTextPart/);
   assert.doesNotMatch(build,/\.b64/);
-  assert.match(build,/fish-real-v7\.avif/);
+  assert.match(build,/loadFishAssetAuthoring/);
+  assert.match(build,/\.\.\.fishAssetFiles/);
+  assert.ok(fishAssetFiles.length>0);
+  for(const file of fishAssetFiles){
+    assert.ok(distBuffer(file).length>0,`fish asset must ship directly: ${file}`);
+    assert.ok(worker.includes(JSON.stringify(`./${file}`)),`fish asset must be offline precached: ${file}`);
+  }
 });

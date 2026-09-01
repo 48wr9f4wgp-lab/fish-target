@@ -6,7 +6,7 @@ const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
 const KEY='fish_target_v17_tackle';
 const manifest=JSON.parse(readFileSync(new URL('../catalog-batch-manifest.json',import.meta.url),'utf8'));
 const batchFiles=[...new Set(manifest.batches.flatMap(x=>x.files||[]))];
-const LAZY=['catalog-providers.js','catalog-adapters.js',...batchFiles,'catalog-fixtures.js','catalog.js'];
+const LAZY=['catalog-providers.js','catalog-adapters.js',...batchFiles,'catalog-research.js','catalog-fixtures.js','catalog.js'];
 const EXPECTED_PRODUCTS=14+manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
 
 async function waitApp(page){

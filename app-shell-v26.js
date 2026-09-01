@@ -3,6 +3,14 @@
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
   document.documentElement.classList.add('app-shell-v26');
 
+  const OWNED_STORAGE_KEYS=Object.freeze([
+    'fish_target_v9','fish_target_v8','fish_target_v7','fish_target_v6','fish_target_v5',
+    'fish_target_v9_checklists','fish_target_v9_events',
+    'fish_target_v16_last_plan','fish_target_v16_recent','fish_target_v16_favorites',
+    'fish_target_v17_tackle'
+  ]);
+  const OWNED_STORAGE_PREFIXES=Object.freeze(['ft-fish-photo-v27r3:']);
+
   const activateView=view=>{
     const legacy=$(`.nav button[data-v="${view}"]`);
     if(legacy)legacy.click();
@@ -49,6 +57,41 @@
     }
   }
 
+  function removeOwnedStorage(){
+    try{
+      for(const key of OWNED_STORAGE_KEYS)localStorage.removeItem(key);
+      for(let i=localStorage.length-1;i>=0;i--){
+        const key=localStorage.key(i);
+        if(key&&OWNED_STORAGE_PREFIXES.some(prefix=>key.startsWith(prefix)))localStorage.removeItem(key);
+      }
+      return true;
+    }catch(error){
+      console.warn('FISH TARGET local data removal failed',error);
+      return false;
+    }
+  }
+
+  function requestOwnedStorageRemoval(){
+    const ok=globalThis.confirm('この端末に保存したFISH TARGETのプラン、MY TACKLE、お気に入り、履歴、チェックリスト、利用イベント、魚写真キャッシュを削除します。元に戻せません。削除しますか？');
+    if(!ok)return;
+    if(!removeOwnedStorage()){
+      globalThis.alert?.('端末内データを削除できませんでした。ブラウザのサイトデータ設定を確認してください。');
+      return;
+    }
+    globalThis.alert?.('この端末のFISH TARGET保存データを削除しました。');
+    location.reload();
+  }
+
+  function ensurePrivacyPanel(){
+    if($('#privacyPanelV26'))return;
+    const grid=$('#home #grid');if(!grid)return;
+    const panel=document.createElement('details');
+    panel.id='privacyPanelV26';panel.className='privacyPanelV26';
+    panel.innerHTML=`<summary><span><b>データとプライバシー</b><small>端末保存と外部通信</small></span><em>確認 ›</em></summary><div class="privacyBodyV26"><p><strong>端末内に保存：</strong>保存プラン、MY TACKLE、お気に入り・最近見た魚、チェックリスト、アプリ内の利用イベントは、この端末のブラウザ/PWAストレージに保存します。外部Analyticsサービスへ送信しません。</p><p><strong>魚のオンライン写真：</strong>オンライン写真が有効な場合はWikipedia / Wikimediaへ画像候補を問い合わせます。アプリの認証情報やCookieは送信せず、画像にはリファラーを付けません。ただし通常のWeb通信と同様、接続元IPなどは接続先から見える場合があります。</p><p><strong>FIELD LIVE：</strong>現在の公開設定ではOFFです。天候・海況APIへの自動送信は行いません。</p><button class="privacyDeleteV26" id="privacyDeleteV26" type="button">この端末のFISH TARGETデータを削除</button><small class="privacyDeleteNoteV26">FISH TARGETが所有する保存キーと魚写真キャッシュだけを削除します。他のサイトやアプリの保存データは削除しません。</small></div>`;
+    grid.insertAdjacentElement('afterend',panel);
+    $('#privacyDeleteV26')?.addEventListener('click',requestOwnedStorageRemoval);
+  }
+
   function tagFishCards(){
     $$('#grid .fish').forEach(card=>{
       card.classList.add('discoveryCardV26');
@@ -59,7 +102,7 @@
   }
 
   function syncShell(){
-    ensureTabBar();ensureResultRail();polishTackleSheet();tagFishCards();
+    ensureTabBar();ensureResultRail();polishTackleSheet();ensurePrivacyPanel();tagFishCards();
     const current=$('.view.on')?.id;
     document.body.classList.toggle('resultOpenV26',current==='result'||current==='fieldmode');
     document.body.classList.toggle('savedOpenV26',current==='saved');
@@ -69,4 +112,5 @@
   const mo=new MutationObserver(()=>requestAnimationFrame(syncShell));
   mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});
   syncShell();
+  globalThis.FISH_TARGET_PRIVACY_CONTROLS=Object.freeze({version:'PRIVACY-RC-1',ownedStorageKeys:OWNED_STORAGE_KEYS,ownedStoragePrefixes:OWNED_STORAGE_PREFIXES});
 })();
