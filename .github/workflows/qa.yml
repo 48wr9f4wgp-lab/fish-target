@@ -28,3 +28,4 @@ jobs:
           npm test
           npm run catalog:contract
           node scripts/catalog-scale-qa.mjs
+          node scripts/publication-build-qa.mjs
