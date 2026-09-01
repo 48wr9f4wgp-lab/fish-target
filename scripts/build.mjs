@@ -1,7 +1,7 @@
 import {cp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {generateRuntimeSource as generateFishAssetRuntimeSource,loadAuthoring as loadFishAssetAuthoring,validateAuthoring as validateFishAssetAuthoring} from './fish-asset-authoring.mjs';
+import {generateRuntimeSource as generateFishAssetRuntimeSource,loadAuthoring as loadFishAssetAuthoring,publicationReady as fishAssetPublicationReady,validateAuthoring as validateFishAssetAuthoring} from './fish-asset-authoring.mjs';
 import {generateIcons} from './generate-icons.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -20,8 +20,13 @@ if(fishAssetErrors.length)throw new Error(`Fish asset authoring invalid during b
 const expectedFishAssetRuntime=generateFishAssetRuntimeSource(fishAssetAuthoring);
 const currentFishAssetRuntime=await readFile(path.join(root,'fish-asset-authoring-generated.js'),'utf8').catch(()=>null);
 if(currentFishAssetRuntime!==expectedFishAssetRuntime)throw new Error('Generated fish asset runtime is stale. Run npm run fish-assets:generate.');
-const fishAssetFiles=[...new Set(fishAssetAuthoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean))];
-if(!fishAssetFiles.length)throw new Error('Fish asset authoring has no bundled files');
+const sourceFishAssetFiles=[...new Set(fishAssetAuthoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean))];
+if(!sourceFishAssetFiles.length)throw new Error('Fish asset authoring has no bundled files');
+const publicationSafeFishFiles=new Set(sourceFishAssetFiles.filter(file=>{
+  const records=fishAssetAuthoring.assets.filter(record=>String(record?.asset?.file??'').trim()===file);
+  return records.length>0&&records.every(fishAssetPublicationReady);
+}));
+const fishAssetFiles=publicationBuild?sourceFishAssetFiles.filter(file=>publicationSafeFishFiles.has(file)):sourceFishAssetFiles;
 
 const catalogManifest=JSON.parse(await readFile(path.join(root,'catalog-batch-manifest.json'),'utf8'));
 if(!catalogManifest||!Array.isArray(catalogManifest.batches))throw new Error('Invalid catalog batch manifest');
@@ -69,11 +74,11 @@ const replaceBuildTokens=source=>source
   .replaceAll('__FIELD_LIVE_STATE__',config.features.fieldLive?'on':'off');
 
 const html=replaceBuildTokens(await readFile(path.join(root,'index.html'),'utf8'))
-  .replace('<html lang="ja"',`<html lang="ja" data-catalog-runtime="${catalogRuntimeEnabled?'on':'off'}" data-catalog-publication="${publicationBuild?'on':'off'}"`);
+  .replace('<html lang="ja"',`<html lang="ja" data-publication-build="${publicationBuild?'on':'off'}" data-catalog-runtime="${catalogRuntimeEnabled?'on':'off'}" data-catalog-publication="${publicationBuild?'on':'off'}"`);
 await writeFile(path.join(output,'index.html'),html);
 
 const worker=replaceBuildTokens(await readFile(path.join(root,'sw.js'),'utf8'))
   .replace('__SHELL_MANIFEST__',JSON.stringify(shell,null,2));
 await writeFile(path.join(output,'sw.js'),worker);
 
-console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${fishAssetFiles.length} bundled fish asset files; catalog ${publicationBuild?'publication':'research'} ${selectedCatalogBatches.length}/${catalogManifest.batches.length} batches; ${lazyRuntimeAssets.length} lazy runtime assets)`);
+console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; fish assets ${publicationBuild?'publication':'research'} ${fishAssetFiles.length}/${sourceFishAssetFiles.length} files; catalog ${publicationBuild?'publication':'research'} ${selectedCatalogBatches.length}/${catalogManifest.batches.length} batches; ${lazyRuntimeAssets.length} lazy runtime assets)`);
