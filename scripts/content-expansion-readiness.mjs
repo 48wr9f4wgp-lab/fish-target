@@ -4,7 +4,6 @@ import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const QUEUE_PATH=path.join(root,'authoring/content-expansion-queue.v1.json');
 const text=value=>String(value??'').trim();
 const canonical=value=>text(value).normalize('NFKC').toLowerCase();
 const HTTP=/^https:\/\//i;
@@ -78,7 +77,7 @@ function summarizeContent(model){
   }
   const sortedUsage=map=>Object.fromEntries([...map].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ja')));
   const coverage=model.records
-    .map(row=>({species:row.name,plans:row.plan_count,methods:row.methods.map(method=>method.method).filter(Boolean)}))
+    .map(row=>({species:row.name,water:row.water,plans:row.plan_count,methods:row.methods.map(method=>method.method).filter(Boolean)}))
     .sort((a,b)=>a.plans-b.plans||a.species.localeCompare(b.species,'ja'));
   return {
     species:model.records.length,
@@ -191,7 +190,7 @@ export async function collectReadiness(){
     doorstep_locked:errors.length===0&&queued===0&&queue.state==='ready-for-input',
     queue:{state:queue.state,counts,total:queued},
     baseline:{species:content.species,plans:content.plans},
-    coverage:{one_plan_count:content.one_plan.length,two_or_fewer_count:content.two_or_fewer.length,one_plan:content.one_plan,two_or_fewer:content.two_or_fewer,method_usage:content.method_usage,style_usage:content.style_usage,water_usage:content.water_usage},
+    coverage:{all_species:content.coverage,one_plan_count:content.one_plan.length,two_or_fewer_count:content.two_or_fewer.length,one_plan:content.one_plan,two_or_fewer:content.two_or_fewer,method_usage:content.method_usage,style_usage:content.style_usage,water_usage:content.water_usage},
     catalog,
     pipeline:{missing,required:requiredFiles},
     errors
