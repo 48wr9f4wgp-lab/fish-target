@@ -22,10 +22,12 @@ try{
   const pageErrors=[];
   const localFailures=[];
   const removedBinaryRequests=[];
+  const lureRequests=[];
   page.on('pageerror',error=>pageErrors.push(String(error)));
   page.on('request',request=>{
     const url=request.url();
     if(url.includes('fish-real-v7.avif'))removedBinaryRequests.push(url);
+    if(url.includes('lure-catalog'))lureRequests.push(url);
   });
   page.on('requestfailed',request=>{
     const url=new URL(request.url());
@@ -39,22 +41,31 @@ try{
 
   await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),{timeout:15000});
-  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===60,{timeout:15000});
+  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===62,{timeout:15000});
 
   const boot=await page.evaluate(()=>({
     publication:document.documentElement.dataset.publicationBuild,
     catalogRuntime:document.documentElement.dataset.catalogRuntime,
     catalogPublication:document.documentElement.dataset.catalogPublication,
+    lureCatalogRuntime:document.documentElement.dataset.lureCatalogRuntime,
+    lureCatalogTargets:document.documentElement.dataset.lureCatalogTargets,
     catalogLoaderDisabled:globalThis.FISH_TARGET_CATALOG_LOADER?.disabled===true,
     catalogFacadePresent:Boolean(globalThis.FISH_TARGET_CATALOG),
+    lureEntryPresent:Boolean(globalThis.FISH_TARGET_LURE_CATALOG_ENTRY),
+    lureLoaderPresent:Boolean(globalThis.FISH_TARGET_LURE_CATALOG),
     targets:document.querySelectorAll('#grid .fish').length
   }));
   assert.equal(boot.publication,'on');
   assert.equal(boot.catalogRuntime,'off');
   assert.equal(boot.catalogPublication,'on');
+  assert.equal(boot.lureCatalogRuntime,'off');
+  assert.equal(boot.lureCatalogTargets,'');
   assert.equal(boot.catalogLoaderDisabled,true,'publication loader must fail closed');
   assert.equal(boot.catalogFacadePresent,false,'publication build with zero approved batches must not expose Catalog facade');
-  assert.equal(boot.targets,60,'publication build must retain all target decisions');
+  assert.equal(boot.lureEntryPresent,false,'publication build must not expose research lure UI');
+  assert.equal(boot.lureLoaderPresent,false,'publication build must not expose research lure loader');
+  assert.equal(boot.targets,62,'publication build must retain all target decisions');
+  assert.deepEqual(lureRequests,[],'publication boot must never request research lure assets');
 
   const tackleTab=page.locator('#appTabBarV26 [data-app-tab="tackle"]');
   await tackleTab.waitFor({state:'visible'});
@@ -94,7 +105,8 @@ try{
   assert.deepEqual(pageErrors,[],'publication smoke must not raise page errors');
   assert.deepEqual(localFailures,[],'publication smoke must not request missing local assets');
   assert.deepEqual(removedBinaryRequests,[],'publication runtime must not request excluded unverified fish binary');
-  console.log('PUBLICATION BROWSER QA PASS · 60 targets · Catalog off · manual MY TACKLE operational · external network blocked');
+  assert.deepEqual(lureRequests,[],'publication runtime must never request research lure assets');
+  console.log('PUBLICATION BROWSER QA PASS · 62 targets · Catalog off · lure Catalog off · manual MY TACKLE operational · external network blocked');
 }catch(error){
   primaryError=error;
 }finally{
