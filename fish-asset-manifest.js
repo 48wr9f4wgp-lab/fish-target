@@ -3,17 +3,23 @@
   const authoring=globalThis.FISH_TARGET_FISH_ASSET_AUTHORING;
   if(!speciesRegistry?.records||!authoring?.assets)return;
 
+  const PUBLICATION_BUILD=document.documentElement.dataset.publicationBuild==='on';
   const SHEET=authoring.bundled_sheet;
   const authoredByName=new Map(authoring.assets.map(record=>[record.species_name,record]));
+  const fileRecords=new Map();
   for(const authored of authoring.assets){
     if(!speciesRegistry.resolve(authored.species_name))throw new Error(`Authored fish asset species is not registered: ${authored.species_name}`);
+    const file=String(authored?.asset?.file||'').trim();
+    if(file){const rows=fileRecords.get(file)||[];rows.push(authored);fileRecords.set(file,rows)}
   }
+  const publicationSafeFiles=new Set([...fileRecords].filter(([,rows])=>rows.length&&rows.every(row=>row.publication_ready===true)).map(([file])=>file));
 
   const freezeAsset=(asset,name)=>Object.freeze({...asset,species_name:name});
   const freezeProvenance=provenance=>provenance?Object.freeze({...provenance,transformations:Object.freeze([...(provenance.transformations||[])])}):null;
   const records=speciesRegistry.records.map(species=>{
     const authored=authoredByName.get(species.name)||null;
-    const bundled=Boolean(authored?.asset);
+    const file=String(authored?.asset?.file||'').trim();
+    const bundled=Boolean(authored?.asset)&&(!PUBLICATION_BUILD||publicationSafeFiles.has(file));
     return Object.freeze({
       species_id:species.species_id,
       species_name:species.name,
@@ -54,12 +60,16 @@
   const assetFor=value=>resolve(value)?.asset||null;
 
   if(records.length!==speciesRegistry.count)throw new Error(`Fish asset manifest coverage mismatch: ${records.length}/${speciesRegistry.count}`);
-  if(bundledRecords.length!==authoring.assets.length)throw new Error(`Fish asset bundled coverage mismatch: ${bundledRecords.length}/${authoring.assets.length}`);
+  const expectedBundled=PUBLICATION_BUILD
+    ? authoring.assets.filter(record=>publicationSafeFiles.has(String(record?.asset?.file||'').trim())).length
+    : authoring.assets.length;
+  if(bundledRecords.length!==expectedBundled)throw new Error(`Fish asset bundled coverage mismatch: ${bundledRecords.length}/${expectedBundled}`);
 
   globalThis.FISH_TARGET_FISH_ASSET_MANIFEST=Object.freeze({
     version:'FISH-ASSET-MANIFEST-2',
     authoringVersion:authoring.version,
     policy:authoring.policy,
+    publicationBuild:PUBLICATION_BUILD,
     count:records.length,
     bundledCount:bundledRecords.length,
     remoteFallbackCount:remoteFallbackRecords.length,
