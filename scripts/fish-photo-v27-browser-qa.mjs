@@ -30,6 +30,13 @@ await page.waitForFunction(()=>document.documentElement.classList.contains('ft-r
 assert.equal(await page.locator('link[data-extension="fish-photo-v27-css"]').count(),1,'V27 photo CSS loaded once');
 assert.equal(await page.locator('script[data-extension="fish-photo-v27-js"]').count(),1,'V27 photo JS loaded once');
 assert.deepEqual(await page.evaluate(()=>({version:globalThis.FISH_TARGET_PHOTO_V27?.version,provider:globalThis.FISH_TARGET_PHOTO_V27?.provider,enabled:globalThis.FISH_TARGET_PHOTO_V27?.enabled,eager:globalThis.FISH_TARGET_PHOTO_V27?.eager,qaAutoLoad:globalThis.FISH_TARGET_PHOTO_V27?.qaAutoLoad})),{version:'V27R3',provider:'Wikimedia',enabled:true,eager:true,qaAutoLoad:true},'V27R3 dedicated QA mode exposed');
+const aliases=await page.evaluate(()=>globalThis.FISH_TARGET_PHOTO_V27?.aliases||{});
+assert.equal(aliases['エソ'],'マエソ','エソ remote image lookup uses resolved マエソ taxon');
+assert.equal(aliases['オニカサゴ'],'イズカサゴ','オニカサゴ remote image lookup uses resolved イズカサゴ taxon');
+assert.equal(aliases['マルイカ'],'ケンサキイカ','マルイカ remote image lookup uses resolved ケンサキイカ taxon');
+assert.equal(aliases['カレイ'],undefined,'generic カレイ must not collapse to one species');
+assert.equal(aliases['タナゴ'],undefined,'generic タナゴ must not collapse to one species');
+assert.equal(aliases['ヒイカ'],undefined,'generic ヒイカ must not collapse to one species');
 
 const saba=page.locator('#grid .fish[data-fish="サバ"]');
 await saba.waitFor({state:'attached',timeout:10000});
