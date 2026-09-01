@@ -2,15 +2,17 @@
   "version": "CONTENT-EXPANSION-QUEUE-1",
   "state": "ready-for-input",
   "baseline_lock": {
-    "species": 60,
-    "plans": 150,
-    "catalog_batches": 44,
-    "catalog_expected_rows": 964
+    "species": 62,
+    "plans": 155,
+    "catalog_batches": 46,
+    "catalog_expected_rows": 971
   },
   "policy": {
     "priority_values": ["P0", "P1", "P2"],
     "publication_stage_default": "research",
     "catalog_categories": ["rod", "reel"],
+    "lure_catalog_strategy": "separate-target-sharded-lazy",
+    "lure_catalog_research_rows": 5,
     "require_evidence_urls": true,
     "allow_runtime_mutation_before_review": false,
     "allow_publication_by_inference": false
