@@ -12,6 +12,7 @@ const config=JSON.parse(await readFile(path.join(root,'build.config.json'),'utf8
 if(!/^V\d+(?:[.-][A-Za-z0-9]+)*$/.test(config.version))throw new Error('Invalid build version');
 if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldLive feature flag');
 const buildId=config.version.toLowerCase();
+const publicationBuild=process.env.FISH_TARGET_PUBLICATION_BUILD==='1';
 
 const fishAssetAuthoring=await loadFishAssetAuthoring();
 const fishAssetErrors=validateFishAssetAuthoring(fishAssetAuthoring);
@@ -24,14 +25,18 @@ if(!fishAssetFiles.length)throw new Error('Fish asset authoring has no bundled f
 
 const catalogManifest=JSON.parse(await readFile(path.join(root,'catalog-batch-manifest.json'),'utf8'));
 if(!catalogManifest||!Array.isArray(catalogManifest.batches))throw new Error('Invalid catalog batch manifest');
+const selectedCatalogBatches=publicationBuild?catalogManifest.batches.filter(batch=>batch?.stage==='production'):catalogManifest.batches;
 const batchIds=new Set(),batchFiles=[];
-for(const batch of catalogManifest.batches){
+for(const batch of selectedCatalogBatches){
   if(!batch?.id||batchIds.has(batch.id))throw new Error(`Invalid/duplicate catalog batch id: ${batch?.id||'missing'}`);
   batchIds.add(batch.id);
   if(!Array.isArray(batch.files)||!batch.files.length)throw new Error(`Catalog batch has no files: ${batch.id}`);
   for(const file of batch.files){if(!batchFiles.includes(file))batchFiles.push(file)}
 }
-const lazyRuntimeAssets=['catalog-providers.js','catalog-adapters.js',...batchFiles,'catalog-research.js','catalog-fixtures.js','catalog.js'];
+const catalogRuntimeEnabled=!publicationBuild||selectedCatalogBatches.length>0;
+const catalogTailAssets=['catalog-research.js',...(publicationBuild?[]:['catalog-fixtures.js']),'catalog.js'];
+const lazyRuntimeAssets=catalogRuntimeEnabled?['catalog-providers.js','catalog-adapters.js',...batchFiles,...catalogTailAssets]:[];
+const catalogDistributionAssets=catalogRuntimeEnabled?['catalog-batch-manifest.json',...lazyRuntimeAssets]:[];
 const copiedAssets=[...new Set([
   'style.css','quick-plan.css','field-mode.css','pwa.css',
   'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','fish-photo-v27.css','visual-v8.css','result-ux-v20.css','result-ux-v23.css','visual-v24.css','visual-v25.css','visual-v26.css',
@@ -41,7 +46,7 @@ const copiedAssets=[...new Set([
   'target-method-data-v2-part1.js','target-method-data-v2-part2.js','target-method-data-v2-part3.js','target-method-data-v2-part4.js','target-method-data-v2-part5.js','target-method-data-v2.js',
   'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js',
   'target-method-data-v4-part1.js','target-method-data-v4-part2.js','target-method-data-v4-part3.js','target-method-data-v4-part4.js','target-method-data-v4-part5.js','target-method-data-v4.js','species-method-authoring-generated.js','species-method-authoring-runtime.js','target-methods-v1.js','species-registry.js','fish-asset-authoring-generated.js','fish-asset-manifest.js','method-registry.js','resolver-engine.js','resolver-shadow.js','resolver-tackle-ui.js',
-  'catalog-batch-manifest.json','catalog-loader.js',...lazyRuntimeAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','fish-photo-v27.js','visual-v8.js','result-ux-v20.js','result-ux-v21.js','result-ux-v23.js','app-shell-v26.js',
+  'catalog-loader.js',...catalogDistributionAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','fish-photo-v27.js','visual-v8.js','result-ux-v20.js','result-ux-v21.js','result-ux-v23.js','app-shell-v26.js',
   ...fishAssetFiles,
   'manifest.webmanifest','icon.svg'
 ])];
@@ -52,6 +57,10 @@ const shell=['./','./index.html',...shellAssets.map(file=>`./${file}`),...genera
 await rm(output,{recursive:true,force:true});
 await mkdir(output,{recursive:true});
 await Promise.all(copiedAssets.map(file=>cp(path.join(root,file),path.join(output,file))));
+if(catalogRuntimeEnabled){
+  const distributionManifest={...catalogManifest,batches:selectedCatalogBatches};
+  await writeFile(path.join(output,'catalog-batch-manifest.json'),JSON.stringify(distributionManifest,null,2));
+}
 await generateIcons(output);
 
 const replaceBuildTokens=source=>source
@@ -59,11 +68,12 @@ const replaceBuildTokens=source=>source
   .replaceAll('__BUILD_ID__',buildId)
   .replaceAll('__FIELD_LIVE_STATE__',config.features.fieldLive?'on':'off');
 
-const html=replaceBuildTokens(await readFile(path.join(root,'index.html'),'utf8'));
+const html=replaceBuildTokens(await readFile(path.join(root,'index.html'),'utf8'))
+  .replace('<html lang="ja"',`<html lang="ja" data-catalog-runtime="${catalogRuntimeEnabled?'on':'off'}"`);
 await writeFile(path.join(output,'index.html'),html);
 
 const worker=replaceBuildTokens(await readFile(path.join(root,'sw.js'),'utf8'))
   .replace('__SHELL_MANIFEST__',JSON.stringify(shell,null,2));
 await writeFile(path.join(output,'sw.js'),worker);
 
-console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${fishAssetFiles.length} bundled fish asset files; ${lazyRuntimeAssets.length} lazy runtime assets in ${catalogManifest.batches.length} batches)`);
+console.log(`Built ${config.version} to ${path.relative(root,output)} (${copiedAssets.length+generatedAssets.length} assets; ${fishAssetFiles.length} bundled fish asset files; catalog ${publicationBuild?'publication':'research'} ${selectedCatalogBatches.length}/${catalogManifest.batches.length} batches; ${lazyRuntimeAssets.length} lazy runtime assets)`);
