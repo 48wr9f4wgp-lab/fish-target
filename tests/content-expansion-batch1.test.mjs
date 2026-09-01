@@ -61,18 +61,26 @@ test('lure catalog is target-sharded, research-only, and excludes color-SKU/imag
   assert.ok(batchBytes<6000,`lure target shards too large: ${batchBytes} bytes`);
   assert.ok((await stat(path.join(root,'lure-catalog-loader.js'))).size<5000);
   assert.ok((await stat(path.join(root,'lure-catalog-entry.js'))).size<5000);
+  assert.ok((await stat(path.join(root,'pwa.js'))).size<8000,'lure demand gate must not bloat the startup bootstrap');
 });
 
-test('research build keeps lure data out of install-time shell and exposes only target metadata',async()=>{
+test('research build keeps every lure asset out of install-time shell and exposes only target metadata',async()=>{
   const [html,sw,pwa,build]=await Promise.all([text('dist/index.html'),text('dist/sw.js'),text('pwa.js'),text('scripts/build.mjs')]);
   assert.match(html,/data-lure-catalog-runtime="on"/);
   assert.match(html,/data-lure-catalog-targets="カマス\|サワラ"/);
-  for(const lazy of ['lure-catalog-loader.js','lure-catalog-manifest.json','lure-catalog-daiwa-kamasu-light-2026.js','lure-catalog-daiwa-sawara-blade-2026.js']){
+  for(const lazy of ['lure-catalog.css','lure-catalog-entry.js','lure-catalog-loader.js','lure-catalog-manifest.json','lure-catalog-daiwa-kamasu-light-2026.js','lure-catalog-daiwa-sawara-blade-2026.js']){
     assert.doesNotMatch(sw,new RegExp(`\\./${lazy.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}(?:["'])`),`${lazy} must not be install-time shell`);
   }
-  assert.match(sw,/\.\/lure-catalog-entry\.js/);
-  assert.match(sw,/\.\/lure-catalog\.css/);
-  assert.match(pwa,/if\(lureRuntime\)await loadScript\('\.\/lure-catalog-entry\.js'/);
+  assert.match(pwa,/dataset\.lureCatalogTargets/);
+  assert.match(pwa,/const maybeLoadLureUi=/);
+  assert.match(pwa,/lureTargets\.has\(species\)/);
+  assert.match(pwa,/loadCss\('\.\/lure-catalog\.css','lure-catalog-css'\)/);
+  assert.match(pwa,/loadScript\('\.\/lure-catalog-entry\.js','lure-catalog-entry-js'\)/);
+  assert.match(pwa,/new MutationObserver/);
+  assert.doesNotMatch(pwa,/if\(lureRuntime\)await loadScript\('\.\/lure-catalog-entry\.js'/);
+  assert.doesNotMatch(pwa,/extensionStyles\.splice[^\n]*lure-catalog\.css/);
+  assert.match(build,/lureLazyRuntimeAssets=lureRuntimeEnabled\?\[/);
+  assert.match(build,/'lure-catalog\.css','lure-catalog-entry\.js','lure-catalog-loader\.js'/);
   assert.match(build,/publicationBuild\?lureCatalogManifest\.batches\.filter\(batch=>batch\?\.stage==='production'\)/);
 });
 
