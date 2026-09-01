@@ -6,10 +6,11 @@ const ALLOWED_STATUS=new Set(['verified-candidate','taxonomy-review']);
 const ALLOWED_LICENSE=new Set(['CC0','Public domain','CC BY 2.0','CC BY 2.5','CC BY 3.0','CC BY 4.0','CC BY-SA 2.5','CC BY-SA 3.0','CC BY-SA 4.0']);
 const attributionRequired=license=>/^CC BY(?:-| )/.test(String(license||''));
 const isHttps=value=>{try{return new URL(value).protocol==='https:'}catch{return false}};
+const isIsoDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value||''));
 
 export function validateCandidateRegistry(input){
   if(!input||input.schema_version!=='FISH-ASSET-CANDIDATES-1')throw new Error('candidate schema_version');
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(input.reviewed_at||''))throw new Error('candidate reviewed_at');
+  if(!isIsoDate(input.reviewed_at))throw new Error('candidate reviewed_at');
   if(!Array.isArray(input.records))throw new Error('candidate records');
   const queue=loadRightsQueue();
   const queueNames=new Set(queue.map(x=>x.species_name));
@@ -19,7 +20,8 @@ export function validateCandidateRegistry(input){
     seen.add(row.species_name);
     if(!queueNames.has(row.species_name))throw new Error(`${row.species_name}: not in rights queue`);
     if(!ALLOWED_STATUS.has(row.status))throw new Error(`${row.species_name}: invalid status`);
-    if(row.verified_at!==input.reviewed_at)throw new Error(`${row.species_name}: verified_at must match registry review date`);
+    if(!isIsoDate(row.verified_at))throw new Error(`${row.species_name}: verified_at must be YYYY-MM-DD`);
+    if(row.verified_at>input.reviewed_at)throw new Error(`${row.species_name}: verified_at cannot be newer than registry review date`);
     if(row.source_url!==null&&row.source_url!==undefined&&!isHttps(row.source_url))throw new Error(`${row.species_name}: source_url must be HTTPS`);
     if('publication_ready' in row||'rights_status' in row)throw new Error(`${row.species_name}: candidate registry cannot assert publication state`);
     if(row.status==='verified-candidate'){
