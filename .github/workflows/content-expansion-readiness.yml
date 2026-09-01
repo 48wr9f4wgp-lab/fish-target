@@ -19,3 +19,5 @@ jobs:
           node-version: 22
       - name: Content expansion readiness
         run: node scripts/content-expansion-readiness.mjs --check
+      - name: Coverage detail
+        run: node scripts/content-expansion-readiness.mjs --json
