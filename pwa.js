@@ -1,6 +1,8 @@
 (()=>{
   const BUILD=document.documentElement.dataset.build;
   if(!BUILD)throw new Error('Missing generated build id');
+  const lureRuntime=document.documentElement.dataset.lureCatalogRuntime==='on';
+  const lureTargets=new Set(String(document.documentElement.dataset.lureCatalogTargets||'').split('|').map(x=>x.trim()).filter(Boolean));
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const status=()=>document.getElementById('networkStatus');
   const renderNetwork=()=>{
@@ -17,9 +19,25 @@
     const css=document.createElement('link');css.rel='stylesheet';css.href=versioned(href);css.dataset.extension=key;css.onload=resolve;css.onerror=()=>{console.warn('extension css load failed',href);resolve()};document.head.appendChild(css)
   });
   const loadScript=(src,key)=>new Promise(resolve=>{if(document.querySelector(`script[data-extension="${key}"]`)){resolve();return}const js=document.createElement('script');js.src=versioned(src);js.async=false;js.dataset.extension=key;js.onload=resolve;js.onerror=()=>{console.warn('extension load failed',src);resolve()};document.body.appendChild(js)});
-  const extensionCss=Promise.all([
+  let lureUiPromise=null;
+  const maybeLoadLureUi=()=>{
+    if(!lureRuntime||!lureTargets.size)return Promise.resolve(false);
+    const species=String(document.getElementById('rname')?.textContent||'').trim();
+    if(!lureTargets.has(species))return Promise.resolve(false);
+    if(!lureUiPromise)lureUiPromise=Promise.all([
+      loadCss('./lure-catalog.css','lure-catalog-css'),
+      loadScript('./lure-catalog-entry.js','lure-catalog-entry-js')
+    ]).then(()=>true);
+    return lureUiPromise;
+  };
+  if(lureRuntime&&lureTargets.size){
+    const targetName=document.getElementById('rname');
+    if(targetName)new MutationObserver(()=>{void maybeLoadLureUi()}).observe(targetName,{childList:true,subtree:true,characterData:true});
+  }
+  const extensionStyles=[
     ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css']
-  ].map(([href,key])=>loadCss(href,key)));
+  ];
+  const extensionCss=Promise.all(extensionStyles.map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
   (async()=>{
     try{
@@ -54,6 +72,7 @@
       await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./app-shell-v26.js','app-shell-v26-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
+      await maybeLoadLureUi();
     }catch(err){console.error('extension bootstrap failed',err)}
     await extensionCss.catch(err=>console.warn('extension css bootstrap failed',err));
     await reveal();

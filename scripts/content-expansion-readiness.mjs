@@ -202,7 +202,7 @@ async function main(){
   if(process.argv.includes('--json'))console.log(JSON.stringify(report,null,2));
   else{
     console.log(`CONTENT EXPANSION READINESS ${report.ready_for_input?'PASS':'FAIL'} · species ${report.baseline.species} · plans ${report.baseline.plans} · catalog ${report.catalog.batches}/${report.catalog.expected_rows} · one-plan ${report.coverage.one_plan_count} · <=2 plans ${report.coverage.two_or_fewer_count} · queued ${report.queue.total}`);
-    if(report.doorstep_locked)console.log('DOORSTEP READY · candidate queues empty · no runtime content added');
+    if(report.doorstep_locked)console.log('QUEUE CLEAR · baseline locked · no pending content intake');
     if(report.coverage.one_plan.length)console.log(`ONE-PLAN SPECIES · ${report.coverage.one_plan.map(row=>row.species).join(' / ')}`);
     for(const error of report.errors)console.error(`ERROR · ${error}`);
   }
