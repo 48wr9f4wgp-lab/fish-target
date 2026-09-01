@@ -1,0 +1,9 @@
+{
+  "version": "SPECIES-METHOD-FRAGMENT-MANIFEST-1",
+  "fragments": [
+    {
+      "id": "batch2-offshore-premium",
+      "file": "authoring/species-methods-batch2.v1.json"
+    }
+  ]
+}
