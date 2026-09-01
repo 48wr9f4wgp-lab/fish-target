@@ -26,6 +26,14 @@ test('V27R3 resolves jawiki imageinfo first then falls back to Commons with lice
   assert.doesNotMatch(js,/unsplash|pexels|pixabay|googleusercontent/i);
 });
 
+test('V27R3 fails closed to resolved canonical photo taxa and invalidates stale ambiguous cache',()=>{
+  assert.match(js,/canonicalPhotoAlias=Object\.freeze\(\{'エソ':'マエソ','オニカサゴ':'イズカサゴ','マルイカ':'ケンサキイカ'\}\)/);
+  assert.match(js,/canonicalPhotoAlias\[name\]\?\[canonicalPhotoAlias\[name\]\]/,'canonical targets must not fall back to the ambiguous product label');
+  assert.match(js,/!canonical\|\|v\.article===canonical/,'canonical cached article must match the resolved taxon title');
+  assert.match(js,/if\(canonical\)localStorage\.removeItem\(cacheKey\(name\)\)/,'stale canonical cache must be removed');
+  assert.match(js,/canonicalAliases:canonicalPhotoAlias/);
+});
+
 test('V27R3 adds explicit aliases for device-observed and taxonomy-resolved species',()=>{
   assert.match(js,/'サバ':'マサバ'/);
   assert.match(js,/'イワシ':'マイワシ'/);
