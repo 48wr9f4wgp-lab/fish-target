@@ -56,7 +56,9 @@ try{
   assert.equal(boot.catalogFacadePresent,false,'publication build with zero approved batches must not expose Catalog facade');
   assert.equal(boot.targets,60,'publication build must retain all target decisions');
 
-  await page.locator('#tackleManage').click();
+  const tackleTab=page.locator('#appTabBarV26 [data-app-tab="tackle"]');
+  await tackleTab.waitFor({state:'visible'});
+  await tackleTab.click();
   await page.locator('#tackleSheet').waitFor({state:'visible'});
   assert.equal(await page.locator('.catalogUnavailable').count(),2,'rod and reel must expose manual fallback instead of Catalog');
   assert.equal(await page.locator('#rodManualPanel').isVisible(),true);
