@@ -7,13 +7,14 @@
   const LOCAL=new Set(MANIFEST?.bundledRecords?.map(record=>record.species_name)||globalThis.FISH_TARGET_REAL_FISH?.species||[]);
   const pending=new Map();
   const cacheKey=name=>`ft-fish-photo-v27r3:${name}`;
+  const canonicalPhotoAlias=Object.freeze({'エソ':'マエソ','オニカサゴ':'イズカサゴ','マルイカ':'ケンサキイカ'});
   const titleAlias=Object.freeze({
     'ブリ・ワラサ':'ブリ','ヤマメ・イワナ':'ヤマメ','グレ':'メジナ','シーバス':'スズキ','ブラックバス':'オオクチバス',
-    'サバ':'マサバ','イワシ':'マイワシ','ハゼ':'マハゼ','エソ':'マエソ','オニカサゴ':'イズカサゴ','マルイカ':'ケンサキイカ','テナガエビ':'テナガエビ','ウミタナゴ':'ウミタナゴ','コノシロ':'コノシロ','ウグイ':'ウグイ','マブナ':'ギンブナ'
+    'サバ':'マサバ','イワシ':'マイワシ','ハゼ':'マハゼ',...canonicalPhotoAlias,'テナガエビ':'テナガエビ','ウミタナゴ':'ウミタナゴ','コノシロ':'コノシロ','ウグイ':'ウグイ','マブナ':'ギンブナ'
   });
   const allowed=/^(CC0|Public domain|CC BY(?:-[A-Z]+)?(?: \d(?:\.\d)?)?|CC BY-SA(?: \d(?:\.\d)?)?)$/i;
   const clean=s=>String(s||'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
-  const candidates=name=>[titleAlias[name],name,String(name).split(/[・／/]/)[0]].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  const candidates=name=>canonicalPhotoAlias[name]?[canonicalPhotoAlias[name]]:[titleAlias[name],name,String(name).split(/[・／/]/)[0]].filter((v,i,a)=>v&&a.indexOf(v)===i);
   const manifestRecord=name=>MANIFEST?.resolve?.(name)||null;
   const remoteEligible=name=>{
     if(!MANIFEST)return !LOCAL.has(name);
@@ -43,7 +44,12 @@
     if(!remoteEligible(name))throw new Error(`remote photo not eligible: ${name}`);
     try{
       const stored=localStorage.getItem(cacheKey(name));
-      if(stored){const v=JSON.parse(stored);if(v?.url&&v?.license&&allowed.test(v.license))return v}
+      if(stored){
+        const v=JSON.parse(stored);
+        const canonical=canonicalPhotoAlias[name];
+        if(v?.url&&v?.license&&allowed.test(v.license)&&(!canonical||v.article===canonical))return v;
+        if(canonical)localStorage.removeItem(cacheKey(name));
+      }
     }catch{}
     for(const title of candidates(name)){
       try{
@@ -148,6 +154,7 @@
     eager:EAGER,
     qaAutoLoad:QA_AUTOLOAD,
     localSpecies:Object.freeze([...LOCAL]),
-    aliases:titleAlias
+    aliases:titleAlias,
+    canonicalAliases:canonicalPhotoAlias
   });
 })();
