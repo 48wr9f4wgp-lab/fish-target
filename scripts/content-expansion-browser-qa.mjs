@@ -35,12 +35,20 @@ async function selectMethod(page,id){
   await picker.locator(`[data-method-id="${id}"]`).click();
 }
 
-async function assertRodSearch(page,series,query,expected){
-  await page.locator('#rodCatalogMaker').selectOption({label:'DAIWA'});
-  await page.locator('#rodCatalogSeries').selectOption({label:series});
-  await page.locator('#rodCatalogSearch').fill(query);
-  await page.waitForFunction(expected=>[...document.querySelectorAll('#rodCatalogModel option')].some(option=>(option.textContent||'').includes(expected)),expected,{timeout:10000});
-  assert.equal(await page.locator('#rodCatalogModel option').filter({hasText:expected}).count(),1,`${expected} is searchable`);
+async function assertRodSearch(page,series,query,modelName,displayName){
+  const maker=page.locator('#rodCatalogMaker'),seriesSelect=page.locator('#rodCatalogSeries'),model=page.locator('#rodCatalogModel'),search=page.locator('#rodCatalogSearch');
+  await maker.selectOption({label:'DAIWA'});
+  await page.waitForFunction(series=>[...document.querySelectorAll('#rodCatalogSeries option')].some(option=>(option.textContent||'').trim()===series),series,{timeout:10000});
+  await seriesSelect.selectOption({label:series});
+  await search.fill(query);
+  const resultLabel=`${series} · ${modelName}`;
+  await page.waitForFunction(expected=>[...document.querySelectorAll('#rodCatalogModel option')].some(option=>(option.textContent||'').includes(expected)),resultLabel,{timeout:10000});
+  const candidate=model.locator('option').filter({hasText:resultLabel}).first();
+  const value=await candidate.getAttribute('value');
+  assert.ok(value,`${displayName} search result exposes stable product id`);
+  await model.selectOption(value);
+  await page.waitForFunction(expected=>(document.getElementById('rodCatalogPreview')?.textContent||'').includes(expected),displayName,{timeout:10000});
+  assert.match(await text(page,'#rodCatalogPreview'),new RegExp(displayName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),`${displayName} is searchable and previewable`);
 }
 
 const browser=await chromium.launch({headless:true});
@@ -68,8 +76,8 @@ try{
   await page.locator('#tackleSheet').waitFor({state:'visible'});
   await page.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG_LOADER?.state?.productCount===985,{timeout:20000});
   assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_CATALOG_LOADER.state.batchCount),46,'46 rod/reel catalog batches load only after MY TACKLE intent');
-  await assertRodSearch(page,'GEKKABIJIN MEBARU','83M','月下美人 83M-T・N');
-  await assertRodSearch(page,'OUTRAGE BR LC','LC70','OUTRAGE BR LC70-2.5');
+  await assertRodSearch(page,'GEKKABIJIN MEBARU','83M','83M-T・N','月下美人 83M-T・N');
+  await assertRodSearch(page,'OUTRAGE BR LC','LC70','LC70-2.5','OUTRAGE BR LC70-2.5');
   assert.deepEqual(noLureRequests(requests),[],'opening rod/reel catalog never loads lure catalog');
   await page.locator('#tackleClose').click();
   await page.locator('#tackleSheet').waitFor({state:'hidden'});
