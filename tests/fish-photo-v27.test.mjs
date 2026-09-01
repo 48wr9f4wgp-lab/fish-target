@@ -26,12 +26,17 @@ test('V27R3 resolves jawiki imageinfo first then falls back to Commons with lice
   assert.doesNotMatch(js,/unsplash|pexels|pixabay|googleusercontent/i);
 });
 
-test('V27R3 adds explicit aliases for device-observed silhouette species',()=>{
+test('V27R3 adds explicit aliases for device-observed and taxonomy-resolved species',()=>{
   assert.match(js,/'サバ':'マサバ'/);
   assert.match(js,/'イワシ':'マイワシ'/);
   assert.match(js,/'ハゼ':'マハゼ'/);
   assert.match(js,/'エソ':'マエソ'/);
+  assert.match(js,/'オニカサゴ':'イズカサゴ'/);
+  assert.match(js,/'マルイカ':'ケンサキイカ'/);
   assert.match(js,/'マブナ':'ギンブナ'/);
+  assert.doesNotMatch(js,/'カレイ':'マコガレイ'/);
+  assert.doesNotMatch(js,/'タナゴ':'ヤリタナゴ'/);
+  assert.doesNotMatch(js,/'ヒイカ':'ジンドウイカ'/);
   assert.match(js,/ft-fish-photo-v27r3/);
 });
 
