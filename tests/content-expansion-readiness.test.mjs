@@ -13,6 +13,9 @@ test('content expansion readiness locks the current RC baseline without adding r
   assert.equal(report.doorstep_locked,true);
   assert.equal(report.baseline.species,60);
   assert.equal(report.baseline.plans,150);
+  assert.equal(report.coverage.all_species.length,60);
+  assert.equal(report.coverage.all_species.reduce((sum,row)=>sum+row.plans,0),150);
+  assert.ok(report.coverage.all_species.every(row=>row.species&&row.water&&Array.isArray(row.methods)&&row.methods.length===row.plans));
   assert.equal(report.catalog.batches,44);
   assert.equal(report.catalog.production_batches,0);
   assert.deepEqual(report.queue.counts,{species:0,methods:0,catalog:0});
