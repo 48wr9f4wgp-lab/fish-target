@@ -1,9 +1,11 @@
 import {readFileSync} from 'node:fs';
+import {validateCandidateRegistry} from './fish-asset-candidate-contract.mjs';
 
 const read=file=>readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 const EXPECTED=Object.freeze(['カレイ','オニカサゴ','タナゴ','ヒイカ','エソ','マルイカ']);
 const KINDS=new Set(['generic-category','canonical-taxon']);
 const STRATEGIES=new Set(['generic-category-svg','canonical-taxon-candidate-required']);
+const RIGHTS_FIELDS=Object.freeze(['publication_ready','rights_status','license','author','attribution']);
 const isHttps=value=>{try{return new URL(value).protocol==='https:'}catch{return false}};
 
 export function validateTaxonomyResolutions(input,{candidateRegistry=null}={}){
@@ -18,7 +20,7 @@ export function validateTaxonomyResolutions(input,{candidateRegistry=null}={}){
     if(!STRATEGIES.has(row.visual_strategy))throw new Error(`${row.species_name}: invalid visual_strategy`);
     if(!isHttps(row.evidence_url))throw new Error(`${row.species_name}: HTTPS evidence required`);
     if(!row.rationale)throw new Error(`${row.species_name}: rationale required`);
-    if('publication_ready' in row||'rights_status' in row||'license' in row)throw new Error(`${row.species_name}: taxonomy registry cannot assert rights/publication state`);
+    for(const field of RIGHTS_FIELDS)if(field in row)throw new Error(`${row.species_name}: taxonomy registry cannot assert rights/publication state`);
     if(row.resolution_kind==='generic-category'){
       if(row.canonical_taxon!==null||row.canonical_name!==null)throw new Error(`${row.species_name}: generic category cannot bind canonical taxon`);
       if(row.visual_strategy!=='generic-category-svg')throw new Error(`${row.species_name}: generic category must remain generic visual`);
@@ -29,11 +31,20 @@ export function validateTaxonomyResolutions(input,{candidateRegistry=null}={}){
   }
   for(const name of EXPECTED)if(!seen.has(name))throw new Error(`taxonomy missing ${name}`);
   if(candidateRegistry){
+    validateCandidateRegistry(candidateRegistry);
+    const resolutions=new Map(input.records.map(row=>[row.species_name,row]));
     const candidates=new Map(candidateRegistry.records?.map(row=>[row.species_name,row])||[]);
     for(const name of EXPECTED){
+      const resolution=resolutions.get(name);
       const candidate=candidates.get(name);
       if(!candidate)throw new Error(`${name}: candidate research row missing`);
-      if(candidate.status==='verified-candidate')throw new Error(`${name}: taxonomy resolution must not auto-promote image candidate`);
+      if(resolution.resolution_kind==='generic-category'){
+        if(candidate.status!=='taxonomy-review')throw new Error(`${name}: generic taxonomy cannot promote a single-species image candidate`);
+        continue;
+      }
+      if(candidate.status==='verified-candidate'&&candidate.source_taxon!==resolution.canonical_taxon){
+        throw new Error(`${name}: verified candidate taxon must match resolved canonical taxon`);
+      }
     }
   }
   const generic=input.records.filter(x=>x.resolution_kind==='generic-category').length;
