@@ -1,6 +1,7 @@
 (()=>{
   const BUILD=document.documentElement.dataset.build;
   if(!BUILD)throw new Error('Missing generated build id');
+  const lureRuntime=document.documentElement.dataset.lureCatalogRuntime==='on';
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
   const status=()=>document.getElementById('networkStatus');
   const renderNetwork=()=>{
@@ -17,9 +18,11 @@
     const css=document.createElement('link');css.rel='stylesheet';css.href=versioned(href);css.dataset.extension=key;css.onload=resolve;css.onerror=()=>{console.warn('extension css load failed',href);resolve()};document.head.appendChild(css)
   });
   const loadScript=(src,key)=>new Promise(resolve=>{if(document.querySelector(`script[data-extension="${key}"]`)){resolve();return}const js=document.createElement('script');js.src=versioned(src);js.async=false;js.dataset.extension=key;js.onload=resolve;js.onerror=()=>{console.warn('extension load failed',src);resolve()};document.body.appendChild(js)});
-  const extensionCss=Promise.all([
-    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./lure-catalog.css','lure-catalog-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css']
-  ].map(([href,key])=>loadCss(href,key)));
+  const extensionStyles=[
+    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css']
+  ];
+  if(lureRuntime)extensionStyles.splice(12,0,['./lure-catalog.css','lure-catalog-css']);
+  const extensionCss=Promise.all(extensionStyles.map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
   (async()=>{
     try{
@@ -51,7 +54,7 @@
       await loadScript('./result-ux-v20.js','result-ux-v20-js');
       await loadScript('./result-ux-v21.js','result-ux-v21-js');
       await loadScript('./result-ux-v23.js','result-ux-v23-js');
-      await loadScript('./lure-catalog-entry.js','lure-catalog-entry-js');
+      if(lureRuntime)await loadScript('./lure-catalog-entry.js','lure-catalog-entry-js');
       await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./app-shell-v26.js','app-shell-v26-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
