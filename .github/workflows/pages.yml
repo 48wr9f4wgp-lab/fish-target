@@ -2,7 +2,7 @@ name: deploy-pages
 
 on:
   push:
-    branches: [main, codex/release-rc1, chatgpt/feature-v23-tackle-catalog, chatgpt/catalog-multimaker-v13, chatgpt/v23-daiwa-catalog-preview, chatgpt/v23-visual-pass1, chatgpt/rc-v23-v8]
+    branches: [main, codex/release-rc1, chatgpt/feature-v23-tackle-catalog, chatgpt/catalog-multimaker-v13, chatgpt/v23-daiwa-catalog-preview, chatgpt/v23-visual-pass1, chatgpt/rc-v23-v8, chatgpt/rc-iphone-publication-preview]
 
 permissions:
   contents: read
@@ -28,6 +28,10 @@ jobs:
           node-version: 22
       - name: Test and build
         run: npm test
+      - name: Build publication-safe preview
+        env:
+          FISH_TARGET_PUBLICATION_BUILD: "1"
+        run: npm run build
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
