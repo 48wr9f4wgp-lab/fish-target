@@ -14,6 +14,7 @@
   ]);
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   let editMode=false;
 
   const readStore=()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}')}catch{return{}}};
@@ -63,7 +64,7 @@
     ensureUi();const root=$('#quickPackV28');if(!root)return;
     const config=getConfig(),checked=getChecked(),list=$('#quickPackListV28');
     for(const id of [...checked])if(!config.some(item=>item.id===id))checked.delete(id);
-    list.innerHTML=config.map(item=>`<div class="quickPackRowV28" data-id="${item.id}"><label class="quickPackItemV28"><input type="checkbox" ${checked.has(item.id)?'checked':''}><span class="quickPackCheckV28"></span><span>${item.name}</span></label><button class="quickPackDeleteV28" type="button" aria-label="${item.name}を削除" ${editMode?'':'hidden'}>×</button></div>`).join('');
+    list.innerHTML=config.map(item=>{const id=escapeHtml(item.id),name=escapeHtml(item.name);return `<div class="quickPackRowV28" data-id="${id}"><label class="quickPackItemV28"><input type="checkbox" ${checked.has(item.id)?'checked':''}><span class="quickPackCheckV28"></span><span>${name}</span></label><button class="quickPackDeleteV28" type="button" aria-label="${name}を削除" ${editMode?'':'hidden'}>×</button></div>`}).join('');
     $$('.quickPackRowV28',list).forEach(row=>{
       const input=$('input',row),id=row.dataset.id;
       input.addEventListener('change',()=>{
