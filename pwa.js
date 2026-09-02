@@ -39,17 +39,17 @@
   ];
   const extensionCss=Promise.all(extensionStyles.map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
-  const loadTargetExpansion=async version=>{
-    await Promise.all(Array.from({length:5},(_,i)=>loadScript(`./target-method-data-${version}-part${i+1}.js`,`target-method-data-${version}-part${i+1}-js`)));
-    await loadScript(`./target-method-data-${version}.js`,`target-method-data-${version}-js`);
-  };
   (async()=>{
     try{
       await loadScript('./continuity.js','continuity-js');
-      await loadTargetExpansion('v1');
-      await loadTargetExpansion('v2');
-      await loadTargetExpansion('v3');
-      await loadTargetExpansion('v4');
+      await Promise.all(Array.from({length:5},(_,i)=>loadScript(`./target-method-data-v1-part${i}.js`,`target-method-data-v1-part${i}-js`)));
+      await loadScript('./target-method-data-v1.js','target-method-data-v1-js');
+      await Promise.all(Array.from({length:5},(_,i)=>loadScript(`./target-method-data-v2-part${i}.js`,`target-method-data-v2-part${i}-js`)));
+      await loadScript('./target-method-data-v2.js','target-method-data-v2-js');
+      await Promise.all(Array.from({length:5},(_,i)=>loadScript(`./target-method-data-v3-part${i}.js`,`target-method-data-v3-part${i}-js`)));
+      await loadScript('./target-method-data-v3.js','target-method-data-v3-js');
+      await Promise.all(Array.from({length:5},(_,i)=>loadScript(`./target-method-data-v4-part${i}.js`,`target-method-data-v4-part${i}-js`)));
+      await loadScript('./target-method-data-v4.js','target-method-data-v4-js');
       await loadScript('./species-method-authoring-generated.js','species-method-authoring-generated-js');
       await loadScript('./species-method-authoring-runtime.js','species-method-authoring-runtime-js');
       await loadScript('./target-methods-v1.js','target-methods-v1-js');
