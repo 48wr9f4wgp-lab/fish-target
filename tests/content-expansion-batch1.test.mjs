@@ -19,15 +19,16 @@ async function loadLureRows(){
 
 test('batch1 content remains intact when later additive batches are present',async()=>{
   const authoring=await json('authoring/species-methods.v1.json');
-  assert.deepEqual(authoring.targets.map(x=>x.name),['カマス','オオモンハタ']);
-  assert.deepEqual(authoring.targets.map(x=>x.methods.length+1),[2,2]);
+  const batch1Targets=authoring.targets.filter(x=>['カマス','オオモンハタ'].includes(x.name));
+  assert.deepEqual(batch1Targets.map(x=>x.name),['カマス','オオモンハタ']);
+  assert.deepEqual(batch1Targets.map(x=>x.methods.length+1),[2,2]);
   const sawara=authoring.existing.find(x=>x.species==='サワラ');
   assert.ok(sawara,'Batch 1 Sawara block remains authored');
   assert.equal(sawara.methods[0].id,'boat-blade');
   assert.equal(sawara.methods[0].method,'ボート・ブレードジギング');
   const report=await collectReadiness();
   assert.deepEqual(report.errors,[]);
-  assert.equal(report.baseline.species,62);
+  assert.ok(report.baseline.species>=62,'later additive batches must preserve the Batch 1 species floor');
   assert.ok(report.baseline.plans>=155,'later additive batches must preserve the Batch 1 plan floor');
   assert.equal(report.queue.total,0);
 });

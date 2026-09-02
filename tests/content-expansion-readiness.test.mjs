@@ -47,7 +47,7 @@ test('doorstep templates are inert and fail closed on publication',()=>{
 
 test('applied content batches remain explicit while the next runtime authoring queue is empty',()=>{
   const authoring=readJson('authoring/species-methods.v1.json');
-  assert.deepEqual(authoring.targets.map(x=>x.name),['カマス','オオモンハタ']);
+  assert.deepEqual(authoring.targets.map(x=>x.name),['カマス','オオモンハタ','アカハタ']);
   const appliedExisting=new Map(authoring.existing.map(x=>[x.species,x]));
   assert.equal(appliedExisting.get('サワラ')?.methods?.some(method=>method.id==='boat-blade'),true,'Batch 1 Sawara method remains explicit');
   assert.equal(appliedExisting.get('カツオ')?.methods?.some(method=>method.id==='offshore-jigging'),true,'Batch 2 Katsuo method remains explicit');

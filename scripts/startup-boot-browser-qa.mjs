@@ -29,7 +29,7 @@ assert.equal(during.splashPosition,'fixed','startup splash must cover the viewpo
 
 await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),{timeout:15000});
 await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_VISUAL_V8),{timeout:15000});
-await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===62,{timeout:15000});
+await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===63,{timeout:15000});
 
 const after=await page.evaluate(()=>({
   appVisibility:getComputedStyle(document.querySelector('.app')).visibility,
@@ -38,9 +38,9 @@ const after=await page.evaluate(()=>({
 }));
 assert.equal(after.appVisibility,'visible','app must reveal after enhanced UI bootstrap');
 assert.ok(after.splash==='none'||after.splash==='normal'||after.splash==='""','startup splash must be removed after reveal');
-assert.equal(after.targets,62,'expanded target grid must be ready before reveal');
+assert.equal(after.targets,63,'expanded target grid must be ready before reveal');
 assert.deepEqual(errors,[],'startup gate must not introduce page errors');
 
 await context.close();
 await browser.close();
-console.log('startup boot browser QA passed · 62 targets');
+console.log('startup boot browser QA passed · 63 targets');
