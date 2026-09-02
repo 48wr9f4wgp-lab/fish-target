@@ -9,9 +9,9 @@ const noLureRequests=list=>list.filter(name=>name.startsWith('lure-catalog'));
 
 async function waitApp(page){
   await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});
-  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===62,{timeout:15000});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===62&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===155,{timeout:15000});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_SPECIES_REGISTRY?.count===62&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===155,{timeout:15000});
+  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===64,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===64&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===159,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_SPECIES_REGISTRY?.count===64&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===159,{timeout:15000});
   await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_CATALOG_LOADER&&document.querySelector('.v19TackleShortcut')),{timeout:15000});
   await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),{timeout:15000});
 }
@@ -63,21 +63,22 @@ try{
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
   await waitApp(page);
 
-  assert.equal(await page.locator('#grid .fish').count(),62,'content expansion renders 62 targets');
-  assert.equal(await text(page,'#home .heroStats span:nth-of-type(1)'),'62魚種','hero species count');
-  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('155釣法プラン'),'hero plan count');
+  assert.equal(await page.locator('#grid .fish').count(),64,'content expansion renders 64 targets');
+  assert.equal(await text(page,'#home .heroStats span:nth-of-type(1)'),'64魚種','hero species count');
+  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('159釣法プラン'),'hero plan count');
   assert.deepEqual(noLureRequests(requests),[],'startup performs zero lure catalog requests');
-  assert.equal(await page.locator('button.fish[data-fish="カマス"]').count(),1,'Kamasu target is selectable');
-  assert.equal(await page.locator('button.fish[data-fish="オオモンハタ"]').count(),1,'Oomonhata target is selectable');
+  for(const fish of ['カマス','オオモンハタ','アマダイ','アカムツ'])assert.equal(await page.locator(`button.fish[data-fish="${fish}"]`).count(),1,`${fish} target is selectable`);
 
   const catalogCold=await page.evaluate(()=>({status:globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status,count:globalThis.FISH_TARGET_CATALOG?.products?.length||0}));
   assert.deepEqual(catalogCold,{status:'idle',count:0},'rod/reel catalog remains unloaded at startup');
   await page.locator('.v19TackleShortcut').click();
   await page.locator('#tackleSheet').waitFor({state:'visible'});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG_LOADER?.state?.productCount===985,{timeout:20000});
-  assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_CATALOG_LOADER.state.batchCount),46,'46 rod/reel catalog batches load only after MY TACKLE intent');
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG_LOADER?.state?.productCount===989,{timeout:20000});
+  assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_CATALOG_LOADER.state.batchCount),47,'47 rod/reel catalog batches load only after MY TACKLE intent');
   await assertRodSearch(page,'GEKKABIJIN MEBARU','83M','83M-T・N','月下美人 83M-T・N');
   await assertRodSearch(page,'OUTRAGE BR LC','LC70','LC70-2.5','OUTRAGE BR LC70-2.5');
+  await assertRodSearch(page,'LIGHT AMADAI X','190','190・R','ライトアマダイ X 190・R');
+  await assertRodSearch(page,'NEOSTAGE DG','J63B','J63B-2','Neostage DG J63B-2');
   assert.deepEqual(noLureRequests(requests),[],'opening rod/reel catalog never loads lure catalog');
   await page.locator('#tackleClose').click();
   await page.locator('#tackleSheet').waitFor({state:'hidden'});
@@ -112,6 +113,22 @@ try{
   assert.equal(await page.locator('#lureCatalogBody .lureCatalogItem').count(),3,'Kamasu renders three functional-size candidates');
   assert.deepEqual(await page.locator('#lureCatalogBody .lureCatalogItem b').allTextContents(),['月下美人 小鉄 3g','月下美人 小鉄 5g','月下美人 小鉄 7g']);
   assert.match(await text(page,'#lureCatalogBody .lureCatalogDisclaimer'),/色別SKU・在庫・価格は含めない/,'UI discloses lightweight catalog scope');
+  await backHome(page);
+
+  await openTarget(page,'アマダイ');
+  assert.equal(await text(page,'#pmethod'),'ライト天秤アマダイ','Amadai default method');
+  assert.equal(await text(page,'#firstBait'),'オキアミ','Amadai bait FIRST CAST');
+  await selectMethod(page,'amadai-tairubber');
+  assert.equal(await text(page,'#pmethod'),'アマラバ（タイラバ）','Amadai lure method selectable');
+  assert.equal(await text(page,'#firstBait'),'ブレード付きタイラバ（アマダイチューン）','Amadai lure FIRST CAST');
+  await backHome(page);
+
+  await openTarget(page,'アカムツ');
+  assert.equal(await text(page,'#pmethod'),'中深場・胴突き餌釣り','Akamutsu default method');
+  assert.match(await text(page,'#firstBait'),/ホタルイカ/,'Akamutsu bait FIRST CAST');
+  await selectMethod(page,'electric-slow-jig');
+  assert.equal(await text(page,'#pmethod'),'電動スロージギング','Akamutsu electric slow method selectable');
+  assert.equal(await text(page,'#firstBait'),'スロー系メタルジグ','Akamutsu lure FIRST CAST');
 
   const layout=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
   assert.ok(layout.doc<=391&&layout.body<=391&&layout.viewport===390,'390px result remains overflow-free');
@@ -119,7 +136,7 @@ try{
   assert.deepEqual(consoleErrors,[],'content expansion browser path has no console errors');
 
   await context.close();
-  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:62,plans:155,catalogProducts:985,catalogBatches:46,lureRequests:requests,renderedKamasu:3}));
+  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:64,plans:159,catalogProducts:989,catalogBatches:47,lureRequests:requests,renderedKamasu:3,batch2:['アマダイ','アカムツ']}));
 }finally{
   await browser.close();
 }
