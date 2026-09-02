@@ -2,7 +2,7 @@
 
 Reviewed: 2026-09-02
 Base: Batch 2 exact head `49583db5bdc79ef06e2065b2e7f200edfd7f7495`
-Scope: decision audit only; no merge/release authorization
+Scope: decision audit + guarded branch implementation; no merge/release authorization
 
 ## Decision
 
@@ -110,6 +110,14 @@ Target plan count: **2**
 - 390px viewport overflowなし
 - publication buildでresearch Catalogを露出しない
 - content expansion readiness / unit / browser / publication regression Green
+
+## Execution gate
+
+- canonical authoring JSONを唯一の入力とし、generated runtimeは既存generatorから再生成する。
+- 一回適用Workflowは `node scripts/batch3-apply-once.mjs` → `npm test` の順で実行し、テスト成功時のみ生成結果をbranchへcommitする。
+- 初回Workflowはrepositoryに `package-lock.json` が無い状態で不要な `npm ci` を実行して失敗した。製品コード起因ではないため、install stepを削除して再発火する。
+- branch実装後は一回適用Workflow / applicatorを削除し、通常のexact-head CIで最終検証する。
+- **この文書更新時点ではアカハタ実データ適用を完了扱いしない。**
 
 ## Non-goals
 
