@@ -34,8 +34,8 @@
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
 
   function ensureUi(){
-    const fieldButton=$('#fieldModeBtn');
-    if(!fieldButton||$('#quickPackV28'))return;
+    const anchor=$('#v19Conditions')||$('#v19Details')||$('#result .actions');
+    if(!anchor||$('#quickPackV28'))return;
     const wrap=document.createElement('section');
     wrap.id='quickPackV28';wrap.className='quickPackV28 card';wrap.setAttribute('aria-label','出発前の小物チェック');
     wrap.innerHTML=`
@@ -48,7 +48,7 @@
         <form id="quickPackAddFormV28"><input id="quickPackAddInputV28" maxlength="24" autocomplete="off" placeholder="持ち物を追加" aria-label="持ち物を追加"><button type="submit">追加</button></form>
         <div class="quickPackEditorActionsV28"><button class="quickPackClearV28" id="quickPackClearV28" type="button">チェック解除</button><button class="quickPackResetV28" id="quickPackResetV28" type="button">標準に戻す</button></div>
       </div>`;
-    fieldButton.insertAdjacentElement('beforebegin',wrap);
+    anchor.insertAdjacentElement('beforebegin',wrap);
     $('#quickPackEditV28')?.addEventListener('click',()=>{editMode=!editMode;render()});
     $('#quickPackAddFormV28')?.addEventListener('submit',event=>{
       event.preventDefault();const input=$('#quickPackAddInputV28');const name=String(input?.value||'').trim();if(!name)return;
