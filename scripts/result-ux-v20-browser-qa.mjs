@@ -103,7 +103,10 @@ assert.ok((await page.locator('#fmBait').textContent()||'').trim(),'field mode k
 await page.locator('#fmBackPlan').click();await page.locator('#result.on').waitFor({state:'visible'});
 
 await backHome();
-await page.locator('#tackleManage').click();await page.locator('#tackleSheet').waitFor({state:'visible'});
+const tackleShortcut=page.locator('.v19TackleShortcut');
+await tackleShortcut.waitFor({state:'visible'});
+await tackleShortcut.click();
+await page.locator('#tackleSheet').waitFor({state:'visible'});
 assert.equal(await page.locator('.tackleSheetIntroV26').count(),0,'redundant tackle intro is removed from default flow');
 await page.locator('#tackleClose').click();
 
