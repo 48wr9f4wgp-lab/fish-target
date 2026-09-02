@@ -30,8 +30,8 @@ test('batch2 adds only Katsuo offshore jigging and keeps the species count fixed
 
   const report=await collectReadiness();
   assert.deepEqual(report.errors,[]);
-  assert.equal(report.baseline.species,62);
-  assert.equal(report.baseline.plans,156);
+  assert.ok(report.baseline.species>=62,'later additive batches must preserve the Batch 2 species floor');
+  assert.ok(report.baseline.plans>=156,'later additive batches must preserve the Batch 2 plan floor');
   assert.equal(report.queue.total,0);
 });
 

@@ -9,9 +9,9 @@ const noLureRequests=list=>list.filter(name=>name.startsWith('lure-catalog'));
 
 async function waitApp(page){
   await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});
-  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===62,{timeout:15000});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===62&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===156,{timeout:15000});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_SPECIES_REGISTRY?.count===62&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===156,{timeout:15000});
+  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===63,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===63&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===158,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_SPECIES_REGISTRY?.count===63&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===158,{timeout:15000});
   await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_CATALOG_LOADER&&document.querySelector('.v19TackleShortcut')),{timeout:15000});
   await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),{timeout:15000});
 }
@@ -63,9 +63,9 @@ try{
   await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});
   await waitApp(page);
 
-  assert.equal(await page.locator('#grid .fish').count(),62,'content expansion renders 62 targets');
-  assert.equal(await text(page,'#home .heroStats span:nth-of-type(1)'),'62魚種','hero species count');
-  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('156釣法プラン'),'hero plan count');
+  assert.equal(await page.locator('#grid .fish').count(),63,'content expansion renders 63 targets');
+  assert.equal(await text(page,'#home .heroStats span:nth-of-type(1)'),'63魚種','hero species count');
+  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('158釣法プラン'),'hero plan count');
   assert.deepEqual(noLureRequests(requests),[],'startup performs zero lure catalog requests');
   assert.equal(await page.locator('button.fish[data-fish="カマス"]').count(),1,'Kamasu target is selectable');
   assert.equal(await page.locator('button.fish[data-fish="オオモンハタ"]').count(),1,'Oomonhata target is selectable');
@@ -108,6 +108,24 @@ try{
   assert.ok(katsuoLayout.doc<=391&&katsuoLayout.body<=391&&katsuoLayout.viewport===390,'390px Katsuo result remains overflow-free');
   await backHome(page);
 
+  await openTarget(page,'アカハタ');
+  assert.equal(await text(page,'#pmethod'),'ボトム・ジグヘッド','Akahata default is bottom-focused jighead');
+  assert.equal(await text(page,'#firstBait'),'ジグヘッド+シャッドテールワーム','Akahata FIRST CAST exposes the bottom jighead plan');
+  assert.equal(await page.locator('#methodPickerV1 [data-method-id="tight-bottom-rig"]').count(),1,'Akahata exposes a distinct tight-bottom rig');
+  await selectMethod(page,'tight-bottom-rig');
+  assert.equal(await text(page,'#pmethod'),'フリーリグ / テキサス','Akahata tight-bottom method selectable');
+  assert.match(await text(page,'#steps'),/沈み根|岩穴/,'Akahata field steps keep the tight-structure decision');
+  assert.equal(await page.locator('#lureCatalogPanel').count(),0,'Akahata adds no research lure catalog UI');
+  await page.locator('#fieldModeBtn').click();
+  await page.locator('#fieldmode.on').waitFor({state:'visible'});
+  assert.equal(await text(page,'#fmFish'),'アカハタ','Akahata FIELD MODE target');
+  assert.equal(await text(page,'#fmMethod'),'フリーリグ / テキサス','Akahata FIELD MODE method');
+  await page.locator('#fmBackPlan').click();
+  await page.locator('#result.on').waitFor({state:'visible'});
+  const akahataLayout=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
+  assert.ok(akahataLayout.doc<=391&&akahataLayout.body<=391&&akahataLayout.viewport===390,'390px Akahata result remains overflow-free');
+  await backHome(page);
+
   await openTarget(page,'カマス');
   await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_LURE_CATALOG_ENTRY),{timeout:10000});
   await page.locator('#lureCatalogPanel').waitFor({state:'visible',timeout:10000});
@@ -139,7 +157,7 @@ try{
   assert.deepEqual(consoleErrors,[],'content expansion browser path has no console errors');
 
   await context.close();
-  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:62,plans:156,catalogProducts:985,catalogBatches:46,lureRequests:requests,renderedKamasu:3,katsuoMethod:'offshore-jigging'}));
+  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:63,plans:158,catalogProducts:985,catalogBatches:46,lureRequests:requests,renderedKamasu:3,katsuoMethod:'offshore-jigging',akahataMethods:2}));
 }finally{
   await browser.close();
 }
