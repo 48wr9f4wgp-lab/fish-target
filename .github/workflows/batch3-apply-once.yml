@@ -1,0 +1,38 @@
+name: batch3-apply-once
+
+on:
+  push:
+    branches:
+      - chatgpt/content-expansion-batch3-audit
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: chatgpt/content-expansion-batch3-audit
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm ci
+      - name: Apply reviewed Akahata content
+        run: node scripts/batch3-apply-once.mjs
+      - name: Unit and build gate
+        run: npm test
+      - name: Commit generated Batch 3 files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add authoring/species-methods.v1.json authoring/content-expansion-queue.v1.json species-method-authoring-generated.js scripts/content-expansion-browser-qa.mjs scripts/publication-browser-qa.mjs tests/content-expansion-readiness.test.mjs tests/content-expansion-batch2.test.mjs tests/content-expansion-batch3.test.mjs
+          git diff --cached --check
+          git commit -m "content: add Akahata bottom rockfish depth"
+          git push origin HEAD:chatgpt/content-expansion-batch3-audit
