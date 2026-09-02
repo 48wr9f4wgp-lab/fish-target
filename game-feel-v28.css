@@ -1,0 +1,36 @@
+.quickPackV28{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.quickPackHeadV28{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.quickPackHeadV28 strong{display:block;font-size:12px}
+.quickPackHeadV28 small{display:block;margin-top:2px;font-size:8px;color:var(--muted)}
+.quickPackHeadActionsV28{display:flex;align-items:center;gap:6px}
+.quickPackHeadActionsV28>span{min-width:38px;text-align:center;font-size:10px;font-weight:950;color:#087f75;background:var(--mint);padding:6px 8px;border-radius:999px}
+.quickPackHeadActionsV28 button,.quickPackResetV28{border:1px solid var(--line);background:#fff;color:#51676c;border-radius:999px;min-height:36px;padding:7px 10px;font-size:9px;font-weight:900}
+.quickPackListV28{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.quickPackRowV28{position:relative;display:grid;grid-template-columns:1fr auto;gap:6px;align-items:stretch;border-radius:13px}
+.quickPackItemV28{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:center;min-height:48px;padding:9px 10px;background:#f6f9f9;border:1px solid #e3ebec;border-radius:13px;font-size:10px;font-weight:850;transition:transform .14s ease,background .18s ease,border-color .18s ease,opacity .18s ease}
+.quickPackItemV28:active{transform:scale(.98)}
+.quickPackItemV28 input{position:absolute;opacity:0;pointer-events:none}
+.quickPackCheckV28{width:20px;height:20px;border:2px solid #b8c8ca;border-radius:7px;background:#fff;position:relative}
+.quickPackItemV28 input:checked+.quickPackCheckV28{background:#0a8d83;border-color:#0a8d83}
+.quickPackItemV28 input:checked+.quickPackCheckV28:after{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:950}
+.quickPackItemV28:has(input:checked){background:#eef8f6;border-color:#cce7e3;opacity:.72}
+.quickPackItemV28:has(input:checked)>span:last-child{text-decoration:line-through}
+.quickPackDeleteV28{width:40px;min-height:48px;border:0;border-radius:12px;background:#f5eded;color:#9a5353;font-size:18px;font-weight:700}
+.quickPackEditorV28{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:9px}
+.quickPackEditorV28[hidden]{display:none!important}
+#quickPackAddFormV28{display:grid;grid-template-columns:1fr auto;gap:6px}
+#quickPackAddFormV28 input{min-width:0;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 11px;font-size:16px;outline:0}
+#quickPackAddFormV28 input:focus{border-color:#78bdb7;box-shadow:0 0 0 3px rgba(19,169,158,.12)}
+#quickPackAddFormV28 button{border:0;background:var(--ink);color:#fff;border-radius:12px;min-width:54px;font-size:10px;font-weight:950}
+.quickPackV28.ready{background:linear-gradient(145deg,#f6fbfa,#eef9f6);border:1px solid #cfe9e4;border-radius:16px;padding:11px}
+.quickPackV28.ready .quickPackHeadActionsV28>span:after{content:' ✓'}
+.quickPackPulseV28{animation:quickPackPopV28 .34s ease}
+.quickPackReadyPulseV28{animation:quickPackReadyV28 .5s ease}
+.gameFeelCastV28{animation:gameFeelCastInV28 .48s cubic-bezier(.2,.9,.2,1)}
+.gameFeelGearV28{animation:gameFeelGearInV28 .42s cubic-bezier(.2,.85,.2,1) both;animation-delay:calc(var(--gf-order,0)*45ms)}
+@keyframes quickPackPopV28{0%{transform:scale(1)}45%{transform:scale(.975)}75%{transform:scale(1.015)}100%{transform:scale(1)}}
+@keyframes quickPackReadyV28{0%{box-shadow:0 0 0 rgba(19,169,158,0)}50%{box-shadow:0 0 0 7px rgba(19,169,158,.12)}100%{box-shadow:0 0 0 rgba(19,169,158,0)}}
+@keyframes gameFeelCastInV28{0%{transform:translateY(8px) scale(.99);opacity:.72}65%{transform:translateY(-1px) scale(1.004);opacity:1}100%{transform:none;opacity:1}}
+@keyframes gameFeelGearInV28{0%{transform:translateY(7px);opacity:.4}100%{transform:none;opacity:1}}
+@media(max-width:360px){.quickPackListV28{grid-template-columns:1fr}.quickPackEditorV28{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.quickPackPulseV28,.quickPackReadyPulseV28,.gameFeelCastV28,.gameFeelGearV28{animation:none!important}.quickPackItemV28{transition:none!important}}
