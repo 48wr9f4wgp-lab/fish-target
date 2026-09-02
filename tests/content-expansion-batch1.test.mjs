@@ -17,18 +17,18 @@ async function loadLureRows(){
   return {manifest,rows:(sandbox.FISH_TARGET_LURE_CATALOG_BATCH_ROWS||[]).flatMap(batch=>batch.rows||[])};
 }
 
-test('batch1 expands the canonical model by two popular species and one Sawara method',async()=>{
+test('batch1 content remains intact when later additive batches are present',async()=>{
   const authoring=await json('authoring/species-methods.v1.json');
   assert.deepEqual(authoring.targets.map(x=>x.name),['カマス','オオモンハタ']);
   assert.deepEqual(authoring.targets.map(x=>x.methods.length+1),[2,2]);
-  assert.equal(authoring.existing.length,1);
-  assert.equal(authoring.existing[0].species,'サワラ');
-  assert.equal(authoring.existing[0].methods[0].id,'boat-blade');
-  assert.equal(authoring.existing[0].methods[0].method,'ボート・ブレードジギング');
+  const sawara=authoring.existing.find(x=>x.species==='サワラ');
+  assert.ok(sawara,'Batch 1 Sawara block remains authored');
+  assert.equal(sawara.methods[0].id,'boat-blade');
+  assert.equal(sawara.methods[0].method,'ボート・ブレードジギング');
   const report=await collectReadiness();
   assert.deepEqual(report.errors,[]);
   assert.equal(report.baseline.species,62);
-  assert.equal(report.baseline.plans,155);
+  assert.ok(report.baseline.plans>=155,'later additive batches must preserve the Batch 1 plan floor');
   assert.equal(report.queue.total,0);
 });
 
