@@ -32,6 +32,10 @@ This pass checks whether the default recommendation is a defensible Japan-first 
 
 ## Cross-spec accuracy fixes in V20
 
+### Canonical shore Tachiuo baseline
+
+The RC baseline is **BAIT / テンヤ釣り / FIRST CAST 2〜6号**. The species data, FIRST CAST rotation, place override behavior, result UI and this audit use the same 2〜6号 range. The former 3〜8号 range is not a valid RC fallback.
+
 ### 1. Unit-aware MY TACKLE matching
 
 Previous logic could read the first number in a size string as grams or line号. That could misread `9〜14cm`, `3〜5inch`, `2.5〜3.5号`, `フロロ4〜8lb`, or `ナイロン3〜4lb / PE0.2〜0.4号`.

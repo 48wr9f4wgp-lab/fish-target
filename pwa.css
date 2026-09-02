@@ -1,3 +1,9 @@
+html:not(.ft-ready) body{background:#061b22;overflow:hidden}
+html:not(.ft-ready) .app{visibility:hidden;pointer-events:none;animation:ftBootFailsafe 0s 8s forwards}
+html:not(.ft-ready) body::before{content:'FISH TARGET';position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top) 24px env(safe-area-inset-bottom);box-sizing:border-box;background:#061b22;color:#79e7dd;font:900 15px/1 -apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;letter-spacing:.28em;text-indent:.28em}
+html.ft-ready body::before{content:none}
+@keyframes ftBootFailsafe{to{visibility:visible;pointer-events:auto}}
+@media(prefers-reduced-motion:no-preference){html:not(.ft-ready) body::before{animation:ftBootPulse .75s ease-in-out infinite alternate}@keyframes ftBootPulse{from{opacity:.72}to{opacity:1}}}
 .networkStatus{position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:60;background:#fff3dd;color:#7a5415;border:1px solid #efd6a8;border-radius:999px;padding:8px 10px;font-size:9px;font-weight:950;box-shadow:0 8px 22px rgba(6,27,34,.14)}
 .networkStatus[hidden]{display:none!important}
 .fieldModeView.on~.nav+.toast+.networkStatus{bottom:calc(14px + env(safe-area-inset-bottom))}

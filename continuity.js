@@ -9,9 +9,6 @@
   const fishFor=name=>typeof F!=='undefined'?F.find(f=>f.name===name):null;
 
   function ensureMarkup(){
-    document.title='FISH TARGET v16';
-    const version=document.querySelector('.version'); if(version)version.textContent='V16';
-    const resultBrand=document.querySelector('#result .toprow .brand'); if(resultBrand)resultBrand.textContent='TARGET GAME PLAN · V16';
     if(!document.getElementById('myTargets')){
       const quick=document.getElementById('quick');
       if(quick)quick.insertAdjacentHTML('afterend','<section class="myTargets" id="myTargets" hidden><div class="head"><h2>MY TARGETS</h2><span>すぐ再開</span></div><button class="resumePlan" id="resumePlan" type="button" hidden></button><div class="targetShelf" id="favoriteTargets"></div><div class="targetShelf" id="recentTargets"></div></section>');

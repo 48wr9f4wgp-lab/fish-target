@@ -1,0 +1,71 @@
+/* Result UX23.1: answer-first hierarchy + density pass without shrinking touch targets */
+#result .ux23AnswerTitle{margin-top:4px!important;margin-bottom:7px!important;color:#087f75!important;font-size:20px!important;line-height:1.12!important;letter-spacing:-.015em!important}
+#result .ux23AnswerTitle small{display:block;margin-top:4px;font-size:11px!important;line-height:1.4!important;color:#71878c!important;letter-spacing:0!important}
+#result .planCard{margin-top:8px!important;position:relative!important}
+#result .planCard .planTop{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto auto!important;align-items:center!important;gap:6px!important}
+#result .planCard .planTop>div:first-child{min-width:0!important}
+#result .planCard .recommend{font-size:10px!important}
+#result .planCard .method{font-size:21px!important;margin:2px 0 0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#result .ux23MethodChange{min-width:58px;min-height:44px;border:1px solid #d6e4e5;border-radius:12px;background:#f6fafa;color:#315a60;font-size:11px;font-weight:950;padding:0 10px}
+#result #methodPickerV1:not(.ux23MethodOpen){display:none!important}
+#result #methodPickerV1.ux23MethodOpen{display:block!important;margin-top:8px!important;padding-top:8px!important;border-top:1px solid #e6eeee!important}
+#result #methodPickerV1.ux23MethodOpen .methodPickerHead{margin-bottom:8px!important}
+#result #methodPickerV1.ux23MethodOpen .methodPickerRail{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;overflow:visible!important}
+#result #methodPickerV1.ux23MethodOpen .methodPickerRail button{display:grid!important;place-items:center!important;min-width:0!important;width:100%!important;min-height:48px!important;padding:8px!important;text-align:center!important}
+#result #methodPickerV1.ux23MethodOpen .methodPickerRail b{font-size:12px!important}
+#result #methodPickerV1.ux23MethodOpen .methodPickerRail small{display:none!important}
+#result .why{font-size:12px!important;line-height:1.45!important;margin-top:6px!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#result .planFacts{margin-top:6px!important}.planFacts span{font-size:10px!important;padding:4px 7px!important}
+#result #planPlace[hidden]{display:none!important}
+#result .planOptions{margin-top:6px!important}
+#result .firstCast{padding:13px!important;border-radius:20px!important}
+#result .firstCastKicker{font-size:10px!important;letter-spacing:.12em!important}
+#result .firstName{font-size:28px!important;margin:4px 0 9px!important}
+#result .firstGrid{gap:7px!important}
+#result .firstGrid div{padding:9px!important;min-height:64px!important}
+#result .firstGrid span{font-size:10px!important}
+#result .firstGrid b{font-size:14px!important;line-height:1.35!important}
+#result .rotationLabel{display:inline-flex!important;align-items:center!important;min-height:44px!important;font-size:10px!important;margin:6px 2px 0 0!important;color:#70858a!important;vertical-align:middle!important}
+#result .rotation{display:inline-flex!important;align-items:center!important;gap:2px!important;vertical-align:middle!important;flex-wrap:wrap!important}
+#result .rotation button{min-height:44px!important;font-size:11px!important;padding:0 7px!important;border:0!important;background:transparent!important;box-shadow:none!important;color:#315a60!important}
+#result .rotation button+button:before{content:'/'!important;margin-right:10px!important;color:#a1afb2!important}
+#result .rotation button.on{display:none!important}
+#result .switchRule{display:none!important}
+#result .favoriteToggle{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;margin:0!important;padding:0!important;border-radius:999px!important;font-size:22px!important;line-height:1!important;display:grid!important;place-items:center!important;overflow:hidden!important}
+#result #favoriteBtn::before,#result #favoriteBtn::after,#result #favoriteBtn.on::before,#result #favoriteBtn:not(.on)::before,button#favoriteBtn.favoriteToggle::before,button#favoriteBtn.favoriteToggle::after{content:none!important;display:none!important}
+#result #gear{display:grid!important;grid-template-columns:1fr!important;gap:0!important;border:1px solid #dbe6e7;border-radius:16px;overflow:hidden;background:#fff}
+#result #gear .gearItem{display:grid!important;grid-template-columns:76px minmax(0,1fr)!important;align-items:center!important;min-height:48px!important;padding:9px 12px!important;border:0!important;border-radius:0!important;background:#fff!important}
+#result #gear .gearItem+ .gearItem{border-top:1px solid #edf2f3!important}
+#result #gear .gearItem span{font-size:10px!important;margin:0!important;color:#72868b!important}
+#result #gear .gearItem b{font-size:13px!important;line-height:1.35!important;margin:0!important}
+#result .fitV20Details>summary em{max-width:68%;white-space:normal;text-align:right;line-height:1.35}
+#resultDockV20.ux23Dock{grid-template-columns:82px minmax(150px,1fr)!important;gap:4px!important;padding:3px!important;left:8px!important;right:8px!important;border-radius:15px!important}
+#resultDockV20.ux23Dock [data-action="home"]{display:none!important}
+#resultDockV20.ux23Dock button,#resultDockV20.ux23Dock #fieldModeBtn{min-height:44px!important;font-size:10.5px!important;border-radius:11px!important}
+#resultDockV20.ux23Dock #fieldModeBtn{font-size:12px!important}
+.ux23ResultActive #result .body{padding-bottom:70px!important}
+@media(max-width:699px){
+  #result .resultHero{padding-top:calc(13px + env(safe-area-inset-top))!important;padding-bottom:10px!important}
+  #result .back{width:44px!important;height:44px!important;border-radius:12px!important}
+  #result .target{grid-template-columns:minmax(0,1fr) 104px!important;gap:9px!important}
+  #result .target h1{font-size:27px!important;margin:3px 0 4px!important}
+  #result .tart{height:82px!important}
+  #result .body{padding-top:8px!important}
+  #result .ux23AnswerTitle{font-size:19px!important}
+  #result .firstCast{padding:12px!important}
+  #result .firstName{font-size:26px!important}
+  #result .firstGrid div{min-height:62px!important;padding:8px!important}
+  #result .planCard{padding:11px!important;border-radius:17px!important}
+  #result .planCard .method{font-size:20px!important}
+  #result .why{-webkit-line-clamp:1!important}
+  #result .sectionTitle{margin-top:15px!important;margin-bottom:7px!important}
+  #result #gear .gearItem{min-height:50px!important}
+}
+@media(max-width:390px){
+  #result .planCard .planTop{grid-template-columns:minmax(0,1fr) auto auto auto!important;gap:5px!important}
+  #result .difficultyBadge{grid-column:auto!important;grid-row:auto!important}
+  #result .ux23MethodChange{grid-column:auto!important;grid-row:auto!important;min-width:56px!important;padding:0 8px!important}
+  #result .firstGrid span{font-size:9.5px!important}
+  #result .firstGrid b{font-size:13.5px!important}
+  #resultDockV20.ux23Dock{left:7px!important;right:7px!important;grid-template-columns:80px minmax(145px,1fr)!important}
+}

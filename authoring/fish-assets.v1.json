@@ -1,0 +1,26 @@
+{
+  "version": "FISH-ASSET-AUTHORING-1",
+  "policy": "bundled-first-license-gated-remote-fallback",
+  "bundled_sheet": "fish-real-v7.avif",
+  "assets": [
+    {"species_name":"ブリ・ワラサ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":0,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"カンパチ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":1,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"サワラ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":2,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"シーバス","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":3,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"ヒラメ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":4,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"マゴチ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":5,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"アジ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":6,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"メバル","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":7,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"アオリイカ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":8,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"タチウオ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":9,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"クロダイ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":10,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"マダイ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":11,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"シロギス","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":12,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"カワハギ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":13,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"ブラックバス","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":14,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"ニジマス","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":15,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"アユ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":16,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"コイ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":17,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"},
+    {"species_name":"ヤマメ・イワナ","asset":{"type":"sprite-sheet","file":"fish-real-v7.avif","slot":18,"columns":5,"rows":4},"source":"project-bundled-existing","source_url":null,"author":null,"license":"unknown","attribution":null,"verified_at":null,"rights_status":"unverified"}
+  ]
+}

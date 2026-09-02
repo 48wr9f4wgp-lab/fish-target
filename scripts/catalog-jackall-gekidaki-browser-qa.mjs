@@ -1,0 +1,19 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {chromium} from 'playwright';
+const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
+const KEY='fish_target_v17_tackle';
+const manifest=JSON.parse(readFileSync(new URL('../catalog-batch-manifest.json',import.meta.url),'utf8'));
+const EXPECTED=14+manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0);
+const browser=await chromium.launch({headless:true});
+async function waitApp(page){await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_CATALOG_LOADER&&document.querySelector('.v19TackleShortcut')),null,{timeout:15000})}
+async function open(page){await page.locator('.v19TackleShortcut').click();await page.locator('#tackleSheet').waitFor({state:'visible'});await page.waitForFunction(n=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready'&&globalThis.FISH_TARGET_CATALOG?.products?.length===n,EXPECTED,{timeout:20000})}
+async function choose(page,model){await page.locator('#rodCatalogMaker').selectOption({label:'JACKALL'});await page.locator('#rodCatalogSeries').selectOption({label:'GEKIDAKI SHAFT EXTRO'});await page.locator('#rodCatalogSearch').fill(model);const value=await page.waitForFunction(model=>[...document.querySelectorAll('#rodCatalogModel option')].find(o=>(o.textContent||'').includes(model))?.value||null,model,{timeout:15000}).then(h=>h.jsonValue());assert.ok(value,model);await page.locator('#rodCatalogModel').selectOption(value);await page.locator('#rodCatalogModel').dispatchEvent('change');await page.waitForFunction(model=>(document.querySelector('#rodCatalogPreview')?.textContent||'').includes(model),model,{timeout:15000});return value}
+try{
+ const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'allow'}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));await page.goto(BASE,{waitUntil:'networkidle',timeout:30000});await waitApp(page);await open(page);
+ let id=await choose(page,'GDX-C60SUL');let p=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),id);assert.equal(p.specs.sinker_load_raw,'5-20号');assert.equal(p.specs.lure_max_g,null);assert.equal(p.specs.power,'');assert.equal(p.identifiers.jan,undefined);await page.locator('#addCatalogRod').click();
+ id=await choose(page,'GDX-C68UL');p=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),id);assert.equal(p.specs.sinker_load_raw,'10-30号');assert.equal(p.specs.line_pe_min,0.4);assert.equal(p.specs.line_pe_max,0.8);assert.equal(p.identifiers.jan,'4525807303117');await page.locator('#addCatalogRod').click();
+ id=await choose(page,'GDX-S65MH+OMO');p=await page.evaluate(id=>globalThis.FISH_TARGET_CATALOG.get(id),id);assert.equal(p.specs.power,'MH');assert.equal(p.specs.power_raw,'MEDIUM HEAVY');assert.equal(p.specs.sinker_load_raw,'10-50号');assert.equal(p.identifiers.jan,'4525807303131');await page.locator('#addCatalogRod').click();
+ const saved=await page.evaluate(k=>JSON.parse(localStorage.getItem(k)||'{"rods":[]}'),KEY);for(const id of ['GDX-C60SUL','GDX-C68UL','GDX-S65MH+OMO'])assert.ok(saved.rods.some(x=>x.model===id),`saved ${id}`);
+ await page.evaluate(()=>navigator.serviceWorker.ready.then(()=>true));await page.locator('#tackleClose').click();await context.setOffline(true);await page.reload({waitUntil:'domcontentloaded',timeout:20000});await waitApp(page);await open(page);const owned=await page.locator('#tackleOwned').textContent()||'';for(const t of ['GEKIDAKI SHAFT EXTRO GDX-C60SUL','GEKIDAKI SHAFT EXTRO GDX-C68UL','GEKIDAKI SHAFT EXTRO GDX-S65MH+OMO'])assert.ok(owned.includes(t),`offline ${t}`);assert.equal(errors.length,0,errors.join('\n'));console.log(`GEKIDAKI BROWSER QA PASS · ${EXPECTED} rows / gou-raw / JAN-safe / save / offline`);await context.close();
+}finally{await browser.close()}

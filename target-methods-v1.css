@@ -1,0 +1,17 @@
+.methodPickerV1{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)}
+.methodPickerHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:9px}
+.methodPickerHead>div{display:flex;align-items:center;gap:8px}.methodPickerHead span{font-size:12px;font-weight:800;letter-spacing:.06em;opacity:.72}.methodPickerHead b{font-size:12px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.08)}
+.methodPickerHead small{font-size:11px;opacity:.62}
+.methodPickerRail{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 5px;scrollbar-width:none}.methodPickerRail::-webkit-scrollbar{display:none}
+.methodPickerRail button{flex:0 0 auto;min-width:142px;max-width:210px;text-align:left;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:rgba(255,255,255,.035);padding:10px 11px;color:inherit}
+.methodPickerRail button.on{border-color:rgba(102,230,210,.72);background:rgba(102,230,210,.10)}
+.methodPickerRail b{display:block;font-size:14px;line-height:1.25}.methodPickerRail small{display:block;margin-top:4px;font-size:10px;line-height:1.35;opacity:.62;white-space:normal}
+@media(max-width:699px){
+  .methodPickerV1{margin-top:10px;padding-top:10px}
+  .methodPickerHead{margin-bottom:7px}.methodPickerHead small{font-size:9px}
+  .methodPickerRail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible;padding:0}
+  .methodPickerRail button{min-width:0;max-width:none;width:100%;min-height:43px;padding:7px 6px;text-align:center;border-radius:11px;display:grid;place-items:center}
+  .methodPickerRail b{font-size:11px;line-height:1.25;overflow-wrap:anywhere}.methodPickerRail small{display:none}
+}
+@media(max-width:390px){.methodPickerHead small{display:none}.methodPickerRail{gap:5px}.methodPickerRail button{min-height:41px;padding:6px 5px}.methodPickerRail b{font-size:10.5px}}
+@media(prefers-reduced-motion:reduce){.methodPickerRail{scroll-behavior:auto}}

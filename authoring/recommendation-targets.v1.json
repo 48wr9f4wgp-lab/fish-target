@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "registry_id": "RECOMMENDATION-TARGETS-1",
+  "verified_at": "2026-08-31",
+  "targets": [
+    {
+      "legacy_name": "カーディフ NX",
+      "legacy_type": "ロッド",
+      "target_kind": "series_family",
+      "maker": "SHIMANO",
+      "category": "rod",
+      "official_series": "カーディフ NX",
+      "selection_policy": "requirements_before_sku",
+      "source": {
+        "source_type": "manufacturer_official",
+        "source_provider": "shimano-official-research",
+        "source_url": "https://fish.shimano.com/ja-JP/product/rod/trout/nativetrout/a075f00003k1js6qaf.html"
+      }
+    },
+    {
+      "legacy_name": "ソアレ BB",
+      "legacy_type": "ロッド",
+      "target_kind": "series_family",
+      "maker": "SHIMANO",
+      "category": "rod",
+      "official_series": "ソアレ BB",
+      "selection_policy": "requirements_before_sku",
+      "source": {
+        "source_type": "manufacturer_official",
+        "source_provider": "shimano-official-research",
+        "source_url": "https://fish.shimano.com/ja-JP/product/rod/lightsalt/a075f00003xgh7lqaq.html"
+      }
+    },
+    {
+      "legacy_name": "ゾディアス",
+      "legacy_type": "ロッド",
+      "target_kind": "series_family",
+      "maker": "SHIMANO",
+      "category": "rod",
+      "official_series": "ゾディアス",
+      "selection_policy": "requirements_before_sku",
+      "source": {
+        "source_type": "manufacturer_official",
+        "source_provider": "shimano-official-research",
+        "source_url": "https://fish.shimano.com/ja-JP/product/rod/bass/shimano/a075f00003yfzrsqam.html"
+      }
+    },
+    {
+      "legacy_name": "プライムサーフ T",
+      "legacy_type": "ロッド",
+      "target_kind": "series_family",
+      "maker": "DAIWA",
+      "category": "rod",
+      "official_series": "プライムサーフ T",
+      "selection_policy": "requirements_before_sku",
+      "source": {
+        "source_type": "manufacturer_official",
+        "source_provider": "daiwa-official-research",
+        "source_url": "https://www.daiwa.com/jp/product/gmag55c"
+      }
+    },
+    {
+      "legacy_name": "ボーダレス BB",
+      "legacy_type": "ロッド",
+      "target_kind": "series_family",
+      "maker": "SHIMANO",
+      "category": "rod",
+      "official_series": "ボーダレス BB",
+      "selection_policy": "requirements_before_sku",
+      "source": {
+        "source_type": "manufacturer_official",
+        "source_provider": "shimano-official-research",
+        "source_url": "https://fish.shimano.com/ja-JP/product/rod/freestyle/borderlesswithguide/a075f00003xhaeeqa2.html"
+      }
+    },
+    {
+      "legacy_name": "ライトゲーム X",
+      "legacy_type": "ロッド",
+      "target_kind": "series_family",
+      "maker": "DAIWA",
+      "category": "rod",
+      "official_series": "ライトゲーム X",
+      "selection_policy": "requirements_before_sku",
+      "source": {
+        "source_type": "manufacturer_official",
+        "source_provider": "daiwa-official-research",
+        "source_url": "https://www.daiwa.com/jp/product/h9awa4c"
+      }
+    }
+  ]
+}

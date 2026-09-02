@@ -1,0 +1,89 @@
+{
+  "template_only": true,
+  "note": "Replace every REPLACE value from reviewed evidence before copying into authoring/species-methods.v1.json. This file is never loaded at runtime.",
+  "new_target_template": {
+    "species_id": "replace-with-stable-slug",
+    "name": "REPLACE",
+    "water": "salt",
+    "shape": "REPLACE",
+    "tags": ["REPLACE"],
+    "aliases": [],
+    "difficulty": "REPLACE",
+    "season": {
+      "春": "REPLACE_FROM_EVIDENCE",
+      "夏": "REPLACE_FROM_EVIDENCE",
+      "秋": "REPLACE_FROM_EVIDENCE",
+      "冬": "REPLACE_FROM_EVIDENCE"
+    },
+    "default_method": {
+      "id": "default",
+      "method": "REPLACE",
+      "style": "lure",
+      "why": "REPLACE_FROM_EVIDENCE",
+      "requirements": {
+        "rod": "REPLACE_NATIVE_GUIDANCE",
+        "reel": "REPLACE_NATIVE_GUIDANCE",
+        "line": "REPLACE_NATIVE_GUIDANCE",
+        "leader": "REPLACE_NATIVE_GUIDANCE",
+        "rig": "REPLACE_NATIVE_GUIDANCE"
+      },
+      "first_cast": {
+        "bait": "REPLACE",
+        "size": "REPLACE_NATIVE_GUIDANCE",
+        "color": "REPLACE",
+        "bait_action": "REPLACE",
+        "range": "REPLACE",
+        "action": "REPLACE",
+        "time": "REPLACE"
+      },
+      "steps": ["REPLACE_STEP_1", "REPLACE_STEP_2", "REPLACE_STEP_3"],
+      "places": ["REPLACE"],
+      "mistakes": ["REPLACE"],
+      "source": {
+        "provider": "REPLACE",
+        "url": "https://example.invalid/replace",
+        "reviewed_at": "YYYY-MM-DD",
+        "evidence": "REPLACE_WHAT_THE_SOURCE_SUPPORTS",
+        "confidence": "C"
+      }
+    },
+    "methods": []
+  },
+  "existing_species_method_template": {
+    "species": "REPLACE_EXISTING_SPECIES_NAME",
+    "methods": [
+      {
+        "id": "replace-method-id",
+        "method": "REPLACE",
+        "style": "bait",
+        "why": "REPLACE_FROM_EVIDENCE",
+        "requirements": {
+          "rod": "REPLACE_NATIVE_GUIDANCE",
+          "reel": "REPLACE_NATIVE_GUIDANCE",
+          "line": "REPLACE_NATIVE_GUIDANCE",
+          "leader": "REPLACE_NATIVE_GUIDANCE",
+          "rig": "REPLACE_NATIVE_GUIDANCE"
+        },
+        "first_cast": {
+          "bait": "REPLACE",
+          "size": "REPLACE_NATIVE_GUIDANCE",
+          "color": "REPLACE",
+          "bait_action": "REPLACE",
+          "range": "REPLACE",
+          "action": "REPLACE",
+          "time": "REPLACE"
+        },
+        "steps": ["REPLACE_STEP_1", "REPLACE_STEP_2", "REPLACE_STEP_3"],
+        "places": ["REPLACE"],
+        "mistakes": ["REPLACE"],
+        "source": {
+          "provider": "REPLACE",
+          "url": "https://example.invalid/replace",
+          "reviewed_at": "YYYY-MM-DD",
+          "evidence": "REPLACE_WHAT_THE_SOURCE_SUPPORTS",
+          "confidence": "C"
+        }
+      }
+    ]
+  }
+}
