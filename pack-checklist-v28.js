@@ -2,6 +2,7 @@
   const STORE_KEY='fish_target_v9_checklists';
   const CONFIG_KEY='__quick_pack_v28_config';
   const CHECKED_KEY='__quick_pack_v28_checked';
+  const ACTIVE_KEY='pack:active';
   const DEFAULTS=Object.freeze([
     {id:'sun',name:'日焼け止め'},
     {id:'bug',name:'虫除け'},
@@ -26,9 +27,9 @@
     return Array.isArray(config)?config.filter(item=>item&&item.id&&item.name).map(item=>({id:String(item.id),name:String(item.name)})):cloneDefaults();
   };
   const saveConfig=config=>{const store=readStore();store[CONFIG_KEY]=config;writeStore(store)};
-  const contextKey=()=>`pack:${($('#rname')?.textContent||'').trim()}|${($('#pmethod')?.textContent||'').trim()}`;
-  const getChecked=()=>{const store=readStore();const all=store[CHECKED_KEY]||{};const list=all[contextKey()];return new Set(Array.isArray(list)?list:[])};
-  const saveChecked=checked=>{const store=readStore();const all=store[CHECKED_KEY]&&typeof store[CHECKED_KEY]==='object'?store[CHECKED_KEY]:{};all[contextKey()]=[...checked];store[CHECKED_KEY]=all;writeStore(store)};
+  const getChecked=()=>{const store=readStore();const all=store[CHECKED_KEY]||{};const list=all[ACTIVE_KEY];return new Set(Array.isArray(list)?list:[])};
+  const saveChecked=checked=>{const store=readStore();const all=store[CHECKED_KEY]&&typeof store[CHECKED_KEY]==='object'?store[CHECKED_KEY]:{};all[ACTIVE_KEY]=[...checked];store[CHECKED_KEY]=all;writeStore(store)};
+  const clearChecks=()=>{const store=readStore();store[CHECKED_KEY]={};writeStore(store)};
   const pulse=(el,klass='quickPackPulseV28')=>{if(!el)return;el.classList.remove(klass);void el.offsetWidth;el.classList.add(klass);setTimeout(()=>el.classList.remove(klass),360)};
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
 
@@ -45,7 +46,7 @@
       <div class="quickPackListV28" id="quickPackListV28"></div>
       <div class="quickPackEditorV28" id="quickPackEditorV28" hidden>
         <form id="quickPackAddFormV28"><input id="quickPackAddInputV28" maxlength="24" autocomplete="off" placeholder="持ち物を追加" aria-label="持ち物を追加"><button type="submit">追加</button></form>
-        <button class="quickPackResetV28" id="quickPackResetV28" type="button">標準に戻す</button>
+        <div class="quickPackEditorActionsV28"><button class="quickPackClearV28" id="quickPackClearV28" type="button">チェック解除</button><button class="quickPackResetV28" id="quickPackResetV28" type="button">標準に戻す</button></div>
       </div>`;
     fieldButton.insertAdjacentElement('beforebegin',wrap);
     $('#quickPackEditV28')?.addEventListener('click',()=>{editMode=!editMode;render()});
@@ -54,6 +55,7 @@
       const config=getConfig();if(config.some(item=>item.name===name)){input.value='';return}
       config.push({id:`custom-${Date.now().toString(36)}`,name});saveConfig(config);input.value='';render();pulse($('#quickPackV28'));
     });
+    $('#quickPackClearV28')?.addEventListener('click',()=>{clearChecks();render();pulse($('#quickPackV28'))});
     $('#quickPackResetV28')?.addEventListener('click',()=>{
       const store=readStore();store[CONFIG_KEY]=cloneDefaults();store[CHECKED_KEY]={};writeStore(store);render();pulse($('#quickPackV28'));
     });
@@ -90,7 +92,7 @@
     $$('.gearItem').forEach((item,index)=>{item.style.setProperty('--gf-order',index);item.classList.remove('gameFeelGearV28');void item.offsetWidth;item.classList.add('gameFeelGearV28');setTimeout(()=>item.classList.remove('gameFeelGearV28'),650)});
   }
 
-  const observeTarget=selector=>{const el=$(selector);if(el)new MutationObserver(()=>{render();playPlanEffect()}).observe(el,{childList:true,subtree:true,characterData:true})};
+  const observeTarget=selector=>{const el=$(selector);if(el)new MutationObserver(playPlanEffect).observe(el,{childList:true,subtree:true,characterData:true})};
   ensureUi();render();observeTarget('#rname');observeTarget('#pmethod');
-  globalThis.FISH_TARGET_QUICK_PACK=Object.freeze({version:'QUICK-PACK-V28',defaults:DEFAULTS.map(item=>({...item})),render});
+  globalThis.FISH_TARGET_QUICK_PACK=Object.freeze({version:'QUICK-PACK-V28',defaults:DEFAULTS.map(item=>({...item})),render,clearChecks});
 })();
