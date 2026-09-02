@@ -42,13 +42,13 @@
   (async()=>{
     try{
       await loadScript('./continuity.js','continuity-js');
-      for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v1-part${i}.js`,`target-method-data-v1-part${i}-js`);
+      await Promise.all(Array.from({length:5},(_,index)=>{const i=index+1;return loadScript(`./target-method-data-v1-part${i}.js`,`target-method-data-v1-part${i}-js`)}));
       await loadScript('./target-method-data-v1.js','target-method-data-v1-js');
-      for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v2-part${i}.js`,`target-method-data-v2-part${i}-js`);
+      await Promise.all(Array.from({length:5},(_,index)=>{const i=index+1;return loadScript(`./target-method-data-v2-part${i}.js`,`target-method-data-v2-part${i}-js`)}));
       await loadScript('./target-method-data-v2.js','target-method-data-v2-js');
-      for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v3-part${i}.js`,`target-method-data-v3-part${i}-js`);
+      await Promise.all(Array.from({length:5},(_,index)=>{const i=index+1;return loadScript(`./target-method-data-v3-part${i}.js`,`target-method-data-v3-part${i}-js`)}));
       await loadScript('./target-method-data-v3.js','target-method-data-v3-js');
-      for(let i=1;i<=5;i++)await loadScript(`./target-method-data-v4-part${i}.js`,`target-method-data-v4-part${i}-js`);
+      await Promise.all(Array.from({length:5},(_,index)=>{const i=index+1;return loadScript(`./target-method-data-v4-part${i}.js`,`target-method-data-v4-part${i}-js`)}));
       await loadScript('./target-method-data-v4.js','target-method-data-v4-js');
       await loadScript('./species-method-authoring-generated.js','species-method-authoring-generated-js');
       await loadScript('./species-method-authoring-runtime.js','species-method-authoring-runtime-js');

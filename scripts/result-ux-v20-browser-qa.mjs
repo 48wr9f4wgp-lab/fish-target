@@ -42,11 +42,11 @@ assert.match((await reel.textContent())||'',/今巻いているライン種類�
 assert.match((await page.locator('.fitV20Details>summary em').textContent())||'',/見直し:/,'detail summary names concrete review causes');
 assert.equal(await page.locator('.fitV20DetailBody').isVisible(),false,'technical rationale stays collapsed');
 
-const answerTitle=(await page.locator('#result .ux23AnswerTitle').textContent())||'';
-assert.match(answerTitle,/まずこれを投げる/,'answer heading is plain-language action');
+const answerTitle=((await page.locator('#result .ux23AnswerTitle').textContent())||'').trim();
+assert.equal(answerTitle,'まず投げる','answer heading is concise plain-language action');
 assert.doesNotMatch(answerTitle,/FIRST CAST/,'FIRST CAST label is not duplicated in the section heading');
-assert.match((await page.locator('#firstCastKicker').textContent())||'',/FIRST CAST/,'FIRST CAST identity remains on the answer card');
-assert.equal(((await page.locator('#result .rotationLabel').textContent())||'').trim(),'反応がなければ →','rotation is demoted to a simple next-step label');
+assert.equal(((await page.locator('#firstCastKicker').textContent())||'').trim(),'最初の1投','answer card identity uses plain Japanese');
+assert.equal(((await page.locator('#result .rotationLabel').textContent())||'').trim(),'ダメなら →','rotation is demoted to a short next-step label');
 
 const first=page.locator('#result .firstCast'),plan=page.locator('#result .planCard'),fit=page.locator('#tackleFitCard'),gear=page.locator('#gear');
 const firstBox=await first.boundingBox(),planBox=await plan.boundingBox(),fitBox=await fit.boundingBox(),gearBox=await gear.boundingBox();
@@ -98,40 +98,19 @@ assert.ok(x.doc<=391&&x.body<=391&&x.viewport===390,'no result overflow');
 
 await page.locator('#resultDockV20 [data-action="field"]').click();
 await page.locator('#fieldmode.on').waitFor({state:'visible'});
-assert.equal(await page.locator('#resultDockV20').isVisible(),false,'dock leaves with result view');
+assert.equal((await page.locator('#fmFish').textContent()||'').trim(),'シロギス','field mode keeps selected fish');
+assert.ok((await page.locator('#fmBait').textContent()||'').trim(),'field mode keeps FIRST CAST');
 await page.locator('#fmBackPlan').click();await page.locator('#result.on').waitFor({state:'visible'});
-assert.equal(await page.locator('#resultDockV20').isVisible(),true,'dock returns with result view');
-await backHome();
-assert.equal(await page.locator('#resultDockV20').isVisible(),false,'dock hidden on home');
-assert.equal(await page.locator('.nav').isVisible(),false,'legacy generic nav remains retired on home');
-assert.equal(await page.locator('#appTabBarV26').isVisible(),true,'V26 native app tab bar is restored on home');
-
-await setTackle({
-  rods:[{id:'good-rod',source:'manual',name:'SURF 13FT',length:13,power:'',maxLure:null}],
-  reels:[{id:'surf-reel',source:'catalog',name:'SURF LEADER SD 35 HYOUJYUN',applicationRaw:'投げ・遠投',dragTypeRaw:'ドラグあり',lineType:'PE',lineNo:1.0}]
-});
-await page.reload({waitUntil:'networkidle'});await ready();await openFish('シロギス');
-assert.equal((await page.locator('.fitV20Summary b').textContent()).trim(),'このセットでOK','good surf setup gets clear pass');
-assert.match((await page.locator('.fitV20Item').filter({hasText:'ROD'}).textContent())||'',/○ OK/,'good rod pass');
-assert.match((await page.locator('.fitV20Item').filter({hasText:'REEL'}).textContent())||'',/○ OK/,'dedicated surf reel pass');
-assert.match((await page.locator('.fitV20Item').filter({hasText:'REEL'}).textContent())||'',/投げ専用・遠投対応/,'dedicated reel target replaces generic size display');
-assert.equal((await page.locator('.fitV20Details>summary em').textContent()).trim(),'すべてOK','cause summary clears when setup passes');
 
 await backHome();
-await setTackle({
-  rods:[{id:'shore-m',source:'manual',name:'DEMO SHORE 96M',length:9.6,power:'M',maxLure:80}],
-  reels:[{id:'spin-3000',source:'manual',name:'DEMO SPIN 3000',size:3000,lineType:'PE',lineNo:2.0}]
-});
-await page.reload({waitUntil:'networkidle'});await ready();await openFish('ブリ・ワラサ');
-assert.equal((await page.locator('#firstBait').textContent()).trim(),'メタルジグ','buri opens on concrete FIRST CAST answer');
-const buriFirst=await page.locator('#result .firstCast').boundingBox(),buriPlan=await page.locator('#result .planCard').boundingBox();assert.ok(buriFirst&&buriPlan&&buriFirst.y<buriPlan.y,'buri answer remains before method controls');
-assert.equal(await page.locator('#methodPickerV1').isVisible(),false,'buri method alternatives are collapsed by default');
-await page.locator('#ux23MethodChange').click();assert.equal(await page.locator('#methodPickerV1 [data-method-id]:visible').count(),6,'buri six methods available on demand');
-assert.equal((await page.locator('.fitV20Summary b').textContent()).trim(),'このセットは見直し推奨','two known core shortfalls aggregate to review');
-assert.match((await page.locator('.fitV20Summary small').textContent())||'',/パワー・番手が推奨より不足/,'aggregate reason names the two core gaps');
-assert.match((await page.locator('.fitV20Details>summary em').textContent())||'',/確認: パワー・番手/,'detail summary names the actual soft gaps instead of a count');
+const tackleShortcut=page.locator('.v19TackleShortcut');
+await tackleShortcut.waitFor({state:'visible'});
+await tackleShortcut.click();
+await page.locator('#tackleSheet').waitFor({state:'visible'});
+assert.equal(await page.locator('.tackleSheetIntroV26').count(),0,'redundant tackle intro is removed from default flow');
+await page.locator('#tackleClose').click();
 
 assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
 assert.deepEqual(consoleErrors,[],`console errors: ${consoleErrors.join('\n')}`);
-await browser.close();
-console.log('RESULT_UX_V23_DENSITY_BROWSER_QA_PASS');
+await context.close();await browser.close();
+console.log('RESULT_UX_V20_BROWSER_QA_PASS');

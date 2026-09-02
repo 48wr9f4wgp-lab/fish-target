@@ -1,7 +1,7 @@
 (()=>{
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-  document.documentElement.classList.add('app-shell-v26');
+  document.documentElement.classList.add('app-shell-v26','clarity-v27');
 
   const OWNED_STORAGE_KEYS=Object.freeze([
     'fish_target_v9','fish_target_v8','fish_target_v7','fish_target_v6','fish_target_v5',
@@ -35,26 +35,68 @@
   }
 
   function ensureResultRail(){
-    const result=$('#result');if(!result||$('#resultRailV26'))return;
-    const hero=$('.resultHero',result);if(!hero)return;
-    const rail=document.createElement('nav');rail.id='resultRailV26';rail.className='resultRailV26';rail.setAttribute('aria-label','プラン内ナビゲーション');
-    rail.innerHTML=`<button class="on" data-jump="plan" type="button">PLAN</button><button data-jump="tackle" type="button">TACKLE</button><button data-jump="field" type="button">FIELD</button>`;
-    hero.insertAdjacentElement('afterend',rail);
-    rail.addEventListener('click',e=>{
-      const btn=e.target.closest('button');if(!btn)return;
-      const target=btn.dataset.jump==='plan'?$('.ux23AnswerTitle',result)||$('.firstCast',result):btn.dataset.jump==='tackle'?$('#tackleFitCard'):$('.steps',result);
-      if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
-      $$('#resultRailV26 button').forEach(x=>x.classList.toggle('on',x===btn));
-    });
+    const result=$('#result');if(!result)return;
+    let rail=$('#resultRailV26');
+    if(!rail){
+      const hero=$('.resultHero',result);if(!hero)return;
+      rail=document.createElement('nav');rail.id='resultRailV26';rail.className='resultRailV26';rail.setAttribute('aria-label','プラン内ナビゲーション');
+      rail.innerHTML=`<button class="on" data-jump="plan" type="button">① 投げる</button><button data-jump="tackle" type="button">② 道具</button><button data-jump="field" type="button">③ 現場</button>`;
+      hero.insertAdjacentElement('afterend',rail);
+      rail.addEventListener('click',e=>{
+        const btn=e.target.closest('button');if(!btn)return;
+        const target=btn.dataset.jump==='plan'?$('.ux23AnswerTitle',result)||$('.firstCast',result):btn.dataset.jump==='tackle'?$('#tackleFitCard'):$('.steps',result);
+        if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+        $$('#resultRailV26 button').forEach(x=>x.classList.toggle('on',x===btn));
+      });
+    }
+    const labels={plan:'① 投げる',tackle:'② 道具',field:'③ 現場'};
+    $$('button[data-jump]',rail).forEach(btn=>{const text=labels[btn.dataset.jump];if(text&&btn.textContent!==text)btn.textContent=text});
   }
 
   function polishTackleSheet(){
     const sheet=$('#tackleSheet');if(!sheet)return;
     sheet.classList.add('appTackleSheetV26');
-    $$('.catalogDevNote',sheet).forEach(el=>{el.classList.add('userCatalogNote');el.textContent='メーカー・シリーズ・モデルから公式公開スペックを選択';});
-    const body=$('.tackleSheetBody',sheet);if(body&&!$('.tackleSheetIntroV26',sheet)){
-      const intro=document.createElement('div');intro.className='tackleSheetIntroV26';intro.innerHTML='<b>MY GEAR</b><span>持っている道具を登録すると、魚ごとの適合を自動判定します。</span>';body.prepend(intro);
+    if(sheet.dataset.clarityV27!=='1'){
+      sheet.dataset.clarityV27='1';
+      const eyebrow=$('.tackleSheetHead span',sheet),title=$('.tackleSheetHead h2',sheet);
+      if(eyebrow)eyebrow.textContent='MY TACKLE';
+      if(title)title.textContent='タックル追加';
+      const cards=$$('.tackleFormCard',sheet);
+      if(cards[0]?.querySelector('h3'))cards[0].querySelector('h3').textContent='ロッド';
+      if(cards[1]?.querySelector('h3'))cards[1].querySelector('h3').textContent='リール';
+      $$('.tackleEntryModes',sheet).forEach(group=>{
+        const buttons=$$('button',group);if(buttons[0])buttons[0].textContent='商品から';if(buttons[1])buttons[1].textContent='手入力';
+      });
+      $$('.catalogDevNote',sheet).forEach(el=>{el.classList.add('userCatalogNote');el.textContent='公式スペックから選択'});
+      $$('.catalogSearch input',sheet).forEach(el=>{el.placeholder='商品名で検索'});
+      $$('.catalogLine>small,.ownedEditor>small',sheet).forEach(el=>{el.hidden=true});
+      $$('.tackleAdd',sheet).forEach(btn=>{btn.textContent='登録'});
     }
+  }
+
+  function simplifyDynamicCopy(){
+    const answer=$('#result .ux23AnswerTitle');if(answer&&answer.textContent.trim()!=='まず投げる')answer.textContent='まず投げる';
+    const kicker=$('#firstCastKicker');if(kicker&&kicker.textContent!=='最初の1投')kicker.textContent='最初の1投';
+    const rotation=$('#result .rotationLabel');if(rotation&&rotation.textContent!=='ダメなら →')rotation.textContent='ダメなら →';
+    const manage=$('#tackleManage');if(manage&&manage.textContent!=='編集')manage.textContent='編集';
+    const empty=$('#tackleEmptyCta');if(empty){const b=$('b',empty),s=$('span',empty);if(b)b.textContent='タックルを追加';if(s)s.textContent='ロッド・リールを選ぶ ›'}
+    const count=$('.tackleCount p');if(count)count.textContent='魚ごとに自動判定';
+    $$('.fitNote').forEach(el=>{el.hidden=true});
+    const fitEmpty=$('.fitEmpty span');if(fitEmpty)fitEmpty.textContent='登録すると使えるか判定';
+    const ownedEmpty=$('.tackleOwned .tackleEmpty');if(ownedEmpty)ownedEmpty.textContent='まだ未登録';
+  }
+
+  function installCatalogSearchDebounce(){
+    if(document.documentElement.dataset.catalogSearchDebounce==='1')return;
+    document.documentElement.dataset.catalogSearchDebounce='1';
+    const timers=new WeakMap();
+    document.addEventListener('input',event=>{
+      const input=event.target?.closest?.('#rodCatalogSearch,#reelCatalogSearch');
+      if(!input||event.__ftDebounced)return;
+      event.stopImmediatePropagation();
+      const prev=timers.get(input);if(prev)clearTimeout(prev);
+      timers.set(input,setTimeout(()=>{const next=new Event('input',{bubbles:true});next.__ftDebounced=true;input.dispatchEvent(next)},160));
+    },true);
   }
 
   function removeOwnedStorage(){
@@ -93,7 +135,7 @@
   }
 
   function tagFishCards(){
-    $$('#grid .fish').forEach(card=>{
+    $$('#grid .fish:not(.discoveryCardV26)').forEach(card=>{
       card.classList.add('discoveryCardV26');
       const art=$('.art',card);if(art)art.classList.add('discoveryArtV26');
       const name=card.dataset.fish||$('h3',card)?.textContent||'';
@@ -102,14 +144,16 @@
   }
 
   function syncShell(){
-    ensureTabBar();ensureResultRail();polishTackleSheet();ensurePrivacyPanel();tagFishCards();
+    ensureTabBar();ensureResultRail();polishTackleSheet();installCatalogSearchDebounce();ensurePrivacyPanel();tagFishCards();simplifyDynamicCopy();
     const current=$('.view.on')?.id;
     document.body.classList.toggle('resultOpenV26',current==='result'||current==='fieldmode');
     document.body.classList.toggle('savedOpenV26',current==='saved');
     if(current==='home'||current==='saved')syncTabs(current);
   }
 
-  const mo=new MutationObserver(()=>requestAnimationFrame(syncShell));
+  let syncQueued=false;
+  const scheduleSync=()=>{if(syncQueued)return;syncQueued=true;requestAnimationFrame(()=>{syncQueued=false;syncShell()})};
+  const mo=new MutationObserver(scheduleSync);
   mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});
   syncShell();
   globalThis.FISH_TARGET_PRIVACY_CONTROLS=Object.freeze({version:'PRIVACY-RC-1',ownedStorageKeys:OWNED_STORAGE_KEYS,ownedStoragePrefixes:OWNED_STORAGE_PREFIXES});

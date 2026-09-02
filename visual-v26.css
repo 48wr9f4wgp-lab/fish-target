@@ -93,3 +93,40 @@ body.resultOpenV26 .appTabBarV26{transform:translateY(130%);pointer-events:none;
   #home .fish.discoveryCardV26{transition:transform .16s ease,box-shadow .16s ease}
   #home .fish.discoveryCardV26:active{transform:scale(.985)}
 }
+
+/* V27 clarity pass — less reading, stronger touch hierarchy */
+html.clarity-v27 #home .fish.discoveryCardV26{min-height:194px!important}
+html.clarity-v27 #home .fish.discoveryCardV26 .art{height:120px!important}
+html.clarity-v27 #home .fish.discoveryCardV26>div:not(.art){padding:11px 13px 12px!important}
+html.clarity-v27 #home .fish.discoveryCardV26 h3{margin-bottom:4px!important}
+html.clarity-v27 #home .fish.discoveryCardV26 p{-webkit-line-clamp:1!important;margin-bottom:3px!important;white-space:normal!important}
+html.clarity-v27 #resultRailV26 button{font-size:12px!important;letter-spacing:0!important;font-weight:900!important}
+html.clarity-v27 #result .ux23AnswerTitle{font-size:20px!important;margin-top:16px!important;margin-bottom:8px!important}
+html.clarity-v27 #result .ux23AnswerTitle small{display:none!important}
+html.clarity-v27 #result .firstCast{box-shadow:0 14px 30px rgba(6,44,52,.12)!important}
+html.clarity-v27 .tackleSheetIntroV26{display:none!important}
+html.clarity-v27 .appTackleSheetV26 .tackleSheetHead span{font-size:9px!important;opacity:.72}
+html.clarity-v27 .appTackleSheetV26 .tackleSheetHead h2{font-size:21px!important}
+html.clarity-v27 .appTackleSheetV26 .tackleFormCard{padding:14px!important}
+html.clarity-v27 .appTackleSheetV26 .tackleFormCard h3{font-size:18px!important;margin-bottom:10px!important}
+html.clarity-v27 .appTackleSheetV26 .userCatalogNote{justify-self:start!important;padding:6px 9px!important;border-radius:999px!important;font-size:9px!important;line-height:1!important}
+html.clarity-v27 .appTackleSheetV26 .catalogLoadState{min-height:8px!important;font-size:9px!important}
+html.clarity-v27 .appTackleSheetV26 .catalogLine>small,
+html.clarity-v27 .appTackleSheetV26 .ownedEditor>small,
+html.clarity-v27 .fitNote{display:none!important}
+html.clarity-v27 .tackleEntryModes{gap:5px!important;margin-bottom:9px!important}
+html.clarity-v27 .tackleEntryModes button{min-height:44px!important;font-size:12px!important}
+html.clarity-v27 .catalogSearch input{font-weight:700!important}
+html.clarity-v27 .tackleFormGrid label{font-size:9px!important;letter-spacing:.04em}
+html.clarity-v27 .tackleCount{grid-template-columns:1fr 1fr!important}
+html.clarity-v27 .tackleCount p{grid-column:1/-1!important;text-align:center!important;font-size:10px!important;line-height:1!important}
+html.clarity-v27 .tackleEmptyCta{gap:2px!important;padding:15px 17px!important}
+html.clarity-v27 .tackleEmptyCta span{font-size:10px!important}
+html.clarity-v27 .fitEmpty{gap:3px!important;padding:13px!important}
+html.clarity-v27 .fitEmpty span{font-size:10px!important}
+html.clarity-v27 .fitItems{gap:7px!important}
+html.clarity-v27 .fitItem{padding:11px 12px!important}
+@media(max-width:430px){
+  html.clarity-v27 #home .fish.discoveryCardV26{min-height:184px!important}
+  html.clarity-v27 #home .fish.discoveryCardV26 .art{height:108px!important}
+}
