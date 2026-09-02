@@ -46,7 +46,10 @@
   (async()=>{
     try{
       await loadScript('./continuity.js','continuity-js');
-      await Promise.all(['v1','v2','v3','v4'].map(loadTargetExpansion));
+      await loadTargetExpansion('v1');
+      await loadTargetExpansion('v2');
+      await loadTargetExpansion('v3');
+      await loadTargetExpansion('v4');
       await loadScript('./species-method-authoring-generated.js','species-method-authoring-generated-js');
       await loadScript('./species-method-authoring-runtime.js','species-method-authoring-runtime-js');
       await loadScript('./target-methods-v1.js','target-methods-v1-js');
