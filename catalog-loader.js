@@ -24,7 +24,7 @@
   Object.defineProperty(facade,'products',{enumerable:true,get:()=>runtime?.products||[]});Object.defineProperty(facade,'loaded',{enumerable:true,get:()=>Boolean(runtime)});Object.freeze(facade);globalThis.FISH_TARGET_CATALOG=facade;globalThis.FISH_TARGET_CATALOG_LOADER=Object.freeze({ensureLoaded,loadManifest,state,facade});
   const refreshCatalogUi=()=>{document.querySelectorAll('.catalogDevNote').forEach(el=>{el.textContent=PUBLICATION_BUILD?'公開データから選択':'公式スペックから選択'});for(const [id,category] of [['rodCatalogMaker','rod'],['reelCatalogMaker','reel']]){const el=document.getElementById(id);if(!el)continue;const names=runtime?.index?.({category})?.makers?.map(x=>x.maker)||runtime?.makersFor?.(category)||MAKERS.slice(),current=el.value;el.replaceChildren(...names.map(name=>{const option=document.createElement('option');option.textContent=name;return option}));if(names.includes(current))el.value=current;el.dispatchEvent(new Event('change',{bubbles:true}))}};
   const triggerSelector='#tackleManage,#tackleEditFromResult,.v19TackleShortcut,#tackleEmptyCta,#fitEmptyAdd';
-  const warmCatalog=event=>{const trigger=event.target?.closest?.(triggerSelector);if(!trigger)return;ensureLoaded().then(refreshCatalogUi).catch(()=>{document.querySelectorAll('.catalogLoadState').forEach(el=>{el.textContent='読み込めません。手入力は使えます。'})})};
-  document.addEventListener('pointerdown',warmCatalog,true);
-  document.addEventListener('click',warmCatalog,true);
+  const reportLoadError=()=>{document.querySelectorAll('.catalogLoadState').forEach(el=>{el.textContent='読み込めません。手入力は使えます。'})};
+  document.addEventListener('pointerdown',event=>{if(!event.target?.closest?.(triggerSelector))return;void ensureLoaded().catch(reportLoadError)},true);
+  document.addEventListener('click',event=>{if(!event.target?.closest?.(triggerSelector))return;ensureLoaded().then(refreshCatalogUi).catch(reportLoadError)},true);
 })();
