@@ -1,6 +1,7 @@
 name: batch3-apply-once
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - chatgpt/content-expansion-batch3-audit
