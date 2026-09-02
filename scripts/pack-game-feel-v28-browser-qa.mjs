@@ -30,11 +30,13 @@ assert.ok(saved.__quick_pack_v28_checked,'checked state stored inside existing c
 await page.locator('#quickPackEditV28').click();
 assert.equal(await page.locator('#quickPackEditorV28').isVisible(),true,'editor opens inline');
 assert.equal(await page.locator('.quickPackDeleteV28:visible').count(),8,'delete controls available in edit mode');
-await page.locator('#quickPackAddInputV28').fill('<img src=x onerror=alert(1)>');
+await page.locator('.quickPackDeleteV28').last().click();
+assert.equal(await page.locator('.quickPackItemV28').count(),7,'standard item can be removed');
+await page.locator('#quickPackAddInputV28').fill('<img src=x>');
 await page.locator('#quickPackAddFormV28 button').click();
 assert.equal(await page.locator('#quickPackListV28 img').count(),0,'custom item text is not interpreted as HTML');
-assert.equal((await page.locator('#quickPackCountV28').textContent())?.trim(),'1/9');
-assert.ok((await page.locator('.quickPackItemV28>span:last-child').allTextContents()).includes('<img src=x onerror=alert(1)>'),'custom text preserved literally');
+assert.equal((await page.locator('#quickPackCountV28').textContent())?.trim(),'1/8');
+assert.ok((await page.locator('.quickPackItemV28>span:last-child').allTextContents()).includes('<img src=x>'),'custom text preserved literally');
 
 await page.locator('#quickPackResetV28').click();
 assert.equal(await page.locator('.quickPackItemV28').count(),8,'reset restores standard items');
