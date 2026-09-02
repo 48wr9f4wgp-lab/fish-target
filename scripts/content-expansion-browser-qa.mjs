@@ -10,8 +10,8 @@ const noLureRequests=list=>list.filter(name=>name.startsWith('lure-catalog'));
 async function waitApp(page){
   await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:15000});
   await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===62,{timeout:15000});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===62&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===155,{timeout:15000});
-  await page.waitForFunction(()=>globalThis.FISH_TARGET_SPECIES_REGISTRY?.count===62&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===155,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.targets===62&&globalThis.FISH_TARGET_METHOD_STATUS?.plans===156,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_SPECIES_REGISTRY?.count===62&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===156,{timeout:15000});
   await page.waitForFunction(()=>Boolean(globalThis.FISH_TARGET_CATALOG_LOADER&&document.querySelector('.v19TackleShortcut')),{timeout:15000});
   await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),{timeout:15000});
 }
@@ -65,7 +65,7 @@ try{
 
   assert.equal(await page.locator('#grid .fish').count(),62,'content expansion renders 62 targets');
   assert.equal(await text(page,'#home .heroStats span:nth-of-type(1)'),'62魚種','hero species count');
-  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('155釣法プラン'),'hero plan count');
+  assert.ok((await page.locator('#home .heroStats').textContent()||'').includes('156釣法プラン'),'hero plan count');
   assert.deepEqual(noLureRequests(requests),[],'startup performs zero lure catalog requests');
   assert.equal(await page.locator('button.fish[data-fish="カマス"]').count(),1,'Kamasu target is selectable');
   assert.equal(await page.locator('button.fish[data-fish="オオモンハタ"]').count(),1,'Oomonhata target is selectable');
@@ -86,6 +86,26 @@ try{
   await page.waitForTimeout(150);
   assert.deepEqual(noLureRequests(requests),[],'unsupported target performs zero lure catalog requests');
   assert.equal(await page.locator('#lureCatalogPanel').count(),0,'unsupported target does not mount lure UI');
+  await backHome(page);
+
+  await openTarget(page,'カツオ');
+  assert.equal(await page.locator('#methodPickerV1 [data-method-id="offshore-jigging"]').count(),1,'Katsuo exposes offshore jigging as a distinct method');
+  await selectMethod(page,'offshore-jigging');
+  assert.equal(await text(page,'#pmethod'),'オフショアジギング','Katsuo offshore jigging selectable');
+  assert.equal(await text(page,'#firstBait'),'メタルジグ','Katsuo FIRST CAST uses metal jig');
+  assert.match(await text(page,'#gear'),/オフショアジギング用スピニング/,'Katsuo requirements keep evidence-safe rod wording');
+  assert.match(await text(page,'#steps'),/ワンピッチワンジャーク/,'Katsuo field procedure exposes the core jigging action');
+  assert.equal(await page.locator('#lureCatalogPanel').count(),0,'Katsuo method-only expansion does not mount product lure UI');
+  assert.deepEqual(noLureRequests(requests),[],'Katsuo method depth adds zero lure catalog requests');
+  await page.locator('#fieldModeBtn').click();
+  await page.locator('#fieldmode.on').waitFor({state:'visible'});
+  assert.equal(await text(page,'#fmFish'),'カツオ','Katsuo FIELD MODE target');
+  assert.equal(await text(page,'#fmMethod'),'オフショアジギング','Katsuo FIELD MODE method');
+  assert.equal(await text(page,'#fmBait'),'メタルジグ','Katsuo FIELD MODE FIRST CAST');
+  await page.locator('#fmBackPlan').click();
+  await page.locator('#result.on').waitFor({state:'visible'});
+  const katsuoLayout=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
+  assert.ok(katsuoLayout.doc<=391&&katsuoLayout.body<=391&&katsuoLayout.viewport===390,'390px Katsuo result remains overflow-free');
   await backHome(page);
 
   await openTarget(page,'カマス');
@@ -119,7 +139,7 @@ try{
   assert.deepEqual(consoleErrors,[],'content expansion browser path has no console errors');
 
   await context.close();
-  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:62,plans:155,catalogProducts:985,catalogBatches:46,lureRequests:requests,renderedKamasu:3}));
+  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:62,plans:156,catalogProducts:985,catalogBatches:46,lureRequests:requests,renderedKamasu:3,katsuoMethod:'offshore-jigging'}));
 }finally{
   await browser.close();
 }

@@ -42,6 +42,7 @@ try{
   await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),{timeout:15000});
   await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===62,{timeout:15000});
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_METHOD_STATUS?.plans===156&&globalThis.FISH_TARGET_METHOD_REGISTRY?.count===156,{timeout:15000});
 
   const boot=await page.evaluate(()=>({
     publication:document.documentElement.dataset.publicationBuild,
@@ -53,7 +54,8 @@ try{
     catalogFacadePresent:Boolean(globalThis.FISH_TARGET_CATALOG),
     lureEntryPresent:Boolean(globalThis.FISH_TARGET_LURE_CATALOG_ENTRY),
     lureLoaderPresent:Boolean(globalThis.FISH_TARGET_LURE_CATALOG),
-    targets:document.querySelectorAll('#grid .fish').length
+    targets:document.querySelectorAll('#grid .fish').length,
+    plans:globalThis.FISH_TARGET_METHOD_REGISTRY?.count
   }));
   assert.equal(boot.publication,'on');
   assert.equal(boot.catalogRuntime,'off');
@@ -65,6 +67,7 @@ try{
   assert.equal(boot.lureEntryPresent,false,'publication build must not expose research lure UI');
   assert.equal(boot.lureLoaderPresent,false,'publication build must not expose research lure loader');
   assert.equal(boot.targets,62,'publication build must retain all target decisions');
+  assert.equal(boot.plans,156,'publication build must retain all approved fishing plans');
   assert.deepEqual(lureRequests,[],'publication boot must never request research lure assets');
 
   const tackleTab=page.locator('#appTabBarV26 [data-app-tab="tackle"]');
@@ -96,8 +99,15 @@ try{
   assert.doesNotMatch(ownedText,/CATALOG/,'publication-owned rows must remain manual-only');
 
   await page.locator('#tackleClose').click();
-  await page.locator('#grid .fish').first().click();
+  await page.locator('button.fish[data-fish="カツオ"]').click();
   await page.locator('#result.on').waitFor({state:'visible'});
+  const picker=page.locator('#methodPickerV1');
+  const change=page.locator('#ux23MethodChange');
+  if(!(await picker.isVisible()))await change.click();
+  await picker.locator('[data-method-id="offshore-jigging"]').click();
+  assert.equal((await page.locator('#pmethod').textContent()||'').trim(),'オフショアジギング','publication keeps Katsuo offshore jigging');
+  assert.equal((await page.locator('#firstBait').textContent()||'').trim(),'メタルジグ','publication keeps Katsuo FIRST CAST');
+  assert.equal(await page.locator('#lureCatalogPanel').count(),0,'publication never mounts research lure panel for Katsuo');
   await page.locator('#tackleFitBody').waitFor({state:'visible'});
   const fitText=await page.locator('#tackleFitBody').innerText();
   assert.match(fitText,/PUBLICATION MANUAL|このセット|条件付き|見直し|推奨/,'manual MY TACKLE must participate in result decision UI');
@@ -106,7 +116,7 @@ try{
   assert.deepEqual(localFailures,[],'publication smoke must not request missing local assets');
   assert.deepEqual(removedBinaryRequests,[],'publication runtime must not request excluded unverified fish binary');
   assert.deepEqual(lureRequests,[],'publication runtime must never request research lure assets');
-  console.log('PUBLICATION BROWSER QA PASS · 62 targets · Catalog off · lure Catalog off · manual MY TACKLE operational · external network blocked');
+  console.log('PUBLICATION BROWSER QA PASS · 62 targets · 156 plans · Catalog off · lure Catalog off · Katsuo jigging operational · manual MY TACKLE operational · external network blocked');
 }catch(error){
   primaryError=error;
 }finally{
