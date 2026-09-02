@@ -8,16 +8,17 @@ const read=file=>readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 
 test('content expansion readiness locks the current post-batch baseline with no pending queue',async()=>{
   const report=await collectReadiness();
+  const queue=readJson('authoring/content-expansion-queue.v1.json');
   assert.deepEqual(report.errors,[]);
   assert.equal(report.ready_for_input,true);
   assert.equal(report.doorstep_locked,true);
-  assert.equal(report.baseline.species,62);
-  assert.equal(report.baseline.plans,155);
-  assert.equal(report.coverage.all_species.length,62);
-  assert.equal(report.coverage.all_species.reduce((sum,row)=>sum+row.plans,0),155);
+  assert.equal(report.baseline.species,queue.baseline_lock.species);
+  assert.equal(report.baseline.plans,queue.baseline_lock.plans);
+  assert.equal(report.coverage.all_species.length,queue.baseline_lock.species);
+  assert.equal(report.coverage.all_species.reduce((sum,row)=>sum+row.plans,0),queue.baseline_lock.plans);
   assert.ok(report.coverage.all_species.every(row=>row.species&&row.water&&Array.isArray(row.methods)&&row.methods.length===row.plans));
-  assert.equal(report.catalog.batches,46);
-  assert.equal(report.catalog.expected_rows,971);
+  assert.equal(report.catalog.batches,queue.baseline_lock.catalog_batches);
+  assert.equal(report.catalog.expected_rows,queue.baseline_lock.catalog_expected_rows);
   assert.equal(report.catalog.production_batches,0);
   assert.deepEqual(report.queue.counts,{species:0,methods:0,catalog:0});
   assert.equal(report.queue.total,0);
@@ -44,10 +45,12 @@ test('doorstep templates are inert and fail closed on publication',()=>{
   assert.equal(catalog.rows[0].identifiers.jan,undefined,'template must not invent JAN');
 });
 
-test('applied batch is explicit while the next runtime authoring queue is empty',()=>{
+test('applied content batches remain explicit while the next runtime authoring queue is empty',()=>{
   const authoring=readJson('authoring/species-methods.v1.json');
   assert.deepEqual(authoring.targets.map(x=>x.name),['カマス','オオモンハタ']);
-  assert.deepEqual(authoring.existing.map(x=>x.species),['サワラ']);
+  const appliedExisting=new Map(authoring.existing.map(x=>[x.species,x]));
+  assert.equal(appliedExisting.get('サワラ')?.methods?.some(method=>method.id==='boat-blade'),true,'Batch 1 Sawara method remains explicit');
+  assert.equal(appliedExisting.get('カツオ')?.methods?.some(method=>method.id==='offshore-jigging'),true,'Batch 2 Katsuo method remains explicit');
   const queue=readJson('authoring/content-expansion-queue.v1.json');
   assert.deepEqual(queue.species_candidates,[]);
   assert.deepEqual(queue.method_candidates,[]);
