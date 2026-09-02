@@ -41,7 +41,7 @@ try{
 
   await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),{timeout:15000});
-  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===62,{timeout:15000});
+  await page.waitForFunction(()=>document.querySelectorAll('#grid .fish').length===64,{timeout:15000});
 
   const boot=await page.evaluate(()=>({
     publication:document.documentElement.dataset.publicationBuild,
@@ -64,7 +64,7 @@ try{
   assert.equal(boot.catalogFacadePresent,false,'publication build with zero approved batches must not expose Catalog facade');
   assert.equal(boot.lureEntryPresent,false,'publication build must not expose research lure UI');
   assert.equal(boot.lureLoaderPresent,false,'publication build must not expose research lure loader');
-  assert.equal(boot.targets,62,'publication build must retain all target decisions');
+  assert.equal(boot.targets,64,'publication build must retain all target decisions');
   assert.deepEqual(lureRequests,[],'publication boot must never request research lure assets');
 
   const tackleTab=page.locator('#appTabBarV26 [data-app-tab="tackle"]');
@@ -106,7 +106,7 @@ try{
   assert.deepEqual(localFailures,[],'publication smoke must not request missing local assets');
   assert.deepEqual(removedBinaryRequests,[],'publication runtime must not request excluded unverified fish binary');
   assert.deepEqual(lureRequests,[],'publication runtime must never request research lure assets');
-  console.log('PUBLICATION BROWSER QA PASS · 62 targets · Catalog off · lure Catalog off · manual MY TACKLE operational · external network blocked');
+  console.log('PUBLICATION BROWSER QA PASS · 64 targets · Catalog off · lure Catalog off · manual MY TACKLE operational · external network blocked');
 }catch(error){
   primaryError=error;
 }finally{
