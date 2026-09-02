@@ -11,11 +11,16 @@ test('catalog hydration loads independent batches in parallel',()=>{
   assert.doesNotMatch(source,/for\(const asset of lazyAssets\)await loadScript\(asset\)/);
 });
 
-test('target expansion bootstrap fetches the four data generations concurrently',()=>{
+test('target expansion parallelizes parts while preserving staged generation order',()=>{
   const source=read('pwa.js');
   assert.match(source,/const loadTargetExpansion=async version=>/);
   assert.match(source,/Promise\.all\(Array\.from\(\{length:5\}/);
-  assert.match(source,/Promise\.all\(\['v1','v2','v3','v4'\]\.map\(loadTargetExpansion\)\)/);
+  const v1=source.indexOf("await loadTargetExpansion('v1')");
+  const v2=source.indexOf("await loadTargetExpansion('v2')");
+  const v3=source.indexOf("await loadTargetExpansion('v3')");
+  const v4=source.indexOf("await loadTargetExpansion('v4')");
+  assert.ok(v1>=0&&v1<v2&&v2<v3&&v3<v4,'generation order remains staged');
+  assert.doesNotMatch(source,/Promise\.all\(\['v1','v2','v3','v4'\]\.map\(loadTargetExpansion\)\)/);
 });
 
 test('clarity pass coalesces mutation work and debounces catalog search',()=>{
