@@ -3,7 +3,7 @@
   "state": "ready-for-input",
   "baseline_lock": {
     "species": 62,
-    "plans": 155,
+    "plans": 156,
     "catalog_batches": 46,
     "catalog_expected_rows": 971
   },
