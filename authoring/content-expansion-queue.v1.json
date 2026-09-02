@@ -2,10 +2,10 @@
   "version": "CONTENT-EXPANSION-QUEUE-1",
   "state": "ready-for-input",
   "baseline_lock": {
-    "species": 62,
-    "plans": 155,
-    "catalog_batches": 46,
-    "catalog_expected_rows": 971
+    "species": 64,
+    "plans": 159,
+    "catalog_batches": 47,
+    "catalog_expected_rows": 975
   },
   "policy": {
     "priority_values": ["P0", "P1", "P2"],

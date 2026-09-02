@@ -2,6 +2,8 @@ import {access,readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
+import {generateRuntimeSource} from './species-method-authoring.mjs';
+import {loadCombinedAuthoring} from './species-method-fragments.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const text=value=>String(value??'').trim();
@@ -29,7 +31,8 @@ async function loadContentModel(){
     for(let part=1;part<=5;part++)await runIfPresent(`target-method-data-v${version}-part${part}.js`,sandbox);
     await runIfPresent(`target-method-data-v${version}.js`,sandbox);
   }
-  await runIfPresent('species-method-authoring-generated.js',sandbox);
+  const combinedAuthoring=await loadCombinedAuthoring();
+  vm.runInNewContext(generateRuntimeSource(combinedAuthoring),sandbox,{filename:'species-method-authoring-combined.generated.js'});
   await runIfPresent('species-method-authoring-runtime.js',sandbox);
 
   const base=Array.isArray(sandbox.__CONTENT_BASE_F)?sandbox.__CONTENT_BASE_F:[];
@@ -146,7 +149,9 @@ function validateQueue(queue,currentNames){
 export async function collectReadiness(){
   const requiredFiles=[
     'authoring/species-methods.v1.json',
+    'authoring/species-method-fragment-manifest.v1.json',
     'scripts/species-method-authoring.mjs',
+    'scripts/species-method-fragments.mjs',
     'scripts/catalog-ingest.mjs',
     'scripts/fish-asset-authoring.mjs',
     'catalog-batch-manifest.json',

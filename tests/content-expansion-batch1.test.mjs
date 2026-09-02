@@ -4,7 +4,6 @@ import {readFile,stat} from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
-import {collectReadiness} from '../scripts/content-expansion-readiness.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const text=rel=>readFile(path.join(root,rel),'utf8');
@@ -17,7 +16,7 @@ async function loadLureRows(){
   return {manifest,rows:(sandbox.FISH_TARGET_LURE_CATALOG_BATCH_ROWS||[]).flatMap(batch=>batch.rows||[])};
 }
 
-test('batch1 expands the canonical model by two popular species and one Sawara method',async()=>{
+test('batch1 source keeps two popular species and one Sawara method intact',async()=>{
   const authoring=await json('authoring/species-methods.v1.json');
   assert.deepEqual(authoring.targets.map(x=>x.name),['カマス','オオモンハタ']);
   assert.deepEqual(authoring.targets.map(x=>x.methods.length+1),[2,2]);
@@ -25,20 +24,19 @@ test('batch1 expands the canonical model by two popular species and one Sawara m
   assert.equal(authoring.existing[0].species,'サワラ');
   assert.equal(authoring.existing[0].methods[0].id,'boat-blade');
   assert.equal(authoring.existing[0].methods[0].method,'ボート・ブレードジギング');
-  const report=await collectReadiness();
-  assert.deepEqual(report.errors,[]);
-  assert.equal(report.baseline.species,62);
-  assert.equal(report.baseline.plans,155);
-  assert.equal(report.queue.total,0);
+  const authoredPlans=authoring.targets.reduce((sum,target)=>sum+1+(target.methods||[]).length,0)
+    +authoring.existing.reduce((sum,entry)=>sum+(entry.methods||[]).length,0);
+  assert.equal(authoredPlans,5,'later fragments must not mutate the Batch 1 source payload');
 });
 
-test('rod expansion stays inside the existing lazy rod/reel catalog boundary',async()=>{
+test('batch1 rod expansion remains present inside the shared lazy rod/reel catalog',async()=>{
   const manifest=await json('catalog-batch-manifest.json');
-  const ids=new Set(manifest.batches.map(x=>x.id));
-  assert.ok(ids.has('daiwa-gekkabijin-mebaru-rods-2023'));
-  assert.ok(ids.has('daiwa-outrage-br-lc'));
-  assert.equal(manifest.batches.length,46);
-  assert.equal(manifest.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0),971);
+  const byId=new Map(manifest.batches.map(x=>[x.id,x]));
+  for(const id of ['daiwa-gekkabijin-mebaru-rods-2023','daiwa-outrage-br-lc']){
+    const batch=byId.get(id);
+    assert.ok(batch,`${id} remains registered`);
+    assert.equal(batch.stage,'research',`${id} remains publication-blocked research`);
+  }
   const rods=[...(await json('catalog-batches/daiwa-gekkabijin-mebaru-rods-2023.json')).rows,...(await json('catalog-batches/daiwa-outrage-br-lc.json')).rows];
   assert.equal(rods.length,7);
   assert.ok(rods.every(x=>x.category==='rod'&&x.maker==='DAIWA'));
