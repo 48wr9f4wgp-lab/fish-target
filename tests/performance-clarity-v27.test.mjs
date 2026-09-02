@@ -11,16 +11,19 @@ test('catalog hydration loads independent batches in parallel',()=>{
   assert.doesNotMatch(source,/for\(const asset of lazyAssets\)await loadScript\(asset\)/);
 });
 
-test('target expansion parallelizes parts while preserving staged generation order',()=>{
+test('target expansion parallelizes each five-part stage while preserving generation order',()=>{
   const source=read('pwa.js');
-  assert.match(source,/const loadTargetExpansion=async version=>/);
-  assert.match(source,/Promise\.all\(Array\.from\(\{length:5\}/);
-  const v1=source.indexOf("await loadTargetExpansion('v1')");
-  const v2=source.indexOf("await loadTargetExpansion('v2')");
-  const v3=source.indexOf("await loadTargetExpansion('v3')");
-  const v4=source.indexOf("await loadTargetExpansion('v4')");
-  assert.ok(v1>=0&&v1<v2&&v2<v3&&v3<v4,'generation order remains staged');
-  assert.doesNotMatch(source,/Promise\.all\(\['v1','v2','v3','v4'\]\.map\(loadTargetExpansion\)\)/);
+  for(const version of ['v1','v2','v3','v4']){
+    assert.match(source,new RegExp(`Promise\\.all\\(Array\\.from\\(\\{length:5\\},\\(_,i\\)=>loadScript\\(\\`\\./target-method-data-${version}-part\\$\\{i\\}\\.js`));
+  }
+  const v1=source.indexOf('./target-method-data-v1.js');
+  const v2Parts=source.indexOf('./target-method-data-v2-part${i}.js');
+  const v2=source.indexOf('./target-method-data-v2.js');
+  const v3Parts=source.indexOf('./target-method-data-v3-part${i}.js');
+  const v3=source.indexOf('./target-method-data-v3.js');
+  const v4Parts=source.indexOf('./target-method-data-v4-part${i}.js');
+  const v4=source.indexOf('./target-method-data-v4.js');
+  assert.ok(v1>=0&&v1<v2Parts&&v2Parts<v2&&v2<v3Parts&&v3Parts<v3&&v3<v4Parts&&v4Parts<v4,'generation order remains explicit and staged');
 });
 
 test('clarity pass coalesces mutation work and debounces catalog search',()=>{
