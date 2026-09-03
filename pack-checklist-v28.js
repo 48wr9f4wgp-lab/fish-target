@@ -17,6 +17,7 @@
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
   const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   let editMode=false;
+  let returnFocus=null;
 
   const readStore=()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}')}catch{return{}}};
   const writeStore=store=>{try{localStorage.setItem(STORE_KEY,JSON.stringify(store));return true}catch(error){console.warn('quick pack save failed',error);return false}};
@@ -33,22 +34,47 @@
   const pulse=(el,klass='quickPackPulseV28')=>{if(!el)return;el.classList.remove(klass);void el.offsetWidth;el.classList.add(klass);setTimeout(()=>el.classList.remove(klass),360)};
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
 
+  function syncPackTab(active){
+    $$('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&button.dataset.appTab==='pack'));
+    if(active)return;
+    const current=$('.view.on')?.id;
+    const fallback=current==='saved'?'saved':current==='home'?'home':null;
+    if(fallback){const button=$(`#appTabBarV26 button[data-app-tab="${fallback}"]`);if(button)button.classList.add('on')}
+  }
+
+  function ensureTab(){
+    const bar=$('#appTabBarV26');
+    if(!bar||$('#appPackTabV30'))return;
+    const button=document.createElement('button');
+    button.id='appPackTabV30';button.dataset.appTab='pack';button.type='button';
+    button.innerHTML='<span class="tabIcon">✓</span><b>持ち物</b>';
+    button.addEventListener('click',event=>{event.stopPropagation();open()});
+    bar.appendChild(button);
+  }
+
   function ensureUi(){
-    const anchor=$('#v19Conditions')||$('#v19Details')||$('#result .actions');
-    if(!anchor||$('#quickPackV28'))return;
-    const wrap=document.createElement('section');
-    wrap.id='quickPackV28';wrap.className='quickPackV28 card';wrap.setAttribute('aria-label','出発前の小物チェック');
-    wrap.innerHTML=`
-      <div class="quickPackHeadV28">
-        <div><strong>出発前の小物</strong><small>忘れやすい物だけ</small></div>
-        <div class="quickPackHeadActionsV28"><span id="quickPackCountV28">0/0</span><button id="quickPackEditV28" type="button" aria-expanded="false">編集</button></div>
+    ensureTab();
+    if($('#packStandaloneV30'))return;
+    const overlay=document.createElement('section');
+    overlay.id='packStandaloneV30';overlay.className='packStandaloneV30';overlay.hidden=true;overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','持ち物');
+    overlay.innerHTML=`
+      <div class="packStandaloneTopV30">
+        <div><span>PACK LIST</span><h2>持ち物</h2><p>釣行フローとは別に、忘れ物だけ管理</p></div>
+        <button id="packStandaloneCloseV30" type="button" aria-label="持ち物を閉じる">×</button>
       </div>
-      <div class="quickPackListV28" id="quickPackListV28"></div>
-      <div class="quickPackEditorV28" id="quickPackEditorV28" hidden>
-        <form id="quickPackAddFormV28"><input id="quickPackAddInputV28" maxlength="24" autocomplete="off" placeholder="持ち物を追加" aria-label="持ち物を追加"><button type="submit">追加</button></form>
-        <div class="quickPackEditorActionsV28"><button class="quickPackClearV28" id="quickPackClearV28" type="button">チェック解除</button><button class="quickPackResetV28" id="quickPackResetV28" type="button">標準に戻す</button></div>
-      </div>`;
-    anchor.insertAdjacentElement('beforebegin',wrap);
+      <section id="quickPackV28" class="quickPackV28 card" aria-label="持ち物チェックリスト">
+        <div class="quickPackHeadV28">
+          <div><strong>チェックリスト</strong><small>必要な物だけ自由に編集</small></div>
+          <div class="quickPackHeadActionsV28"><span id="quickPackCountV28">0/0</span><button id="quickPackEditV28" type="button" aria-expanded="false">編集</button></div>
+        </div>
+        <div class="quickPackListV28" id="quickPackListV28"></div>
+        <div class="quickPackEditorV28" id="quickPackEditorV28" hidden>
+          <form id="quickPackAddFormV28"><input id="quickPackAddInputV28" maxlength="24" autocomplete="off" placeholder="持ち物を追加" aria-label="持ち物を追加"><button type="submit">追加</button></form>
+          <div class="quickPackEditorActionsV28"><button class="quickPackClearV28" id="quickPackClearV28" type="button">チェック解除</button><button class="quickPackResetV28" id="quickPackResetV28" type="button">標準に戻す</button></div>
+        </div>
+      </section>`;
+    document.body.appendChild(overlay);
+    $('#packStandaloneCloseV30')?.addEventListener('click',close);
     $('#quickPackEditV28')?.addEventListener('click',()=>{editMode=!editMode;render()});
     $('#quickPackAddFormV28')?.addEventListener('submit',event=>{
       event.preventDefault();const input=$('#quickPackAddInputV28');const name=String(input?.value||'').trim();if(!name)return;
@@ -83,8 +109,19 @@
   function updateProgress(config,checked){
     const count=config.filter(item=>checked.has(item.id)).length,total=config.length,el=$('#quickPackCountV28'),root=$('#quickPackV28');
     if(el)el.textContent=`${count}/${total}`;const ready=total>0&&count===total;root?.classList.toggle('ready',ready);
-    if(ready&&!root?.dataset.readyAnnounced){root.dataset.readyAnnounced='1';pulse(root,'quickPackReadyPulseV28');haptic([10,20,10]);if(typeof globalThis.toast==='function')globalThis.toast('小物 READY ✓')}
+    if(ready&&!root?.dataset.readyAnnounced){root.dataset.readyAnnounced='1';pulse(root,'quickPackReadyPulseV28');haptic([10,20,10]);if(typeof globalThis.toast==='function')globalThis.toast('持ち物 READY ✓')}
     if(!ready&&root)delete root.dataset.readyAnnounced;
+  }
+
+  function open(){
+    ensureUi();render();const overlay=$('#packStandaloneV30');if(!overlay)return;
+    returnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    overlay.hidden=false;document.body.classList.add('packOpenV30');syncPackTab(true);$('#packStandaloneCloseV30')?.focus();
+  }
+
+  function close(){
+    const overlay=$('#packStandaloneV30');if(!overlay||overlay.hidden)return;
+    overlay.hidden=true;document.body.classList.remove('packOpenV30');syncPackTab(false);returnFocus?.focus?.();returnFocus=null;
   }
 
   function playPlanEffect(){
@@ -92,7 +129,9 @@
     $$('.gearItem').forEach((item,index)=>{item.style.setProperty('--gf-order',index);item.classList.remove('gameFeelGearV28');void item.offsetWidth;item.classList.add('gameFeelGearV28');setTimeout(()=>item.classList.remove('gameFeelGearV28'),650)});
   }
 
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('#packStandaloneV30')?.hidden)close()});
   const observeTarget=selector=>{const el=$(selector);if(el)new MutationObserver(playPlanEffect).observe(el,{childList:true,subtree:true,characterData:true})};
   ensureUi();render();observeTarget('#rname');observeTarget('#pmethod');
-  globalThis.FISH_TARGET_QUICK_PACK=Object.freeze({version:'QUICK-PACK-V28',defaults:DEFAULTS.map(item=>({...item})),render,clearChecks});
+  const tabObserver=new MutationObserver(()=>{ensureTab();if(!$('#packStandaloneV30')?.hidden)syncPackTab(true)});tabObserver.observe(document.body,{childList:true,subtree:true});
+  globalThis.FISH_TARGET_QUICK_PACK=Object.freeze({version:'PACK-STANDALONE-V30',defaults:DEFAULTS.map(item=>({...item})),render,open,close,clearChecks});
 })();
