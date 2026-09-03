@@ -3,7 +3,7 @@
   const OWNED_KEY='fish_target_v17_tackle';
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
-  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]));
+  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const statusRank=Object.freeze({current:0,unknown:1,discontinued:2,legacy:3});
   const MAX_ALTERNATES=3;
   const compatibilityMeta=Object.freeze({
