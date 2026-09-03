@@ -1,0 +1,98 @@
+/* V25 unified marine polish — extends V24 without changing UX23 structure */
+:root{
+  --v25-ink:#10282f;
+  --v25-deep:#06232b;
+  --v25-deep2:#0a3a43;
+  --v25-surface:rgba(247,251,251,.86);
+  --v25-surface-strong:#f8fbfb;
+  --v25-surface-alt:#eef5f5;
+  --v25-line:rgba(106,143,149,.20);
+  --v25-mint:#62dfd1;
+  --v25-mint2:#22a99e;
+  --v25-shadow:0 14px 34px rgba(7,36,43,.09);
+  --v25-shadow-soft:0 7px 18px rgba(7,36,43,.06);
+}
+html,body{background:linear-gradient(180deg,#eaf2f2 0,#f4f8f8 28%,#eef4f4 100%)!important}
+#result .body{background:linear-gradient(180deg,rgba(241,247,247,.72),rgba(247,250,250,.9))!important}
+
+/* hero + fish art: integrate rather than boxed image */
+#result .resultHero{box-shadow:0 18px 44px rgba(3,28,35,.19)!important}
+#result .tart{border-color:rgba(131,207,200,.16)!important;background:radial-gradient(circle at 50% 46%,rgba(99,225,210,.10),transparent 62%)!important;box-shadow:none!important;overflow:visible!important}
+#result .tart svg,#result .tart img{filter:drop-shadow(0 10px 16px rgba(0,0,0,.18));transform:scale(1.04)}
+
+/* hierarchy separators become deliberate instrument labels */
+#result .ux23AnswerTitle,#result .sectionTitle{position:relative;padding-left:12px!important}
+#result .ux23AnswerTitle:before,#result .sectionTitle:before{content:"";position:absolute;left:0;top:.18em;bottom:.16em;width:3px;border-radius:999px;background:linear-gradient(180deg,var(--v25-mint),var(--v25-mint2))}
+#result .ux23AnswerTitle small{padding-left:0!important}
+
+/* surfaces: one material system, not isolated white cards */
+#result .planCard,#result #tackleFitCard,#result #gear,#result section.card:has(>#steps),#result .refine{
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(243,248,248,.92))!important;
+  border:1px solid var(--v25-line)!important;
+  box-shadow:var(--v25-shadow)!important;
+  backdrop-filter:blur(12px)!important;
+  -webkit-backdrop-filter:blur(12px)!important;
+}
+#result .planCard:before{top:12px!important;bottom:12px!important;width:2px!important}
+
+/* method card: product card feel */
+#result .planTop{min-height:48px}
+#result .method{color:#112c33!important}
+#result .recommend{font-size:10px!important;letter-spacing:.06em!important}
+#result .difficultyBadge{background:rgba(236,244,244,.92)!important;border-color:rgba(108,143,149,.14)!important}
+#result .ux23MethodChange{background:linear-gradient(145deg,#082c34,#0d424b)!important;box-shadow:0 8px 18px rgba(7,40,48,.14)!important}
+#result .favoriteToggle{background:rgba(247,251,251,.86)!important;border-color:rgba(111,148,153,.24)!important}
+#result .favoriteToggle.on{background:linear-gradient(145deg,#092e36,#0b4049)!important}
+#result .planFacts span{background:rgba(231,242,241,.9)!important;border:1px solid rgba(105,145,149,.10)!important}
+
+/* tackle decision becomes a status module */
+#result #tackleFitCard{overflow:hidden!important}
+#result .tackleFitHead{padding-bottom:4px!important}
+#result .fitV20Summary{border:1px solid rgba(0,0,0,.035)!important}
+#result .fitV20Item{background:rgba(255,255,255,.74)!important;border-color:rgba(109,146,151,.18)!important;box-shadow:none!important}
+#result .fitV20Item+ .fitV20Item{margin-top:7px!important}
+#result .fitV20Details{border-top-color:rgba(106,143,149,.15)!important}
+
+/* required tackle: engraved spec table */
+#result #gear{overflow:hidden!important;background:linear-gradient(180deg,#f9fcfc,#f1f6f6)!important}
+#result #gear .gearItem{position:relative!important;background:transparent!important;min-height:54px!important}
+#result #gear .gearItem:before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;border-radius:2px;background:rgba(34,169,158,.34)}
+#result #gear .gearItem span{font-size:10px!important;letter-spacing:.08em!important;color:#6f8589!important}
+#result #gear .gearItem b{font-size:14px!important;color:#122b31!important}
+#result #gear .gearItem+ .gearItem{border-top-color:rgba(110,145,150,.13)!important}
+
+/* field steps: one coherent panel */
+#result section.card:has(>#steps){padding:14px!important}
+#result .step{align-items:start!important}
+#result .num{width:30px!important;height:30px!important;border-radius:10px!important;background:linear-gradient(145deg,#072a32,#0d4550)!important;box-shadow:0 8px 16px rgba(5,36,44,.14)!important}
+#result .st{font-size:13px!important;line-height:1.55!important;color:#1b3339!important}
+#result .tip{margin-top:12px!important;border-left-width:2px!important;background:linear-gradient(90deg,rgba(221,246,241,.94),rgba(239,249,247,.82))!important}
+
+/* disclosure rows: flatter and cleaner */
+#result .refine{box-shadow:var(--v25-shadow-soft)!important}
+#result .refine summary{padding:13px 14px!important}
+#result .refine summary em{background:rgba(224,243,239,.86)!important;color:#167c74!important}
+
+/* dock: lighter chrome, stronger main CTA */
+#resultDockV20.ux23Dock{background:rgba(244,249,249,.76)!important;border-color:rgba(114,148,153,.19)!important;box-shadow:0 12px 30px rgba(6,36,43,.14),inset 0 1px 0 rgba(255,255,255,.86)!important}
+#resultDockV20.ux23Dock button{background:rgba(235,242,242,.86)!important}
+#resultDockV20.ux23Dock #fieldModeBtn{background:linear-gradient(145deg,#062a32,#0b414b)!important;box-shadow:0 8px 18px rgba(5,38,46,.17)!important}
+
+/* detail typography */
+#result .why{color:#526b70!important}
+#result .fitV20Details>summary em{color:#167b73!important}
+#result .sectionTitle small{color:#778d91!important}
+
+/* home receives the same material system */
+#home .filterPanel,#home .fish{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(244,248,248,.94))!important;border-color:var(--v25-line)!important;box-shadow:var(--v25-shadow-soft)!important}
+#home .fish .art{background:radial-gradient(circle at 50% 48%,#e4f3f1 0,#d9ebe8 62%,#d4e6e4 100%)!important}
+#home .fish .art svg,#home .fish .art img{filter:drop-shadow(0 7px 10px rgba(14,68,76,.12))}
+
+@media(max-width:699px){
+  #result .ux23AnswerTitle,#result .sectionTitle{padding-left:10px!important}
+  #result .planCard,#result #tackleFitCard,#result #gear,#result section.card:has(>#steps),#result .refine{border-radius:19px!important}
+  #result .st{font-size:12.5px!important}
+}
+@media(prefers-reduced-motion:no-preference){
+  #result .planCard,#result #tackleFitCard,#result #gear,#result section.card:has(>#steps){transition:box-shadow .18s ease,transform .18s ease}
+}

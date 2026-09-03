@@ -1,0 +1,89 @@
+/* V23 VISUAL2 — copy/readability and dimensional fish-art polish */
+body{font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.brand{font-size:11px;line-height:1.35;letter-spacing:.16em}
+.version{font-size:10px;line-height:1.3}
+.hero h1{letter-spacing:-.045em;font-weight:950;text-wrap:balance}
+.hero>p{font-weight:650;letter-spacing:-.005em}
+.search input{font-weight:650;color:#20363b}
+.search input::placeholder{color:#849499;opacity:1}
+#home .head h2,#result .sectionTitle{font-weight:950;letter-spacing:-.035em}
+#home .head>span{font-weight:800;color:#71858a}
+.quick button,.filters button,.choices button{font-size:12px;font-weight:900}
+.v19FilterDetails summary span,.v19TackleShortcut>span{font-size:15px;font-weight:950;letter-spacing:-.02em}
+.v19FilterDetails summary small,.v19TackleShortcut>small{font-size:11px;line-height:1.4}
+.nav button{font-size:11px;font-weight:900;letter-spacing:-.01em}
+
+/* RC touch-target floor */
+.back{width:44px;height:44px}
+.spotPresets button{min-height:44px}
+
+.fieldGuideArtReal{shape-rendering:geometricPrecision;filter:drop-shadow(0 7px 7px rgba(18,38,40,.19)) saturate(1.08) contrast(1.03)}
+.fieldGuideArtReal>path:first-of-type{vector-effect:non-scaling-stroke}
+.fieldGuideArtReal .detail{vector-effect:non-scaling-stroke}
+.visualFishCard .art{background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.96),rgba(255,255,255,.34) 34%,transparent 58%),linear-gradient(145deg,var(--fish-bg1),var(--fish-bg2))}
+#result .tart{background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.35),transparent 55%),linear-gradient(145deg,var(--fish-bg1),var(--fish-bg2))}
+
+.visualFishCard .name{font-weight:950}
+.visualFishCard .tags{font-size:10px;line-height:1.35}
+.visualFishCard .methodSmall{font-size:12px;line-height:1.45}
+.visualFishCard .visualDifficulty{font-size:10px;line-height:1.2}
+#result .target h1{font-weight:950;letter-spacing:-.045em}
+#result .target p{font-size:12px;line-height:1.55}
+#result .method{font-size:30px;font-weight:950;letter-spacing:-.035em}
+#result .why{font-size:14px;line-height:1.72}
+#result .quickPromise{font-size:11px;line-height:1.55;font-weight:750}
+#result .planFacts span{font-size:10px}
+#result .sectionTitle small{font-weight:700}
+#result .firstCastKicker{font-size:10px}
+#result .firstGrid span{font-size:9px}
+#result .firstGrid b{font-size:13px}
+#result .rotationLabel{font-size:10px}
+#result .rotation button{font-size:11px}
+#result .switchRule{font-size:11px;line-height:1.65}
+#result .gearItem span{font-size:10px}
+#result .gearItem b{font-size:14px;line-height:1.5}
+#result .st{font-size:14px;line-height:1.62}
+#result .tip{font-size:12px;line-height:1.65}
+#result .actions button,#result .fieldModeLaunch{font-size:13px}
+.visualTackleSheet .tackleSheetHead p,.visualTackleSheet .catalogDevNote{line-height:1.55}
+
+@media(max-width:699px){
+  .hero{padding-top:calc(18px + env(safe-area-inset-top));padding-bottom:20px}
+  .hero h1{font-size:38px;line-height:1.02;margin:18px 0 11px;max-width:340px}
+  .hero>p{font-size:14px;line-height:1.55;max-width:350px}
+  .search{margin-top:17px;border-radius:20px}
+  .search input{font-size:16px;min-height:56px}
+  #home .head{margin-top:13px;margin-bottom:11px}
+  #home .head h2{font-size:23px;line-height:1.2}
+  #home .head>span{font-size:11px}
+  .quick{gap:8px}
+  .quick button{font-size:12px;min-height:44px;padding-inline:15px}
+  #home .visualFishCard{grid-template-columns:138px minmax(0,1fr);min-height:126px}
+  #home .visualFishCard .art{min-height:126px}
+  #home .visualFishCard .art svg{width:98%;height:98%}
+  #home .visualFishCard .info{padding:14px 15px}
+  #home .visualFishCard .name{font-size:21px;line-height:1.17}
+  #home .visualFishCard .tags{font-size:10px}
+  #home .visualFishCard .methodSmall{font-size:12px;margin-top:7px}
+  #home .visualFishCard .visualDifficulty{font-size:10px;margin-top:9px}
+  .nav button{font-size:12px;min-height:44px}
+
+  #result .target{grid-template-columns:minmax(0,1fr) 150px;gap:14px}
+  #result .target h1{font-size:32px;line-height:1.08}
+  #result .tart{height:124px}
+  #result .planCard{padding:18px}
+  #result .method{font-size:30px}
+  #result .why{font-size:14px}
+  #result .sectionTitle{font-size:21px;line-height:1.25;margin-top:26px}
+  #result .sectionTitle small{font-size:11px;line-height:1.5;margin-top:5px}
+  #result .firstName{font-size:29px}
+  #result .gearItem{min-height:104px}
+}
+
+@media(min-width:700px){
+  .hero h1{font-size:44px}
+  .hero>p{font-size:15px}
+  #home .head h2{font-size:24px}
+}
+
+@media(prefers-reduced-motion:reduce){.fieldGuideArtReal{filter:none}}

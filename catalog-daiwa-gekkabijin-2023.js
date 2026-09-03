@@ -1,0 +1,10 @@
+(()=>{
+  const batch=Object.freeze({id:"daiwa-gekkabijin-2023",rows:Object.freeze([
+    {"maker":"DAIWA","category":"reel","series":"GEKKABIJIN","generation":"2023","model":"LT1000S","display_name":"GEKKABIJIN LT1000S","status":"unknown","specs":{"reel_size":1000,"weight_g":165,"gear_ratio":5.1,"retrieve_cm":64,"max_drag_kg":5,"pe_capacity_raw":"0.3号-200m"},"source":{"source_type":"manufacturer_official","source_provider":"daiwa-official-research","source_url":"https://www.daiwa.com/jp/product/kfw5101","retrieved_at":"2026-08-28","last_verified":"2026-08-28","license_status":"unknown"},"identifiers":{"jan":"4550133304514"}},
+    {"maker":"DAIWA","category":"reel","series":"GEKKABIJIN","generation":"2023","model":"LT2000S","display_name":"GEKKABIJIN LT2000S","status":"unknown","specs":{"reel_size":2000,"weight_g":165,"gear_ratio":5.1,"retrieve_cm":67,"max_drag_kg":5,"pe_capacity_raw":"0.4号-200m"},"source":{"source_type":"manufacturer_official","source_provider":"daiwa-official-research","source_url":"https://www.daiwa.com/jp/product/kfw5101","retrieved_at":"2026-08-28","last_verified":"2026-08-28","license_status":"unknown"},"identifiers":{"jan":"4550133304521"}},
+    {"maker":"DAIWA","category":"reel","series":"GEKKABIJIN","generation":"2023","model":"LT2000S-H","display_name":"GEKKABIJIN LT2000S-H","status":"unknown","specs":{"reel_size":2000,"weight_g":165,"gear_ratio":5.8,"retrieve_cm":76,"max_drag_kg":5,"pe_capacity_raw":"0.4号-200m"},"source":{"source_type":"manufacturer_official","source_provider":"daiwa-official-research","source_url":"https://www.daiwa.com/jp/product/kfw5101","retrieved_at":"2026-08-28","last_verified":"2026-08-28","license_status":"unknown"},"identifiers":{"jan":"4550133304538"}}
+  ].map(row=>Object.freeze({...row,specs:Object.freeze({...row.specs}),source:Object.freeze({...row.source}),identifiers:Object.freeze({...row.identifiers})})))});
+  const registry=globalThis.FISH_TARGET_CATALOG_BATCH_ROWS||(globalThis.FISH_TARGET_CATALOG_BATCH_ROWS=[]);
+  if(registry.some(x=>x?.id===batch.id))throw new Error('Duplicate catalog batch id: '+batch.id);
+  registry.push(batch);
+})();

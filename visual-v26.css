@@ -1,0 +1,132 @@
+/* V26 App Shell Visual Rebuild — Surfline x AllTrails x Fishbrain principles */
+:root{
+  --v26-deep:#061f27;
+  --v26-deep2:#0a3842;
+  --v26-cyan:#64e0d2;
+  --v26-cyan2:#23a99d;
+  --v26-ink:#0e252c;
+  --v26-muted:#71858a;
+  --v26-bg:#edf4f4;
+  --v26-glass:rgba(246,250,250,.78);
+  --v26-line:rgba(102,137,143,.18);
+  --v26-shadow:0 16px 38px rgba(4,31,38,.12);
+}
+html.app-shell-v26,html.app-shell-v26 body{background:radial-gradient(circle at 50% -10%,#dcefee 0,#edf4f4 36%,#f4f7f7 100%)!important;max-width:100%!important;overflow-x:clip!important}
+html.app-shell-v26 body{padding-bottom:88px!important}
+html.app-shell-v26 body>.app{width:100%!important;max-width:100vw!important;min-width:0!important;overflow-x:clip!important;contain:paint!important}
+html.app-shell-v26 .view{max-width:100%!important;overflow-x:clip!important}
+html.app-shell-v26 .nav{display:none!important}
+
+/* Native-style global shell */
+.appTabBarV26{position:fixed;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));z-index:2600;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px;border:1px solid rgba(107,146,151,.18);border-radius:24px;background:rgba(244,249,249,.82);backdrop-filter:blur(22px) saturate(1.15);-webkit-backdrop-filter:blur(22px) saturate(1.15);box-shadow:0 16px 42px rgba(4,31,38,.17),inset 0 1px 0 rgba(255,255,255,.86)}
+.appTabBarV26 button{min-height:52px;border:0;border-radius:18px;background:transparent;color:#71878c;font:inherit;display:grid;place-items:center;align-content:center;gap:2px}
+.appTabBarV26 button.on{background:linear-gradient(145deg,#082a33,#0b434d);color:white;box-shadow:0 8px 18px rgba(3,34,41,.16)}
+.appTabBarV26 .tabIcon{font-size:18px;line-height:1}.appTabBarV26 b{font-size:11px;letter-spacing:.04em}
+body.resultOpenV26 .appTabBarV26{transform:translateY(130%);pointer-events:none;opacity:0}
+.appTabBarV26{transition:transform .2s ease,opacity .2s ease}
+
+/* Home becomes visual discovery rather than web list */
+#home .hero{border-radius:0 0 34px 34px!important;box-shadow:0 18px 40px rgba(3,31,38,.16)!important;overflow:hidden!important}
+#home .hero:after{content:"";position:absolute;inset:auto -10% -36% 24%;height:62%;border:1px solid rgba(104,224,211,.12);border-radius:50%;transform:rotate(-7deg);pointer-events:none}
+#home #quick.quick{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;contain:layout paint!important}
+#home #quick.quick>button{width:100%!important;min-width:0!important;max-width:100%!important;min-height:44px!important;padding:8px 6px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#home .filters,#home .choices{width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-inline:contain;contain:inline-size;-webkit-overflow-scrolling:touch}
+#home .filters>* ,#home .choices>*{flex:0 0 auto!important}
+#home .filterPanel,#home .filterRow,#home .filterRow>*{min-width:0!important;max-width:100%!important}
+#home .grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;padding:4px 14px 20px!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+#home .grid>*{min-width:0!important;max-width:100%!important}
+#home .fish.discoveryCardV26{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:222px!important;border:1px solid rgba(99,137,143,.17)!important;border-radius:24px!important;overflow:hidden!important;background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(239,246,246,.96))!important;box-shadow:0 10px 24px rgba(7,38,45,.08)!important;position:relative!important;padding:0!important;text-align:left!important;grid-template-columns:none!important}
+#home .fish.discoveryCardV26>*{min-width:0!important;max-width:100%!important}
+#home .fish.discoveryCardV26 .art{width:100%!important;max-width:100%!important;min-width:0!important;height:126px!important;border:0!important;border-radius:0!important;background:radial-gradient(circle at 50% 45%,#e4f3f1 0,#d9ebe8 58%,#cfe2e0 100%)!important;overflow:hidden!important}
+#home .fish.discoveryCardV26 .art img,#home .fish.discoveryCardV26 .art svg{width:88%!important;max-width:100%!important;height:88%!important;object-fit:contain!important;filter:drop-shadow(0 10px 12px rgba(16,65,72,.16))!important}
+#home .fish.discoveryCardV26>div:not(.art){width:100%!important;min-width:0!important;padding:13px 14px 15px!important;overflow:hidden!important}
+#home .fish.discoveryCardV26 h3,#home .fish.discoveryCardV26 .name,#home .fish.discoveryCardV26 p,#home .fish.discoveryCardV26 .methodSmall{max-width:100%!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis}
+#home .fish.discoveryCardV26 h3{font-size:20px!important;line-height:1.15!important;margin:0 0 7px!important;color:#10272d!important}
+#home .fish.discoveryCardV26 p{font-size:11px!important;line-height:1.45!important;color:#72878b!important;margin:0 0 7px!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+#home .fish.discoveryCardV26 .difficulty,#home .fish.discoveryCardV26 .tag{font-size:9px!important}
+
+/* Local privacy and data controls */
+.privacyPanelV26{margin:0 14px 108px;border:1px solid rgba(99,137,143,.18);border-radius:20px;background:rgba(255,255,255,.82);box-shadow:0 9px 22px rgba(6,37,44,.06);overflow:hidden}
+.privacyPanelV26>summary{list-style:none;min-height:56px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+.privacyPanelV26>summary::-webkit-details-marker{display:none}
+.privacyPanelV26>summary span{display:grid;gap:2px}.privacyPanelV26>summary b{font-size:13px;color:var(--v26-ink)}.privacyPanelV26>summary small{font-size:10px;color:var(--v26-muted)}.privacyPanelV26>summary em{font-style:normal;font-size:10px;font-weight:900;color:#26776f}
+.privacyPanelV26[open]>summary{border-bottom:1px solid rgba(99,137,143,.13)}
+.privacyBodyV26{padding:14px 15px 16px}.privacyBodyV26 p{margin:0 0 11px;font-size:11px;line-height:1.65;color:#536d72}.privacyBodyV26 strong{color:#24474d}
+.privacyDeleteV26{width:100%;min-height:48px;margin-top:4px;border:1px solid rgba(153,58,58,.22);border-radius:14px;background:#fff2f2;color:#963b3b;font:inherit;font-size:12px;font-weight:900}
+.privacyDeleteNoteV26{display:block;margin-top:8px;font-size:9px;line-height:1.5;color:#839397}
+
+/* Result is an app workspace with local segmented rail */
+#resultRailV26{position:sticky;top:max(0px,env(safe-area-inset-top));z-index:1500;margin:-1px 12px 12px;padding:5px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border:1px solid rgba(97,138,143,.16);border-radius:18px;background:rgba(241,247,247,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 9px 22px rgba(6,37,44,.10)}
+#resultRailV26 button{min-height:44px;border:0;border-radius:13px;background:transparent;color:#657c81;font-weight:800;font-size:11px;letter-spacing:.10em}
+#resultRailV26 button.on{background:linear-gradient(145deg,#082a33,#0c414b);color:#fff}
+#result .body{padding-bottom:96px!important}
+#result .sectionTitle{margin-top:24px!important}
+
+/* Tackle sheet becomes native bottom sheet / control surface */
+.tackleBackdrop{background:rgba(2,20,25,.56)!important;backdrop-filter:blur(5px)!important;-webkit-backdrop-filter:blur(5px)!important}
+.appTackleSheetV26{top:auto!important;bottom:0!important;height:min(88dvh,760px)!important;border-radius:32px 32px 0 0!important;background:linear-gradient(180deg,#f7fbfb,#eef5f5)!important;box-shadow:0 -24px 70px rgba(2,24,30,.25)!important;border:1px solid rgba(113,151,156,.16)!important}
+.appTackleSheetV26:before{content:"";position:absolute;top:8px;left:50%;width:44px;height:5px;border-radius:999px;transform:translateX(-50%);background:rgba(84,111,116,.25)}
+.appTackleSheetV26 .tackleSheetHead{padding-top:24px!important;background:transparent!important;border-bottom:1px solid rgba(106,143,149,.12)!important}
+.appTackleSheetV26 #tackleClose{width:44px!important;height:44px!important;border-radius:16px!important;background:#e7f0f0!important;color:#183b43!important;font-size:0!important}
+.appTackleSheetV26 #tackleClose:after{content:"×";font-size:27px;font-weight:400}
+.tackleSheetIntroV26{margin:0 0 14px;padding:14px 16px;border-radius:18px;background:linear-gradient(145deg,#082d35,#0c434c);color:white;display:grid;gap:4px}
+.tackleSheetIntroV26 b{font-size:11px;letter-spacing:.14em;color:var(--v26-cyan)}
+.tackleSheetIntroV26 span{font-size:12px;color:rgba(255,255,255,.75)}
+.appTackleSheetV26 .tackleFormCard{border-radius:24px!important;border:1px solid rgba(105,143,149,.17)!important;background:rgba(255,255,255,.86)!important;box-shadow:0 10px 24px rgba(7,38,45,.07)!important}
+.appTackleSheetV26 .userCatalogNote{padding:10px 12px!important;border:0!important;border-radius:14px!important;background:#e9f5f3!important;color:#37716d!important;font-size:11px!important}
+.appTackleSheetV26 select,.appTackleSheetV26 input{min-height:50px!important;border-radius:16px!important;background:#f7fbfb!important;border-color:rgba(106,143,149,.24)!important}
+.appTackleSheetV26 .tackleAdd{min-height:52px!important;border-radius:17px!important;background:linear-gradient(145deg,#082d35,#0c434c)!important;box-shadow:0 8px 18px rgba(5,37,44,.14)!important}
+
+/* Result dock remains local primary action dock */
+#resultDockV20.ux23Dock{left:12px!important;right:12px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;border-radius:24px!important}
+
+@media(max-width:430px){
+  #home .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;padding-left:10px!important;padding-right:10px!important}
+  #home .fish.discoveryCardV26{min-height:204px!important;border-radius:21px!important}
+  #home .fish.discoveryCardV26 .art{height:112px!important}
+  #home .fish.discoveryCardV26 h3{font-size:18px!important}
+  .privacyPanelV26{margin-left:10px;margin-right:10px}
+  .appTackleSheetV26{height:91dvh!important;border-radius:28px 28px 0 0!important}
+}
+@media(max-width:359px){#home .grid{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:no-preference){
+  #home .fish.discoveryCardV26{transition:transform .16s ease,box-shadow .16s ease}
+  #home .fish.discoveryCardV26:active{transform:scale(.985)}
+}
+
+/* V27 clarity pass — less reading, stronger touch hierarchy */
+html.clarity-v27 #home .fish.discoveryCardV26{min-height:194px!important}
+html.clarity-v27 #home .fish.discoveryCardV26 .art{height:120px!important}
+html.clarity-v27 #home .fish.discoveryCardV26>div:not(.art){padding:11px 13px 12px!important}
+html.clarity-v27 #home .fish.discoveryCardV26 h3{margin-bottom:4px!important}
+html.clarity-v27 #home .fish.discoveryCardV26 p{-webkit-line-clamp:1!important;margin-bottom:3px!important;white-space:normal!important}
+html.clarity-v27 #resultRailV26 button{font-size:12px!important;letter-spacing:0!important;font-weight:900!important}
+html.clarity-v27 #result .ux23AnswerTitle{font-size:20px!important;margin-top:16px!important;margin-bottom:8px!important}
+html.clarity-v27 #result .ux23AnswerTitle small{display:none!important}
+html.clarity-v27 #result .firstCast{box-shadow:0 14px 30px rgba(6,44,52,.12)!important}
+html.clarity-v27 .tackleSheetIntroV26{display:none!important}
+html.clarity-v27 .appTackleSheetV26 .tackleSheetHead span{font-size:9px!important;opacity:.72}
+html.clarity-v27 .appTackleSheetV26 .tackleSheetHead h2{font-size:21px!important}
+html.clarity-v27 .appTackleSheetV26 .tackleFormCard{padding:14px!important}
+html.clarity-v27 .appTackleSheetV26 .tackleFormCard h3{font-size:18px!important;margin-bottom:10px!important}
+html.clarity-v27 .appTackleSheetV26 .userCatalogNote{justify-self:start!important;padding:6px 9px!important;border-radius:999px!important;font-size:9px!important;line-height:1!important}
+html.clarity-v27 .appTackleSheetV26 .catalogLoadState{min-height:8px!important;font-size:9px!important}
+html.clarity-v27 .appTackleSheetV26 .catalogLine>small,
+html.clarity-v27 .appTackleSheetV26 .ownedEditor>small,
+html.clarity-v27 .fitNote{display:none!important}
+html.clarity-v27 .tackleEntryModes{gap:5px!important;margin-bottom:9px!important}
+html.clarity-v27 .tackleEntryModes button{min-height:44px!important;font-size:12px!important}
+html.clarity-v27 .catalogSearch input{font-weight:700!important}
+html.clarity-v27 .tackleFormGrid label{font-size:9px!important;letter-spacing:.04em}
+html.clarity-v27 .tackleCount{grid-template-columns:1fr 1fr!important}
+html.clarity-v27 .tackleCount p{grid-column:1/-1!important;text-align:center!important;font-size:10px!important;line-height:1!important}
+html.clarity-v27 .tackleEmptyCta{gap:2px!important;padding:15px 17px!important}
+html.clarity-v27 .tackleEmptyCta span{font-size:10px!important}
+html.clarity-v27 .fitEmpty{gap:3px!important;padding:13px!important}
+html.clarity-v27 .fitEmpty span{font-size:10px!important}
+html.clarity-v27 .fitItems{gap:7px!important}
+html.clarity-v27 .fitItem{padding:11px 12px!important}
+@media(max-width:430px){
+  html.clarity-v27 #home .fish.discoveryCardV26{min-height:184px!important}
+  html.clarity-v27 #home .fish.discoveryCardV26 .art{height:108px!important}
+}

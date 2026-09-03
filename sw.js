@@ -1,28 +1,5 @@
-const CACHE='fish-target-shell-v20b';
-const SHELL=[
-  './',
-  './index.html',
-  './style.css',
-  './quick-plan.css',
-  './field-mode.css',
-  './pwa.css',
-  './continuity.css',
-  './tackle.css',
-  './fit-explain.css',
-  './simplify.css',
-  './data.js',
-  './products.js',
-  './app.js',
-  './field-mode.js',
-  './pwa.js',
-  './continuity.js',
-  './tackle.js',
-  './fit-explain.js',
-  './simplify.js',
-  './accuracy.js',
-  './manifest.webmanifest',
-  './icon.svg'
-];
+const CACHE='fish-target-shell-__CACHE_BUILD_ID__';
+const SHELL=__SHELL_MANIFEST__;
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
@@ -52,10 +29,11 @@ self.addEventListener('fetch',event=>{
       }
       return fresh;
     }catch(err){
-      const cached=await caches.match(request,{ignoreSearch:true});
+      const cache=await caches.open(CACHE);
+      const cached=await cache.match(request,{ignoreSearch:true});
       if(cached)return cached;
       if(request.mode==='navigate'){
-        const appShell=await caches.match('./index.html');
+        const appShell=await cache.match('./index.html');
         if(appShell)return appShell;
       }
       throw err;

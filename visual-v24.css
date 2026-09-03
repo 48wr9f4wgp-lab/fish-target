@@ -1,0 +1,119 @@
+/* V24 Marine Instrument visual pass — presentation only; UX23 hierarchy stays canonical */
+:root{
+  --v24-deep:#061d24;
+  --v24-deep2:#0a3942;
+  --v24-panel:#0b2c34;
+  --v24-panel2:#0d3740;
+  --v24-mint:#63e1d2;
+  --v24-mint-soft:#dff7f2;
+  --v24-ice:#f4f8f8;
+  --v24-steel:#91a6aa;
+  --v24-line:#d8e4e5;
+  --v24-shadow:0 18px 46px rgba(7,35,42,.10);
+  --v24-shadow-soft:0 8px 24px rgba(7,35,42,.07);
+}
+html,body{background:linear-gradient(180deg,#edf4f4 0,#f7fafa 38%,#f1f6f6 100%)!important}
+body{background-attachment:fixed!important}
+.app{position:relative}
+
+/* Home: same product language */
+#home .hero{background:
+  radial-gradient(circle at 82% 16%,rgba(99,225,210,.16),transparent 32%),
+  linear-gradient(145deg,#041b22 0%,#06303a 58%,#0b4650 100%)!important;
+  border-radius:0 0 34px 34px!important;
+  box-shadow:0 18px 52px rgba(3,28,35,.24)!important;
+}
+#home .brand{color:var(--v24-mint)!important;text-shadow:0 0 18px rgba(99,225,210,.18)}
+#home .search{border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 15px 36px rgba(0,0,0,.22)!important}
+#home .filterPanel,#home .fish{border-color:rgba(126,155,160,.22)!important;box-shadow:var(--v24-shadow-soft)!important}
+#home .fish .art{background:linear-gradient(145deg,#e8f4f2,#d5e9e6)!important}
+#home .fish:active{transform:scale(.978)!important}
+
+/* Result hero: darker, cleaner, more premium */
+#result .resultHero{position:relative;overflow:hidden;background:
+  radial-gradient(circle at 82% 22%,rgba(99,225,210,.18),transparent 30%),
+  radial-gradient(circle at 8% 100%,rgba(15,106,119,.22),transparent 34%),
+  linear-gradient(145deg,#031a21 0%,#062d36 54%,#0b414a 100%)!important;
+  border-radius:0 0 34px 34px!important;
+  box-shadow:0 20px 52px rgba(3,26,32,.22)!important;
+}
+#result .resultHero:after{content:"";position:absolute;inset:auto -8% -58% 30%;height:78%;border:1px solid rgba(99,225,210,.10);border-radius:50%;transform:rotate(-8deg);pointer-events:none}
+#result .resultHero .brand{color:var(--v24-mint)!important;letter-spacing:.23em!important}
+#result .back{background:rgba(255,255,255,.055)!important;border:1px solid rgba(157,224,218,.20)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;backdrop-filter:blur(12px)}
+#result .target h1{letter-spacing:-.045em!important;text-shadow:0 2px 22px rgba(0,0,0,.18)}
+#result .tart{border:1px solid rgba(139,213,207,.22)!important;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(99,225,210,.035))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 28px rgba(0,0,0,.12)!important}
+
+/* Answer heading */
+#result .ux23AnswerTitle{color:#0b756d!important;font-weight:950!important;letter-spacing:-.035em!important}
+#result .ux23AnswerTitle small{color:#718589!important;font-weight:750!important}
+
+/* FIRST CAST becomes the hero instrument panel */
+#result .firstCast{position:relative;overflow:hidden;background:
+  radial-gradient(circle at 94% 0%,rgba(99,225,210,.15),transparent 31%),
+  linear-gradient(145deg,var(--v24-panel) 0%,#08262e 55%,#0b343c 100%)!important;
+  border:1px solid rgba(112,213,202,.18)!important;
+  box-shadow:0 22px 48px rgba(5,31,38,.17),inset 0 1px 0 rgba(255,255,255,.05)!important;
+  color:#f8ffff!important;
+}
+#result .firstCast:after{content:"";position:absolute;width:180px;height:180px;right:-110px;bottom:-118px;border:1px solid rgba(99,225,210,.12);border-radius:50%;pointer-events:none}
+#result .firstCastKicker{color:var(--v24-mint)!important;text-shadow:0 0 18px rgba(99,225,210,.14)}
+#result .firstName{color:#fff!important;letter-spacing:-.045em!important}
+#result .firstGrid div{background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.045))!important;border:1px solid rgba(176,227,222,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.045)!important}
+#result .firstGrid span{color:#91aaae!important;text-transform:none}
+#result .firstGrid b{color:#f5ffff!important}
+#result .rotationLabel{color:#8da5a9!important}
+#result .rotation button{color:#cfe1e3!important}
+#result .rotation button+button:before{color:#668187!important}
+
+/* Method card: bright precision surface, not another generic white box */
+#result .planCard{background:linear-gradient(180deg,#ffffff 0%,#f9fbfb 100%)!important;border:1px solid rgba(110,143,148,.22)!important;box-shadow:var(--v24-shadow)!important}
+#result .planCard:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 4px 4px 0;background:linear-gradient(180deg,var(--v24-mint),#158f86);opacity:.9}
+#result .recommend{color:#0c8278!important;letter-spacing:.03em!important}
+#result .method{letter-spacing:-.035em!important}
+#result .difficultyBadge{background:#edf4f4!important;border:1px solid #e1ebec!important;color:#4d666b!important}
+#result .ux23MethodChange{background:#0d2e35!important;border-color:#0d2e35!important;color:#f5ffff!important;box-shadow:0 7px 16px rgba(7,39,47,.12)!important}
+#result .favoriteToggle{background:#f8fbfb!important;border:1px solid #cadbdd!important;color:#48676d!important;box-shadow:inset 0 1px 0 #fff,0 5px 14px rgba(9,45,53,.06)!important}
+#result .favoriteToggle.on{background:#0d2e35!important;color:var(--v24-mint)!important;border-color:#0d2e35!important}
+#result .planFacts span{background:#edf5f4!important;color:#48656a!important}
+#result .why{color:#536a70!important}
+
+/* Decision card: high-clarity status object */
+#result #tackleFitCard{background:linear-gradient(180deg,#fff,#fbfcfc)!important;border:1px solid rgba(110,143,148,.22)!important;box-shadow:var(--v24-shadow)!important}
+#result .tackleFitHead strong{letter-spacing:-.025em!important}
+#result .fitV20Summary{box-shadow:inset 0 1px 0 rgba(255,255,255,.45)!important}
+#result .fitV20Item{background:#fff!important;border-color:#dce7e8!important;box-shadow:0 6px 18px rgba(8,43,50,.045)!important}
+#result .fitV20Details{border-top-color:#e4ecec!important}
+
+/* Required tackle = technical spec plate */
+#result #gear{background:linear-gradient(180deg,#fff,#fbfcfc)!important;border-color:#d6e3e4!important;box-shadow:var(--v24-shadow-soft)!important}
+#result #gear .gearItem{background:transparent!important}
+#result #gear .gearItem span{letter-spacing:.035em!important;color:#72868a!important;font-weight:900!important}
+#result #gear .gearItem b{letter-spacing:-.018em!important;color:#132b31!important}
+#result #gear .gearItem+ .gearItem{border-top-color:#e7eeee!important}
+
+/* Field steps and disclosure cards */
+#result .steps>.card,#result .refine{border-color:rgba(110,143,148,.20)!important;box-shadow:var(--v24-shadow-soft)!important;background:linear-gradient(180deg,#fff,#fbfcfc)!important}
+#result .num{background:linear-gradient(145deg,#092b33,#0d4049)!important;box-shadow:0 6px 14px rgba(5,38,46,.14)!important}
+#result .tip{background:linear-gradient(90deg,#e4f7f3,#eff9f7)!important;border-left-color:#21aa9f!important}
+#result .refine summary em{background:#eaf6f4!important;padding:7px 10px!important;border-radius:999px!important}
+
+/* Floating action dock = compact glass control bar */
+#resultDockV20.ux23Dock{background:rgba(244,250,250,.84)!important;border:1px solid rgba(122,153,158,.24)!important;box-shadow:0 16px 40px rgba(6,38,45,.16),inset 0 1px 0 rgba(255,255,255,.78)!important;backdrop-filter:blur(22px) saturate(140%)!important;-webkit-backdrop-filter:blur(22px) saturate(140%)!important}
+#resultDockV20.ux23Dock button{background:#edf3f3!important;color:#526a70!important;border:0!important}
+#resultDockV20.ux23Dock #fieldModeBtn{background:linear-gradient(145deg,#082a32,#0b3c45)!important;color:#fff!important;box-shadow:0 7px 16px rgba(6,39,47,.15)!important}
+
+/* Small polish */
+#result .sectionTitle{letter-spacing:-.035em!important;color:#102b31!important}
+#result .sectionTitle small{color:#7a8c90!important}
+#result .body{background:transparent!important}
+#result button{-webkit-tap-highlight-color:transparent}
+
+@media(max-width:699px){
+  #result .resultHero{border-radius:0 0 28px 28px!important}
+  #result .firstCast{border-radius:22px!important}
+  #result .planCard,#result #tackleFitCard{border-radius:20px!important}
+}
+@media(prefers-reduced-motion:no-preference){
+  #result .firstCast,#result .planCard,#result #tackleFitCard{transition:transform .18s ease,box-shadow .18s ease}
+  #result .ux23MethodChange:active,#result .favoriteToggle:active,#resultDockV20 button:active{transform:scale(.97)}
+}

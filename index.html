@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html lang="ja">
+<html lang="ja" data-build="__BUILD_ID__" data-field-live="__FIELD_LIVE_STATE__">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
@@ -8,21 +8,22 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="FISH TARGET" name="apple-mobile-web-app-title"/>
-<link href="manifest.webmanifest" rel="manifest"/>
-<link href="icon.svg" rel="icon" type="image/svg+xml"/>
-<title>FISH TARGET v15</title>
-<link href="style.css" rel="stylesheet"/>
-<link href="quick-plan.css" rel="stylesheet"/>
-<link href="field-mode.css" rel="stylesheet"/>
-<link href="pwa.css" rel="stylesheet"/></head>
+<link href="manifest.webmanifest?v=__BUILD_ID__" rel="manifest"/>
+<link href="icon.svg?v=__BUILD_ID__" rel="icon" type="image/svg+xml"/>
+<link href="apple-touch-icon.png?v=__BUILD_ID__" rel="apple-touch-icon" sizes="180x180"/>
+<title>FISH TARGET __BUILD_VERSION__</title>
+<link href="style.css?v=__BUILD_ID__" rel="stylesheet"/>
+<link href="quick-plan.css?v=__BUILD_ID__" rel="stylesheet"/>
+<link href="field-mode.css?v=__BUILD_ID__" rel="stylesheet"/>
+<link href="pwa.css?v=__BUILD_ID__" rel="stylesheet"/></head>
 <body>
 <div class="app">
 <section class="view on" id="home">
 <header class="hero">
-<div class="brandRow"><div class="brand">FISH TARGET · SMART GAME PLAN</div><span class="version">V15</span></div>
+<div class="brandRow"><div class="brand">FISH TARGET · SMART GAME PLAN</div><span class="version">__BUILD_VERSION__</span></div>
 <h1>魚を選ぶ。<br/>最初の1投まで決まる。</h1>
 <p>おすすめ釣法、タックル、仕掛けに加えて「まず何を投げるか」「反応がなければ何を変えるか」まで1本化。</p>
-<div class="heroStats"><span>19魚種</span><span>LIVE WEATHER</span><span>JMA潮位表</span><span>25釣法</span><span>仕掛け図解</span></div>
+<div class="heroStats"><span>19魚種</span><span data-feature="field-live">LIVE WEATHER</span><span data-feature="field-live">JMA潮位表</span><span>25釣法</span><span>仕掛け図解</span></div>
 <div class="search"><span class="searchMark">⌕</span><input autocomplete="off" id="q" placeholder="魚を検索　例：ヒラメ、アジ、青物"/><button aria-label="検索を消す" id="clearSearch">×</button></div>
 </header>
 <main class="body">
@@ -39,7 +40,7 @@
 </section>
 <section class="view" id="result">
 <header class="resultHero">
-<div class="toprow"><button aria-label="戻る" class="back" id="back">‹</button><div class="brand">TARGET GAME PLAN · V15</div><span style="width:42px"></span></div>
+<div class="toprow"><button aria-label="戻る" class="back" id="back">‹</button><div class="brand">TARGET GAME PLAN · __BUILD_VERSION__</div><span style="width:42px"></span></div>
 <div class="target"><div><div class="brand" id="meta"></div><h1 id="rname"></h1><p id="sub"></p></div><div class="tart" id="tart"></div></div>
 </header>
 <main class="body">
@@ -53,7 +54,8 @@
 <div class="firstGrid"><div><span>サイズ / 重さ</span><b id="firstSize"></b></div><div><span>色</span><b id="firstColor"></b></div><div><span>レンジ</span><b id="firstRange"></b></div><div><span>操作</span><b id="firstAction"></b></div></div>
 <div class="rotationLabel">次に替える候補</div><div class="rotation" id="rotation"></div>
 <div class="switchRule" id="switchRule"></div>
-</section><h2 class="coreTitle sectionTitle">必須タックル<small>この4点を合わせれば基本セットが成立。</small></h2><div class="gear" id="gear"></div><h2 class="coreTitle sectionTitle">現場では3ステップ<small>迷ったらこの順番だけ実行。</small></h2><section class="card"><div class="steps" id="steps"></div><div class="tip" id="seasonTip"></div></section><div class="actions"><button id="copy">一覧をコピー</button><button class="save" id="save">このプランを保存</button></div><button class="fieldModeLaunch" id="fieldModeBtn" type="button">現場モードを開く</button><div class="detailDivider">ここから先は条件を詰めたい時だけ</div><h2 class="sectionTitle liveTitle">FIELD LIVE<small>現在天候・海況・次の6時間を取得して、FIRST CASTを自動補正。</small></h2><section class="card fieldLive">
+<button class="autoReset" hidden="" id="autoReset" type="button">FIRST CASTをAUTO提案に戻す</button>
+</section><h2 class="coreTitle sectionTitle">必須タックル<small>この4点を合わせれば基本セットが成立。</small></h2><div class="gear" id="gear"></div><h2 class="coreTitle sectionTitle">現場では3ステップ<small>迷ったらこの順番だけ実行。</small></h2><section class="card"><div class="steps" id="steps"></div><div class="tip" id="seasonTip"></div></section><div class="actions"><button id="copy">一覧をコピー</button><button class="save" id="save">このプランを保存</button></div><button class="fieldModeLaunch" id="fieldModeBtn" type="button">現場モードを開く</button><div class="detailDivider">ここから先は条件を詰めたい時だけ</div><h2 class="sectionTitle liveTitle" data-feature="field-live">FIELD LIVE<small>現在天候・海況・次の6時間を取得して、FIRST CASTを自動補正。</small></h2><section class="card fieldLive" data-feature="field-live">
 <div class="fieldHead"><div><span class="liveDot"></span><strong>LIVE CONDITIONS</strong><small id="fieldUpdated">釣行地を選んで取得</small></div><span class="fitBadge" id="fieldFit">FIELD STATUS · 未取得</span></div>
 <div class="spotPresets" id="spotPresets"></div>
 <div class="spotSearch"><input autocomplete="off" id="spotQuery" placeholder="市区町村・港周辺を検索 例：沼津、糸魚川"/><button id="spotSearchBtn">検索</button></div>
@@ -76,7 +78,7 @@
 <div class="fieldSafety" id="fieldSafety"></div>
 <div class="tideOfficial" id="tideOfficial"><div><b>気象庁 潮位表</b><small>天文潮位の予測。実測潮位ではない。</small></div><a href="https://www.data.jma.go.jp/kaiyou/db/tide/suisan/index.php" id="jmaTideLink" rel="noopener" target="_blank">公式を開く ›</a></div>
 <p class="sourceNote">Weather / Marine model: Open-Meteo（CC BY 4.0・Preview評価用途）。海況モデルは沿岸精度に限界があり航海用途不可。天文潮位: 気象庁。商用公開時はAPI契約を再設計する。</p>
-</section><h2 class="sectionTitle liveTitle">LIVE AUTO ADJUST<small>取得した条件を、最初の1投・規格・持ち物へ自動反映。</small></h2><section class="card autoAdjust" id="autoAdjust">
+</section><h2 class="sectionTitle liveTitle" data-feature="field-live">LIVE AUTO ADJUST<small>取得した条件を、最初の1投・規格・持ち物へ自動反映。</small></h2><section class="card autoAdjust" data-feature="field-live" id="autoAdjust">
 <div class="autoAdjustHead"><div><strong>AUTO GAME PLAN</strong><small id="autoAdjustUpdated">FIELD LIVE未取得でも基準プランは使用可能</small></div><span class="autoMode" id="autoMode">BASE</span></div>
 <div class="autoPickGrid">
 <div class="autoPick"><span>FIRST CAST</span><b id="autoCast">基準プラン</b></div>
@@ -85,12 +87,11 @@
 <div class="autoPick"><span>狙いやすい時間</span><b id="autoWindow">FIELD LIVE取得後に表示</b></div>
 </div>
 <div class="autoReason" id="autoReason">魚種・季節・時間帯の基準から開始。地点を選ぶと風・雨・波・流れを反映する。</div>
-<button class="autoReset" hidden="" id="autoReset" type="button">FIRST CASTをAUTO提案に戻す</button>
 </section>
 <details class="refine" id="refine">
 <summary><span><b>条件を調整</b><small>任意。魚を選ぶだけでも使える。</small></span><em id="refineSummary"></em></summary>
 <div class="refineBody">
-<p class="refineNote">季節・端末時刻は自動。風はFIELD LIVE取得時に自動反映。潮・水色は現段階では手動入力。</p>
+<p class="refineNote">季節・端末時刻は自動。風・潮・水色は必要な時だけ手動入力。</p>
 <div class="label">風</div><div class="choices" id="winds"></div>
 <div class="label">潮</div><div class="choices" id="tides"></div>
 <div class="label">水色</div><div class="choices" id="waters"></div>
@@ -101,7 +102,7 @@
 <div class="autoTop"><strong>NOW ASSIST</strong><span class="autoBadge">HEURISTIC / 目安</span></div>
 <div class="autoSignals"><div class="signal"><span>季節</span><b id="autoSeason"></b></div><div class="signal"><span>時間帯</span><b id="autoTime"></b></div><div class="signal"><span>時刻相性</span><b id="timeFit"></b></div><div class="signal"><span>攻めるレンジ</span><b id="autoRange"></b></div></div>
 <div class="autoAdvice" id="autoAdvice"></div>
-<div class="manualNote">風はFIELD LIVEの取得値を反映。波・流れは海況モデル値。潮汐は気象庁公式表を確認し、モデル海面高度を「公式の満干潮」とは扱わない。</div>
+<div class="manualNote">未入力時は魚種・季節・端末時刻の基準プラン。現地の風・潮・水色を入力した場合だけ補正する。</div>
 </section>
 <h2 class="sectionTitle">推奨根拠<small>なぜこのGame Planなのかを分解。</small></h2>
 <section class="card evidence" id="evidence"></section>
@@ -137,7 +138,7 @@
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
 <div aria-live="polite" class="networkStatus" id="networkStatus" hidden>OFFLINE · 基本診断は利用可</div>
 </div>
-<script src="data.js"></script>
-<script src="products.js"></script>
-<script src="app.js"></script><script src="field-mode.js"></script><script src="pwa.js"></script>
+<script src="data.js?v=__BUILD_ID__"></script>
+<script src="products.js?v=__BUILD_ID__"></script>
+<script src="app.js?v=__BUILD_ID__"></script><script src="field-mode.js?v=__BUILD_ID__"></script><script src="pwa.js?v=__BUILD_ID__"></script>
 </body></html>

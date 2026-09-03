@@ -1,0 +1,43 @@
+{
+  "template_only": true,
+  "stage": "research",
+  "publication_ready": false,
+  "note": "Replace placeholders from manufacturer-official evidence. Do not change stage to production without an explicit publication-rights decision.",
+  "batch_id": "replace-maker-series-year",
+  "expected_maker": "REPLACE",
+  "rows": [
+    {
+      "maker": "REPLACE",
+      "category": "rod",
+      "series": "REPLACE",
+      "generation": "unknown",
+      "model": "REPLACE",
+      "display_name": "REPLACE",
+      "status": "unknown",
+      "specs": {
+        "length_ft": null,
+        "length_m": null,
+        "pieces": null,
+        "weight_g": null,
+        "lure_min_g": null,
+        "lure_max_g": null,
+        "jig_max_g": null,
+        "line_pe_min": null,
+        "line_pe_max": null,
+        "reel_size": null,
+        "gear_ratio": null,
+        "retrieve_cm": null,
+        "max_drag_kg": null
+      },
+      "source": {
+        "source_type": "manufacturer_official",
+        "source_provider": "REPLACE",
+        "source_url": "https://example.invalid/replace",
+        "retrieved_at": "YYYY-MM-DD",
+        "last_verified": "YYYY-MM-DD",
+        "license_status": "restricted"
+      },
+      "identifiers": {}
+    }
+  ]
+}

@@ -1,12 +1,6 @@
 (()=>{
   const once=(el,key)=>{if(!el||el.dataset[key])return false;el.dataset[key]='1';return true};
-  const text=(sel,value)=>{const el=document.querySelector(sel);if(el)el.textContent=value};
-
-  function setVersion(){
-    const build=String(globalThis.FISH_TARGET_BUILD_VERSION||'20');
-    document.title=`FISH TARGET v${build}`;
-    text('.version',`V${build}`);
-    text('#result .toprow .brand',`TARGET GAME PLAN · V${build}`);
+  function updateHeroCopy(){
     const hero=document.querySelector('.hero > p');
     if(hero)hero.textContent='魚を選ぶだけで、釣法・FIRST CAST・手持ちタックル判定まで。';
   }
@@ -79,7 +73,8 @@
     if(autoCard){autoCard.classList.add('v19Retired');const h=autoCard.previousElementSibling;if(h?.matches('h2.sectionTitle'))h.classList.add('v19Retired')}
 
     if(body&&fieldBtn){
-      const conditions=makeGroup('v19Conditions','今日の条件を反映','天候・海況・手動条件でプランを補正',actions||fieldBtn);
+      const fieldLiveEnabled=document.documentElement.dataset.fieldLive==='on';
+      const conditions=makeGroup('v19Conditions',fieldLiveEnabled?'今日の条件を反映':'条件を調整',fieldLiveEnabled?'天候・海況・手動条件でプランを補正':'風・潮・水色を必要な時だけ入力',actions||fieldBtn);
       const cbody=conditions?.querySelector('.v19GroupBody');
       const fieldLive=document.querySelector('#result .fieldLive');
       const autoAdjust=document.getElementById('autoAdjust');
@@ -87,12 +82,14 @@
       if(fieldLive&&!fieldLive.closest('#v19Conditions'))moveWithHeading(fieldLive,cbody);
       if(autoAdjust&&!autoAdjust.closest('#v19Conditions'))moveWithHeading(autoAdjust,cbody);
       if(refine&&!refine.closest('#v19Conditions'))cbody.appendChild(refine);
-      let state=document.getElementById('v19ConditionState');
-      if(!state){state=document.createElement('span');state.id='v19ConditionState';state.className='v19ConditionState';conditions.querySelector('summary span')?.appendChild(state)}
-      const fit=document.getElementById('fieldFit');
-      const sync=()=>{if(state)state.textContent=fit?.textContent?.replace('FIELD STATUS · ','')||'未取得'};
-      sync();
-      if(fit&&!fit.dataset.v19Observed){fit.dataset.v19Observed='1';new MutationObserver(sync).observe(fit,{childList:true,characterData:true,subtree:true})}
+      if(fieldLiveEnabled){
+        let state=document.getElementById('v19ConditionState');
+        if(!state){state=document.createElement('span');state.id='v19ConditionState';state.className='v19ConditionState';conditions.querySelector('summary span')?.appendChild(state)}
+        const fit=document.getElementById('fieldFit');
+        const sync=()=>{if(state)state.textContent=fit?.textContent?.replace('FIELD STATUS · ','')||'未取得'};
+        sync();
+        if(fit&&!fit.dataset.v19Observed){fit.dataset.v19Observed='1';new MutationObserver(sync).observe(fit,{childList:true,characterData:true,subtree:true})}
+      }
 
       const details=makeGroup('v19Details','詳細を見る','仕掛け・根拠・製品・持ち物・注意点',conditions);
       const dbody=details?.querySelector('.v19GroupBody');
@@ -106,7 +103,7 @@
     collapseFitDetails();
   }
 
-  function apply(){setVersion();compactHome();compactResult()}
+  function apply(){updateHeroCopy();compactHome();compactResult()}
   apply();
   if(typeof renderResult==='function'){
     const prev=renderResult;

@@ -1,0 +1,61 @@
+{
+  "schema_version": "FISH-TAXONOMY-RESOLUTIONS-1",
+  "reviewed_at": "2026-09-01",
+  "purpose": "Resolve product-level taxonomy semantics independently from image-candidate rights. This registry never approves image binaries or publication rights.",
+  "records": [
+    {
+      "species_name": "カレイ",
+      "resolution_kind": "generic-category",
+      "canonical_taxon": null,
+      "canonical_name": null,
+      "visual_strategy": "generic-category-svg",
+      "evidence_url": "https://www.fra.go.jp/shigen/fisheries_resources/stock_assessment_result/enshi_kokushi_betsu.html",
+      "rationale": "The product label is a broad angling category while Japanese fisheries references distinguish multiple カレイ species. Do not bind the category to the current マコガレイ image candidate."
+    },
+    {
+      "species_name": "オニカサゴ",
+      "resolution_kind": "canonical-taxon",
+      "canonical_taxon": "Scorpaena neglecta",
+      "canonical_name": "イズカサゴ",
+      "visual_strategy": "canonical-taxon-candidate-required",
+      "evidence_url": "https://www.fra.go.jp/home/kenkyushokai/book/bulletin/files/bull25_katayama.pdf",
+      "rationale": "The product method data is a deep-water boat target and explicitly includes イズカサゴ as a synonym. FRA material distinguishes イズカサゴ Scorpaena neglecta from standard オニカサゴ Scorpaenopsis cirrosa, so the current cirrosa candidate must not be used for this product intent."
+    },
+    {
+      "species_name": "タナゴ",
+      "resolution_kind": "generic-category",
+      "canonical_taxon": null,
+      "canonical_name": null,
+      "visual_strategy": "generic-category-svg",
+      "evidence_url": "https://www.fra.go.jp/shigen/fisheries_resources/stock_assessment_result/enshi_kokushi_betsu.html",
+      "rationale": "The product label and aliases represent a freshwater multi-species angling category. Japanese fisheries references also use タナゴ as another name for ウミタナゴ, reinforcing that one species image would be misleading."
+    },
+    {
+      "species_name": "ヒイカ",
+      "resolution_kind": "generic-category",
+      "canonical_taxon": null,
+      "canonical_name": null,
+      "visual_strategy": "generic-category-svg",
+      "evidence_url": "https://www.fra.go.jp/shigen/fisheries_resources/stock_assessment_result/enshi_kokushi_betsu.html",
+      "rationale": "FRA lists ヒイカ as another name for ジンドウイカ, but the product aliases also include コイカ・テッポウイカ・ベイカ. Preserve the product as a small-coastal-squid category instead of silently binding all aliases to one species image."
+    },
+    {
+      "species_name": "エソ",
+      "resolution_kind": "canonical-taxon",
+      "canonical_taxon": "Saurida macrolepis",
+      "canonical_name": "マエソ",
+      "visual_strategy": "canonical-taxon-candidate-required",
+      "evidence_url": "https://www.godac.jamstec.go.jp/bismal/j/view/9016475",
+      "rationale": "The product alias intent is マエソ. JAMSTEC BISMaL identifies Saurida macrolepis as マエソ; do not substitute other Saurida species imagery."
+    },
+    {
+      "species_name": "マルイカ",
+      "resolution_kind": "canonical-taxon",
+      "canonical_taxon": "Uroteuthis (Photololigo) edulis",
+      "canonical_name": "ケンサキイカ",
+      "visual_strategy": "canonical-taxon-candidate-required",
+      "evidence_url": "https://www.godac.jamstec.go.jp/bismal/j/view/9037334",
+      "rationale": "The product method data explicitly groups マルイカ with ケンサキイカ. JAMSTEC BISMaL accepts Uroteuthis (Photololigo) edulis as ケンサキイカ; image rights still require a separate licensed candidate."
+    }
+  ]
+}

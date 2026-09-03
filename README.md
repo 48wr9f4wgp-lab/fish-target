@@ -4,10 +4,10 @@ Fish-first fishing setup advisor. Choose a target fish and get a recommended met
 
 ## Current build
 
-- Canonical working version: v20 accuracy candidate
+- Canonical build version: `build.config.json` (single source of truth)
 - DEV / device test: GitHub Pages from `main`
 - Primary target: iPhone Safari / Home Screen PWA-style usage
-- Production candidate: Vercel only at release checkpoints; one project / one fixed URL
+- Current and release-candidate delivery route: GitHub Pages only
 - Offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
 
 ## Product rule
@@ -42,8 +42,9 @@ Anything outside that path is secondary and should be collapsed, hidden from fir
 - `tackle.js` / `tackle.css` — MY TACKLE and compatibility checks
 - `fit-explain.js` / `fit-explain.css` — compatibility reasoning and buy guidance
 - `simplify.js` / `simplify.css` — information hierarchy and progressive disclosure
-- `accuracy.js` — v20 high-risk recommendation and unit-semantics corrections
+- Recommendation corrections are canonical in `data.js`, `app.js`, and `tackle.js`; no late accuracy patch is required.
 - `ACCURACY_AUDIT_V20.md` — 19-species accuracy audit and release caveats
+- `scripts/build.mjs` — generates version-consistent `dist/index.html` and `dist/sw.js`
 
 ## Release workflow
 
@@ -53,7 +54,9 @@ Anything outside that path is secondary and should be collapsed, hidden from fir
 4. Open a PR and inspect the diff.
 5. Merge to `main` only after QA passes.
 6. GitHub Pages automatically updates the DEV URL for iPhone testing.
-7. Vercel is updated only at production checkpoints.
+7. Keep GitHub Pages as the only current deployment route.
+
+Local verification: run `npm test`, then `npm run serve` and open `/dist/` for browser/offline QA.
 
 ## Critical regression flows
 

@@ -1,33 +1,31 @@
-name: static-qa
+name: rc-qa
 
 on:
-  push:
   pull_request:
+  push:
+    branches: [main, chatgpt/rc-v23-v8, chatgpt/catalog-production-v1, chatgpt/catalog-lazy-load-v1, chatgpt/catalog-scale-v1, chatgpt/catalog-multimaker-v2, chatgpt/catalog-multimaker-v3, chatgpt/catalog-multimaker-v4, chatgpt/catalog-multimaker-v5, chatgpt/catalog-multimaker-v6, chatgpt/catalog-multimaker-v7, chatgpt/catalog-multimaker-v8, chatgpt/catalog-multimaker-v9, chatgpt/catalog-multimaker-v10, chatgpt/catalog-multimaker-v11, chatgpt/catalog-multimaker-v13, chatgpt/target-method-expansion-v1, chatgpt/target-method-expansion-v2, chatgpt/target-method-expansion-v3, chatgpt/target-method-expansion-v4]
+
+concurrency:
+  group: rc-qa-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  static-qa:
+  regression:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check JavaScript syntax
+      - name: Syntax, build, regression, and catalog gates
         run: |
-          for f in *.js; do
-            echo "checking $f"
-            node --check "$f"
-          done
-      - name: Check Service Worker shell files exist
-        run: |
-          node - <<'NODE'
-          const fs=require('fs');
-          const sw=fs.readFileSync('sw.js','utf8');
-          const files=[...sw.matchAll(/'\.\/([^']+)'/g)].map(m=>m[1]).filter(Boolean);
-          const missing=files.filter(f=>f!==''&&!fs.existsSync(f));
-          if(missing.length){
-            console.error('Missing cached files:',missing);
-            process.exit(1);
-          }
-          console.log(`Service Worker shell OK: ${files.length} files`);
-          NODE
+          npm run test:syntax
+          npm test
+          npm run catalog:contract
+          node scripts/catalog-scale-qa.mjs
+          node scripts/publication-build-qa.mjs

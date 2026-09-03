@@ -2,8 +2,7 @@ name: deploy-pages
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches: [main, codex/release-rc1, chatgpt/feature-v23-tackle-catalog, chatgpt/catalog-multimaker-v13, chatgpt/v23-daiwa-catalog-preview, chatgpt/v23-visual-pass1, chatgpt/rc-v23-v8]
 
 permissions:
   contents: read
@@ -17,30 +16,24 @@ concurrency:
 jobs:
   deploy:
     environment:
-      name: github-pages
+      name: ${{ github.ref == 'refs/heads/main' && 'github-pages' || github.ref == 'refs/heads/codex/release-rc1' && 'github-pages-rc' || 'github-pages-v23' }}
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Prepare V20 cache-busted entrypoint
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          for name in ['style.css','quick-plan.css','field-mode.css','pwa.css']:
-              s = s.replace(f'href="{name}"', f'href="{name}?v=20"')
-          for name in ['data.js','products.js','app.js','field-mode.js','pwa.js']:
-              s = s.replace(f'src="{name}"', f'src="{name}?v=20"')
-          p.write_text(s, encoding='utf-8')
-          PY
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test and build
+        run: npm test
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
       - name: Deploy Pages
         id: deployment
         uses: actions/deploy-pages@v4
