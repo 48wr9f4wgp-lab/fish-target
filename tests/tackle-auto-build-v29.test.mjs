@@ -11,7 +11,7 @@ const count=(source,token)=>source.split(token).length-1;
 
 test('auto build reuses resolver/catalog fit instead of inventing recommendation data',()=>{
   assert.match(auto,/FISH_TARGET_RESOLVER/);
-  assert.match(auto,/resolver\.matchCatalog\(plan\.plan_id/);
+  assert.match(auto,/resolver\.matchCatalog\(plan\.plan_id,'default',\{catalog,includeResearch:true,includeSynthetic:false\}\)/,'catalog context must be the resolver third argument');
   assert.match(auto,/includeResearch:true/);
   assert.match(auto,/includeSynthetic:false/);
   assert.match(auto,/statusRank=Object\.freeze\(\{current:0,unknown:1,discontinued:2,legacy:3\}\)/);
