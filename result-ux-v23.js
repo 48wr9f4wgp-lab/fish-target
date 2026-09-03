@@ -13,11 +13,13 @@
     if(!title?.matches('h2.sectionTitle'))title=document.querySelector('#result .ux23AnswerTitle');
     if(title){
       title.classList.add('ux23AnswerTitle');
-      title.innerHTML='まずこれを投げる<small>魚を選んだら、ここだけ見ればOK。</small>';
-      body.insertBefore(title,plan);
+      title.innerHTML='STEP 2 · 最初の1投<small>釣り方を決めたら、ここから始める。</small>';
+      if(plan.nextElementSibling!==title)body.insertBefore(plan,title);
+      if(title.nextElementSibling!==first)title.insertAdjacentElement('afterend',first);
     }
-    body.insertBefore(first,plan);
-    const kicker=document.getElementById('firstCastKicker');if(kicker)kicker.textContent='FIRST CAST · 最初の1投';
+    const auto=document.getElementById('tackleAutoBuildV29');
+    if(auto&&first.nextElementSibling!==auto)first.insertAdjacentElement('afterend',auto);
+    const kicker=document.getElementById('firstCastKicker');if(kicker)kicker.textContent='FIRST CAST';
     const rotationLabel=document.querySelector('#result .rotationLabel');if(rotationLabel)rotationLabel.textContent='反応がなければ →';
 
     const gear=document.getElementById('gear'),fit=document.getElementById('tackleFitCard');
@@ -28,7 +30,7 @@
   function compactMethodChoice(){
     const plan=document.querySelector('#result .planCard'),top=plan?.querySelector('.planTop'),picker=document.getElementById('methodPickerV1');
     if(!plan||!top||!picker)return;
-    const recommend=plan.querySelector('.recommend');if(recommend)recommend.textContent='釣り方';
+    const recommend=plan.querySelector('.recommend');if(recommend)recommend.textContent='STEP 1 · 釣り方';
     let change=document.getElementById('ux23MethodChange');
     if(!change){
       change=document.createElement('button');change.id='ux23MethodChange';change.type='button';change.className='ux23MethodChange';change.textContent='変更';top.appendChild(change);
@@ -68,7 +70,7 @@
     dock.classList.add('ux23Dock');
     const home=dock.querySelector('[data-action="home"]');if(home){home.hidden=true;home.setAttribute('aria-hidden','true')}
     const save=document.getElementById('save');if(save){save.textContent='保存';save.setAttribute('aria-label','このプランを保存')}
-    const field=document.getElementById('fieldModeBtn');if(field){field.textContent='現場モード';field.setAttribute('aria-label','現場モードを開く')}
+    const field=document.getElementById('fieldModeBtn');if(field){field.textContent='STEP 4 · 現場へ';field.setAttribute('aria-label','現場モードを開く')}
   }
 
   function syncTackleReason(){
@@ -89,5 +91,5 @@
   apply();
   if(typeof renderResult==='function'){const prev=renderResult;renderResult=function(...args){const out=prev.apply(this,args);apply();return out}}
   window.addEventListener('pageshow',apply);
-  globalThis.FISH_TARGET_RESULT_UX_V23=Object.freeze({version:'V23D1',render:apply});
+  globalThis.FISH_TARGET_RESULT_UX_V23=Object.freeze({version:'V23D2-RC32',render:apply});
 })();
