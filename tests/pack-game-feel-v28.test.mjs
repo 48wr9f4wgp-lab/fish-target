@@ -9,12 +9,20 @@ const [runtime,css,pwa,build]=await Promise.all([
   readFile(new URL('../scripts/build.mjs',import.meta.url),'utf8')
 ]);
 
-test('quick pack ships a compact default essentials list',()=>{
+test('packing surface ships a compact default essentials list',()=>{
   for(const item of ['日焼け止め','虫除け','飲み物','タオル','モバイルバッテリー','ヘッドライト / ライト','ゴミ袋','救急用品'])assert.match(runtime,new RegExp(item.replace('/','\\/')));
-  assert.match(runtime,/QUICK-PACK-V28/);
+  assert.match(runtime,/PACK-STANDALONE-V30/);
 });
 
-test('quick pack reuses owned checklist storage and stays editable',()=>{
+test('packing surface is independent from fish result flow',()=>{
+  assert.match(runtime,/packStandaloneV30/);
+  assert.match(runtime,/appPackTabV30/);
+  assert.match(runtime,/data-app-tab/);
+  assert.doesNotMatch(runtime,/v19Conditions|v19Details|#result \.actions/,'packing UI must not anchor into result flow');
+  assert.match(runtime,/釣行フローとは別に/);
+});
+
+test('packing surface reuses owned checklist storage and stays editable',()=>{
   assert.match(runtime,/fish_target_v9_checklists/);
   assert.match(runtime,/__quick_pack_v28_config/);
   assert.match(runtime,/__quick_pack_v28_checked/);
@@ -29,12 +37,14 @@ test('editable labels are escaped before innerHTML rendering',()=>{
   assert.match(runtime,/const id=escapeHtml\(item\.id\),name=escapeHtml\(item\.name\)/);
 });
 
-test('quick pack adds no network dependency',()=>{
+test('packing surface adds no network dependency',()=>{
   assert.doesNotMatch(runtime,/\bfetch\s*\(/);
   assert.doesNotMatch(runtime,/XMLHttpRequest/);
 });
 
-test('game feel respects reduced motion and uses focused feedback',()=>{
+test('standalone layout keeps four-tab shell and reduced-motion support',()=>{
+  assert.match(css,/grid-template-columns:repeat\(4,1fr\)/);
+  assert.match(css,/\.packStandaloneV30/);
   assert.match(css,/prefers-reduced-motion:reduce/);
   assert.match(css,/gameFeelCastV28/);
   assert.match(css,/gameFeelGearV28/);
