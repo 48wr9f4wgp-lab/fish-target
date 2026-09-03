@@ -33,7 +33,8 @@
     if(level===1)return Object.freeze({type:'acceptable_substitution',component:kind,severity:1});
     let direction='';
     if(kind==='rod'){
-      const rank=candidate.item?.power&&rules.POWER.includes(String(candidate.item.power).toUpperCase())?rules.POWER.indexOf(String(candidate.item.power).toUpperCase()):null;
+      const power=String(candidate.item?.power||'').toUpperCase();
+      const rank=power&&rules.POWER.includes(power)?rules.POWER.indexOf(power):null;
       direction=rules.directionLabel(rules.direction(rank,ideal.power_range));
     }else if(kind==='reel')direction=rules.directionLabel(rules.direction(candidate.item?.size,ideal.size_range));
     return Object.freeze({type:direction==='underspec'?'underspec':direction==='overspec'?'overspec':'incompatible',component:kind,severity:2});
@@ -49,17 +50,12 @@
     const idealSet=buildIdealSet(plan);
     if(!idealSet)return null;
     const logic=globalThis.FISH_TARGET_TACKLE_LOGIC;
-    const resolver=globalThis.FISH_TARGET_RESOLVER;
     const rods=Array.isArray(ownedTackle?.rods)?ownedTackle.rods:[];
     const reels=Array.isArray(ownedTackle?.reels)?ownedTackle.reels:[];
-    if(!logic?.rodFit||!logic?.reelFit||!resolver?.resolvePlan){
+    if(!logic?.rodFit||!logic?.reelFit){
       const gaps=[idealSet.rod.required?{type:'missing_component',component:'rod',severity:2}:null,idealSet.reel.required?{type:'missing_component',component:'reel',severity:2}:null].filter(Boolean).map(freeze);
       return Object.freeze({idealSet,myBestSet:null,gaps:Object.freeze(gaps),compatibility:'incompatible',reasons:Object.freeze([Object.freeze({code:'tackle-logic-unavailable',component:'set',level:2})])});
     }
-    const species=plan.species_id||plan.species_name;
-    const method=plan.method_id||'default';
-    const fitContext=resolver.evaluateOwnedTackle(species,method,{rods:[],reels:[]},context);
-    void fitContext;
     const runtimeFish=globalThis.FISH_TARGET_SPECIES_REGISTRY?.runtimeFish?.(plan.species_id)||{};
     const fitPlan={...runtimeFish,...plan.requirements,style:plan.style,method:plan.method,size:plan.first_cast?.size||'',...(context?.plan||{})};
     const rotation={size:plan.first_cast?.size||'',...(context?.rotation||{})};
@@ -76,18 +72,24 @@
     }
     const partialRod=!best&&evaluatedRods.length?evaluatedRods.slice().sort((a,b)=>fitLevel(a.fit)-fitLevel(b.fit)||a.index-b.index)[0]:null;
     const partialReel=!best&&evaluatedReels.length?evaluatedReels.slice().sort((a,b)=>fitLevel(a.fit)-fitLevel(b.fit)||a.index-b.index)[0]:null;
-    const rod=best?.rod||partialRod,reel=best?.reel||partialReel,pair=best?.pair||rules.pairFit(rod?.item||null,reel?.item||null,idealSet);
+    const rod=best?.rod||partialRod,reel=best?.reel||partialReel;
+    const hasPair=Boolean(rod&&reel);
+    const pair=best?.pair||(hasPair?rules.pairFit(rod.item,reel.item,idealSet):Object.freeze({level:2,code:'pair-missing-component',rodDirection:0,reelDirection:0}));
     const dataComplete=Boolean((!idealSet.rod.required||idealSet.rod.power_range||idealSet.rod.length_ft)&&(!idealSet.reel.required||idealSet.reel.size_range));
     const compatibility=compatibilityFor({rod,reel,pair,idealSet,dataComplete});
-    const gaps=[gapForComponent('rod',rod,idealSet),gapForComponent('reel',reel,idealSet),fitLevel(pair)>=1?Object.freeze({type:fitLevel(pair)>=2?'incompatible':'acceptable_substitution',component:'pair',severity:fitLevel(pair)}):null].filter(Boolean);
+    const gaps=[
+      gapForComponent('rod',rod,idealSet),
+      gapForComponent('reel',reel,idealSet),
+      hasPair&&fitLevel(pair)>=1?Object.freeze({type:fitLevel(pair)>=2?'incompatible':'acceptable_substitution',component:'pair',severity:fitLevel(pair)}):null
+    ].filter(Boolean);
     const myBestSet=(rod||reel)?Object.freeze({
       rod:rod?rod.item:null,
       reel:reel?reel.item:null,
-      fits:Object.freeze({rod:rod?freeze(rod.fit):null,reel:reel?freeze(reel.fit):null,pair:freeze(pair)}),
+      fits:Object.freeze({rod:rod?freeze(rod.fit):null,reel:reel?freeze(reel.fit):null,pair:hasPair?freeze(pair):null}),
       score:best?.score??null,
       compatible:!['poor','incompatible'].includes(compatibility)
     }):null;
-    return Object.freeze({idealSet,myBestSet,gaps:Object.freeze(gaps),compatibility,reasons:reasonsFor(rod,reel,pair,compatibility,dataComplete)});
+    return Object.freeze({idealSet,myBestSet,gaps:Object.freeze(gaps),compatibility,reasons:reasonsFor(rod,reel,hasPair?pair:null,compatibility,dataComplete)});
   }
   function resolve(speciesValue,methodId='default',ownedTackle={},context={}){
     const resolver=globalThis.FISH_TARGET_RESOLVER;
