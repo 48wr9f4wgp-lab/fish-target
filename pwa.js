@@ -35,7 +35,7 @@
     if(targetName)new MutationObserver(()=>{void maybeLoadLureUi()}).observe(targetName,{childList:true,subtree:true,characterData:true});
   }
   const extensionStyles=[
-    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css'],['./game-feel-v28.css','game-feel-v28-css']
+    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css'],['./game-feel-v28.css','game-feel-v28-css'],['./tackle-auto-build-v29.css','tackle-auto-build-v29-css']
   ];
   const extensionCss=Promise.all(extensionStyles.map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
@@ -72,6 +72,7 @@
       await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./app-shell-v26.js','app-shell-v26-js');
       await loadScript('./pack-checklist-v28.js','pack-checklist-v28-js');
+      await loadScript('./tackle-auto-build-v29.js','tackle-auto-build-v29-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
       await maybeLoadLureUi();
     }catch(err){console.error('extension bootstrap failed',err)}
