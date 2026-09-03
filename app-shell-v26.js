@@ -40,16 +40,16 @@
     if(!rail){
       const hero=$('.resultHero',result);if(!hero)return;
       rail=document.createElement('nav');rail.id='resultRailV26';rail.className='resultRailV26';rail.setAttribute('aria-label','プラン内ナビゲーション');
-      rail.innerHTML=`<button class="on" data-jump="plan" type="button">① 投げる</button><button data-jump="tackle" type="button">② 道具</button><button data-jump="field" type="button">③ 現場</button>`;
+      rail.innerHTML=`<button class="on" data-jump="plan" type="button">釣り方</button><button data-jump="tackle" type="button">セット</button><button data-jump="field" type="button">現場</button>`;
       hero.insertAdjacentElement('afterend',rail);
       rail.addEventListener('click',e=>{
         const btn=e.target.closest('button');if(!btn)return;
-        const target=btn.dataset.jump==='plan'?$('.ux23AnswerTitle',result)||$('.firstCast',result):btn.dataset.jump==='tackle'?$('#tackleFitCard'):$('.steps',result);
+        const target=btn.dataset.jump==='plan'?$('.planCard',result):btn.dataset.jump==='tackle'?$('#tackleAutoBuildV29')||$('#tackleFitCard'):$('.steps',result);
         if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
         $$('#resultRailV26 button').forEach(x=>x.classList.toggle('on',x===btn));
       });
     }
-    const labels={plan:'① 投げる',tackle:'② 道具',field:'③ 現場'};
+    const labels={plan:'釣り方',tackle:'セット',field:'現場'};
     $$('button[data-jump]',rail).forEach(btn=>{const text=labels[btn.dataset.jump];if(text&&btn.textContent!==text)btn.textContent=text});
   }
 
@@ -75,9 +75,10 @@
   }
 
   function simplifyDynamicCopy(){
-    const answer=$('#result .ux23AnswerTitle');if(answer&&answer.textContent.trim()!=='まず投げる')answer.textContent='まず投げる';
-    const kicker=$('#firstCastKicker');if(kicker&&kicker.textContent!=='最初の1投')kicker.textContent='最初の1投';
+    const answer=$('#result .ux23AnswerTitle');if(answer&&answer.innerHTML!=='STEP 2 · 最初の1投<small>釣り方を決めたら、ここから始める。</small>')answer.innerHTML='STEP 2 · 最初の1投<small>釣り方を決めたら、ここから始める。</small>';
+    const kicker=$('#firstCastKicker');if(kicker&&kicker.textContent!=='FIRST CAST')kicker.textContent='FIRST CAST';
     const rotation=$('#result .rotationLabel');if(rotation&&rotation.textContent!=='ダメなら →')rotation.textContent='ダメなら →';
+    const recommend=$('#result .planCard .recommend');if(recommend&&recommend.textContent!=='STEP 1 · 釣り方')recommend.textContent='STEP 1 · 釣り方';
     const manage=$('#tackleManage');if(manage&&manage.textContent!=='編集')manage.textContent='編集';
     const empty=$('#tackleEmptyCta');if(empty){const b=$('b',empty),s=$('span',empty);if(b)b.textContent='タックルを追加';if(s)s.textContent='ロッド・リールを選ぶ ›'}
     const count=$('.tackleCount p');if(count)count.textContent='魚ごとに自動判定';
