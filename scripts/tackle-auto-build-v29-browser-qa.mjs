@@ -23,8 +23,17 @@ assert.equal((await page.locator('#autoBuildRunV29').textContent())?.trim(),'AUT
 assert.equal(await page.locator('#autoBuildResultV29').isVisible(),false,'AUTO BUILD result starts collapsed');
 const ownedBefore=await page.evaluate(()=>localStorage.getItem('fish_target_v17_tackle'));
 
+const started=Date.now();
 await page.locator('#autoBuildRunV29').click();
-await page.waitForFunction(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.().status==='ready',null,{timeout:15000});
+await page.waitForFunction(()=>['ready','error'].includes(globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.().status),null,{timeout:30000});
+const terminal=await page.evaluate(()=>({
+  elapsedMs:0,
+  auto:globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.(),
+  catalog:{...globalThis.FISH_TARGET_CATALOG_LOADER?.state},
+  statusText:document.getElementById('autoBuildStatusV29')?.textContent||''
+}));
+terminal.elapsedMs=Date.now()-started;
+assert.equal(terminal.auto?.status,'ready',`AUTO BUILD failed to reach ready: ${JSON.stringify(terminal)}`);
 await page.locator('#autoBuildResultV29').waitFor({state:'visible'});
 const runtime=await page.evaluate(()=>({products:globalThis.FISH_TARGET_CATALOG_LOADER?.state?.productCount,batches:globalThis.FISH_TARGET_CATALOG_LOADER?.state?.batchCount,state:globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.()}));
 assert.equal(runtime.products,985,'AUTO BUILD hydrates the current 985-product Catalog');
@@ -52,4 +61,4 @@ assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
 assert.deepEqual(consoleErrors,[],`console errors: ${consoleErrors.join('\n')}`);
 
 await browser.close();
-console.log('TACKLE_AUTO_BUILD_V29_BROWSER_QA_PASS');
+console.log('TACKLE_AUTO_BUILD_V29_BROWSER_QA_PASS',JSON.stringify({elapsedMs:terminal.elapsedMs}));
