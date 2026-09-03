@@ -108,7 +108,7 @@
     if(runButton){runButton.disabled=true;runButton.textContent='構成中…'}if(status)status.textContent='Catalogを読み込み中…';if(result)result.hidden=true;
     try{
       const catalog=await loader.ensureLoaded();
-      const matches=resolver.matchCatalog(plan.plan_id,{catalog,includeResearch:true,includeSynthetic:false});
+      const matches=resolver.matchCatalog(plan.plan_id,'default',{catalog,includeResearch:true,includeSynthetic:false});
       const rods=rankCategory(matches,'rod'),reels=rankCategory(matches,'reel');
       if(!rods.length||!reels.length)throw new Error('matching-catalog-candidate-missing');
       state={status:'ready',plan,rods,reels,rodIndex:0,reelIndex:0,error:null};renderBuild();
