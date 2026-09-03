@@ -155,7 +155,7 @@
   let syncQueued=false;
   const scheduleSync=()=>{if(syncQueued)return;syncQueued=true;requestAnimationFrame(()=>{syncQueued=false;syncShell()})};
   const mo=new MutationObserver(scheduleSync);
-  mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','hidden']});
+  mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','hidden']});
   syncShell();
   globalThis.FISH_TARGET_PRIVACY_CONTROLS=Object.freeze({version:'PRIVACY-RC-1',ownedStorageKeys:OWNED_STORAGE_KEYS,ownedStoragePrefixes:OWNED_STORAGE_PREFIXES});
 })();
