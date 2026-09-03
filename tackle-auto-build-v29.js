@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='TACKLE-AUTO-BUILD-V31';
+  const VERSION='TACKLE-AUTO-BUILD-V32';
   const OWNED_KEY='fish_target_v17_tackle';
   const $=(selector,root=document)=>root.querySelector(selector);
   const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -40,19 +40,26 @@
   const fitClass=level=>level===0?'good':level===1?'warn':'bad';
   const sourceLabel=item=>item?.production_eligible?'公開可':'参考データ';
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
+  const compatibleForField=()=>['ideal','good','usable'].includes(state.setResult?.compatibility);
+
+  function handleNextAction(){
+    if(compatibleForField()){$('#fieldModeBtn')?.click();return}
+    ($('#tackleManage')||$('.v19TackleShortcut'))?.click();
+  }
 
   function ensureUi(){
-    if($('#tackleAutoBuildV29'))return;
-    const anchor=$('#tackleFitCard')||$('#gear');
+    const anchor=$('#result .firstCast')||$('#tackleFitCard')||$('#gear');
+    const existing=$('#tackleAutoBuildV29');
+    if(existing){if(anchor&&existing.previousElementSibling!==anchor)anchor.insertAdjacentElement('afterend',existing);return}
     if(!anchor)return;
     const section=document.createElement('section');
     section.id='tackleAutoBuildV29';section.className='card tackleAutoBuildV29';section.setAttribute('aria-label','タックル自動構成');
     section.innerHTML=`
       <div class="autoBuildHeadV29">
-        <div><span>TACKLE AUTO BUILD</span><strong>おすすめセットを組む</strong><small id="autoBuildPlanV29">魚と釣法から自動構成</small></div>
-        <button id="autoBuildRunV29" type="button">AUTO BUILD</button>
+        <div><span>TACKLE AUTO BUILD</span><strong>STEP 3 · セットを組む</strong><small id="autoBuildPlanV29">理想＋MY TACKLE＋不足を一発判定</small></div>
+        <button id="autoBuildRunV29" type="button">組む</button>
       </div>
-      <div class="autoBuildStatusV29" id="autoBuildStatusV29">理想スペックとMY TACKLEの最適セットをまとめます。</div>
+      <div class="autoBuildStatusV29" id="autoBuildStatusV29" hidden></div>
       <div class="autoBuildResultV29" id="autoBuildResultV29" hidden>
         <div class="autoBuildSetSummaryV31" id="autoBuildSetSummaryV31">
           <article data-set-card="ideal"><span>IDEAL SET</span><b>理想スペック</b><small></small></article>
@@ -69,23 +76,23 @@
             <article class="autoBuildStageV29" data-stage="rig"><div class="autoBuildStageTopV29"><span>04 · RIG</span></div><b></b><small></small></article>
           </div>
         </details>
-        <div class="autoBuildReadyV29" id="autoBuildReadyV31"><span>SET READY</span><small>MY TACKLEは読み取りだけ。自動登録・自動変更はしません。</small></div>
+        <div class="autoBuildReadyV29" id="autoBuildReadyV31"><span>SET READY</span><small>手持ちは変更しません</small><button id="autoBuildNextV32" type="button">STEP 4 · 現場へ</button></div>
       </div>`;
     anchor.insertAdjacentElement('afterend',section);
     $('#autoBuildRunV29')?.addEventListener('click',run);
+    $('#autoBuildNextV32')?.addEventListener('click',handleNextAction);
     $$('[data-alt]',section).forEach(button=>button.addEventListener('click',()=>cycle(button.dataset.alt)));
     syncPlanLabel();
   }
 
   function syncPlanLabel(){
     const plan=currentPlan();const label=$('#autoBuildPlanV29');
-    if(label)label.textContent=plan?`${plan.species_name} · ${plan.method}`:'魚と釣法から自動構成';
+    if(label)label.textContent=plan?`${plan.species_name} · ${plan.method} / 理想＋手持ち＋不足`:'理想＋MY TACKLE＋不足を一発判定';
   }
   function renderIdle(){
     const result=$('#autoBuildResultV29'),status=$('#autoBuildStatusV29'),run=$('#autoBuildRunV29'),details=$('#autoBuildDetailsV31');
-    if(result)result.hidden=true;if(details)details.hidden=true;
-    if(run){run.disabled=false;run.textContent='AUTO BUILD'}
-    if(status)status.textContent='理想スペックとMY TACKLEの最適セットをまとめます。';
+    if(result)result.hidden=true;if(details)details.hidden=true;if(status){status.hidden=true;status.textContent=''}
+    if(run){run.disabled=false;run.textContent='組む'}
   }
   const stage=name=>$(`.autoBuildStageV29[data-stage="${name}"]`);
   const setCard=name=>$(`[data-set-card="${name}"]`);
@@ -117,10 +124,11 @@
         $('small',gapCard).textContent=gaps.map(gap=>`${componentLabels[gap.component]||gap.component}: ${gapLabels[gap.type]||gap.type}`).join(' · ');
       }
     }
-    const ready=$('#autoBuildReadyV31');if(ready){
-      const okay=['ideal','good','usable'].includes(result.compatibility);ready.classList.toggle('needsCheckV31',!okay);
+    const ready=$('#autoBuildReadyV31'),next=$('#autoBuildNextV32');if(ready){
+      const okay=compatibleForField();ready.classList.toggle('needsCheckV31',!okay);
       $('span',ready).textContent=okay?'SET READY':'CHECK GAPS';
-      $('small',ready).textContent=okay?'MY TACKLEは読み取りだけ。自動登録・自動変更はしません。':'不足やズレを確認してからFIELD MODEへ。';
+      $('small',ready).textContent=okay?'手持ちは変更しません':'不足を直してから現場へ';
+      if(next){next.textContent=okay?'STEP 4 · 現場へ':my?'MY TACKLEを編集':'MY TACKLEを追加';next.dataset.next=okay?'field':'tackle'}
     }
   }
   function renderBuild(){
@@ -136,23 +144,21 @@
       if(details)details.hidden=false;
     }else if(details)details.hidden=true;
     if(result){result.hidden=false;result.classList.remove('assemblingV29');void result.offsetWidth;result.classList.add('assemblingV29')}
-    if(status){
-      const suffix=state.catalogReady?' · 商品候補あり':catalogEnabled()?' · 商品候補は取得できず':' · 商品候補は非表示';
-      status.textContent=`${plan.species_name} · ${plan.method} のセットを構成しました${suffix}`;
-    }
-    if(run){run.disabled=false;run.textContent='再構成'}
+    if(status){status.hidden=false;status.textContent=state.catalogReady?'セット判定完了 · 商品候補あり':'セット判定完了'}
+    if(run){run.disabled=false;run.textContent='組み直す'}
     haptic([8,16,8]);
   }
 
   async function run(){
     ensureUi();if(state.status==='loading')return;
     const plan=currentPlan(),setResolver=globalThis.FISH_TARGET_TACKLE_SET_RESOLVER,resolver=globalThis.FISH_TARGET_RESOLVER,loader=globalThis.FISH_TARGET_CATALOG_LOADER;
-    if(!plan||!setResolver?.resolvePlan){state={...state,status:'error',error:'set-resolver-unavailable'};const status=$('#autoBuildStatusV29');if(status)status.textContent='自動構成に必要なセット判定を取得できません。';return}
+    const status=$('#autoBuildStatusV29');
+    if(!plan||!setResolver?.resolvePlan){state={...state,status:'error',error:'set-resolver-unavailable'};if(status){status.hidden=false;status.textContent='セット判定を取得できません。'}return}
     const setResult=setResolver.resolvePlan(plan,readOwned());
-    if(!setResult){state={...state,status:'error',error:'set-resolution-failed'};const status=$('#autoBuildStatusV29');if(status)status.textContent='セットを構成できませんでした。';return}
+    if(!setResult){state={...state,status:'error',error:'set-resolution-failed'};if(status){status.hidden=false;status.textContent='セットを構成できませんでした。'}return}
     state={status:'loading',plan,setResult,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};
-    const runButton=$('#autoBuildRunV29'),status=$('#autoBuildStatusV29'),result=$('#autoBuildResultV29');
-    if(runButton){runButton.disabled=true;runButton.textContent='構成中…'}if(status)status.textContent='理想セットとMY TACKLEを照合中…';if(result)result.hidden=true;
+    const runButton=$('#autoBuildRunV29'),result=$('#autoBuildResultV29');
+    if(runButton){runButton.disabled=true;runButton.textContent='構成中…'}if(status){status.hidden=false;status.textContent='理想セットとMY TACKLEを照合中…'}if(result)result.hidden=true;
     if(catalogEnabled()&&loader?.ensureLoaded&&resolver?.matchCatalog){
       try{
         const catalog=await loader.ensureLoaded();
@@ -169,7 +175,7 @@
     if(kind==='reel'&&state.reels.length)state.reelIndex=(state.reelIndex+1)%Math.min(MAX_ALTERNATES,state.reels.length);
     renderBuild();
   }
-  function resetForPlanChange(){state={status:'idle',plan:null,setResult:null,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};syncPlanLabel();renderIdle()}
+  function resetForPlanChange(){state={status:'idle',plan:null,setResult:null,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};ensureUi();syncPlanLabel();renderIdle()}
 
   ensureUi();
   const watch=selector=>{const el=$(selector);if(el)new MutationObserver(resetForPlanChange).observe(el,{childList:true,subtree:true,characterData:true})};

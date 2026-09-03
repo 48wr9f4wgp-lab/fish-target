@@ -25,8 +25,9 @@ const homeOverflow=await page.evaluate(()=>{
 assert.ok(homeOverflow.doc<=376&&homeOverflow.body<=376,`V26 375 home overflow: ${JSON.stringify(homeOverflow)}`);
 await page.locator('button.fish[data-fish="ブリ・ワラサ"]').click();await page.locator('#result.on').waitFor({state:'visible'});
 assert.equal(await page.locator('#resultRailV26').count(),1,'result local 3-step rail exists');
-assert.deepEqual(await page.locator('#resultRailV26 button').allTextContents(),['① 投げる','② 道具','③ 現場']);
-assert.equal((await page.locator('#result .ux23AnswerTitle').textContent())?.trim(),'まず投げる','answer title is concise');
+assert.deepEqual(await page.locator('#resultRailV26 button').allTextContents(),['釣り方','セット','現場']);
+assert.match((await page.locator('#result .ux23AnswerTitle').innerText())||'',/STEP 2 · 最初の1投/,'answer title states the second decision step');
+assert.equal((await page.locator('#result .planCard .recommend').textContent())?.trim(),'STEP 1 · 釣り方','method is the first decision step');
 assert.equal(await page.locator('#appTabBarV26').evaluate(el=>getComputedStyle(el).pointerEvents),'none','global tabs yield to result workspace');
 await page.locator('#tackleEditFromResult').click();await page.locator('#tackleSheet:not([hidden])').waitFor({state:'visible'});
 assert.equal(await page.locator('.catalogDevNote').first().textContent(),'公式スペックから選択','catalog explanation reduced to a compact cue');

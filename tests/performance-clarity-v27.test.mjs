@@ -26,16 +26,17 @@ test('target expansion parallelizes each five-part stage while preserving genera
   assert.ok(v1>=0&&v1<v2Parts&&v2Parts<v2&&v2<v3Parts&&v3Parts<v3&&v3<v4Parts&&v4Parts<v4,'generation order remains explicit and staged');
 });
 
-test('clarity pass coalesces mutation work and debounces catalog search',()=>{
+test('clarity pass coalesces mutation work, debounces catalog search, and matches the RC32 decision flow',()=>{
   const source=read('app-shell-v26.js');
   assert.match(source,/let syncQueued=false/);
   assert.match(source,/new MutationObserver\(scheduleSync\)/);
   assert.match(source,/setTimeout\(\(\)=>\{const next=new Event\('input'/);
   assert.match(source,/160\)\)/);
-  assert.match(source,/① 投げる/);
-  assert.match(source,/② 道具/);
-  assert.match(source,/③ 現場/);
-  assert.match(source,/answer\.textContent='まず投げる'/);
+  assert.match(source,/plan:'釣り方'/);
+  assert.match(source,/tackle:'セット'/);
+  assert.match(source,/field:'現場'/);
+  assert.match(source,/STEP 2 · 最初の1投/);
+  assert.match(source,/STEP 1 · 釣り方/);
 });
 
 test('visual clarity hides explanatory copy that is not needed for the core loop',()=>{

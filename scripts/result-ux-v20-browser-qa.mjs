@@ -42,17 +42,19 @@ assert.match((await reel.textContent())||'',/今巻いているライン種類�
 assert.match((await page.locator('.fitV20Details>summary em').textContent())||'',/見直し:/,'detail summary names concrete review causes');
 assert.equal(await page.locator('.fitV20DetailBody').isVisible(),false,'technical rationale stays collapsed');
 
-const answerTitle=((await page.locator('#result .ux23AnswerTitle').textContent())||'').trim();
-assert.equal(answerTitle,'まず投げる','answer heading is concise plain-language action');
+const answerTitle=((await page.locator('#result .ux23AnswerTitle').innerText())||'').trim();
+assert.match(answerTitle,/STEP 2 · 最初の1投/,'answer heading is a clear numbered action');
 assert.doesNotMatch(answerTitle,/FIRST CAST/,'FIRST CAST label is not duplicated in the section heading');
-assert.equal(((await page.locator('#firstCastKicker').textContent())||'').trim(),'最初の1投','answer card identity uses plain Japanese');
+assert.equal(((await page.locator('#firstCastKicker').textContent())||'').trim(),'FIRST CAST','answer card retains compact product-language identity');
 assert.equal(((await page.locator('#result .rotationLabel').textContent())||'').trim(),'ダメなら →','rotation is demoted to a short next-step label');
+assert.equal(((await page.locator('#result .planCard .recommend').textContent())||'').trim(),'STEP 1 · 釣り方','method decision is explicit before first cast');
 
-const first=page.locator('#result .firstCast'),plan=page.locator('#result .planCard'),fit=page.locator('#tackleFitCard'),gear=page.locator('#gear');
-const firstBox=await first.boundingBox(),planBox=await plan.boundingBox(),fitBox=await fit.boundingBox(),gearBox=await gear.boundingBox();
-assert.ok(firstBox&&planBox&&firstBox.y<planBox.y,'FIRST CAST is the first answer before method controls');
+const first=page.locator('#result .firstCast'),plan=page.locator('#result .planCard'),auto=page.locator('#tackleAutoBuildV29'),fit=page.locator('#tackleFitCard'),gear=page.locator('#gear');
+const firstBox=await first.boundingBox(),planBox=await plan.boundingBox(),autoBox=await auto.boundingBox(),fitBox=await fit.boundingBox(),gearBox=await gear.boundingBox();
+assert.ok(firstBox&&planBox&&planBox.y<firstBox.y,'method controls precede FIRST CAST in the decision flow');
+assert.ok(firstBox&&autoBox&&firstBox.y<autoBox.y,'AUTO BUILD follows FIRST CAST immediately');
 assert.ok(fitBox&&gearBox&&fitBox.y<gearBox.y,'MY TACKLE decision comes before generic required tackle');
-assert.ok((await page.locator('#firstBait').boundingBox())?.y<470,'FIRST CAST answer is visible in the opening decision window');
+assert.ok((await page.locator('#firstBait').boundingBox())?.y<650,'FIRST CAST remains in the opening decision window after the method card');
 assert.ok(firstBox&&firstBox.height<=390,`FIRST CAST density stays bounded: ${firstBox?.height}`);
 assert.ok(planBox&&planBox.height<=240,`method card density stays bounded: ${planBox?.height}`);
 assert.equal(await page.locator('#methodPickerV1').isVisible(),false,'method chooser is collapsed by default');
@@ -79,6 +81,7 @@ const backBox=await page.locator('#back').boundingBox();assert.ok(backBox&&backB
 assert.equal(await page.locator('#resultDockV20').isVisible(),true,'result action dock visible');
 assert.equal(await page.locator('#resultDockV20 [data-action="home"]').isVisible(),false,'redundant fish-list dock action removed');
 assert.equal(await page.locator('#resultDockV20 button:visible').count(),2,'dock exposes only save and field mode');
+assert.equal(((await page.locator('#fieldModeBtn').textContent())||'').trim(),'STEP 4 · 現場へ','field action matches the numbered flow');
 const dockBox=await page.locator('#resultDockV20').boundingBox();assert.ok(dockBox&&dockBox.height<=56,`dock chrome stays thin while preserving targets: ${dockBox?.height}`);
 const dockButtons=await page.locator('#resultDockV20 button:visible').evaluateAll(btns=>btns.map(b=>b.getBoundingClientRect().height));
 assert.ok(dockButtons.every(h=>h>=44),`dock targets meet 44px minimum: ${dockButtons.join(',')}`);

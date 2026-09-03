@@ -69,7 +69,7 @@ try{
   assert.equal(boot.lureEntryPresent,false,'publication build must not expose research lure UI');
   assert.equal(boot.lureLoaderPresent,false,'publication build must not expose research lure loader');
   assert.equal(boot.tackleSetResolver,'TACKLE-SET-RESOLVER-V31','spec/MY SET resolver must remain in publication shell');
-  assert.equal(boot.autoBuild,'TACKLE-AUTO-BUILD-V31','AUTO BUILD core must remain in publication shell');
+  assert.equal(boot.autoBuild,'TACKLE-AUTO-BUILD-V32','AUTO BUILD core must remain in publication shell');
   assert.equal(boot.targets,63,'publication build must retain all target decisions');
   assert.equal(boot.plans,158,'publication build must retain all approved fishing plans');
   assert.deepEqual(lureRequests,[],'publication boot must never request research lure assets');

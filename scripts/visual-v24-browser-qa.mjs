@@ -47,7 +47,7 @@ assert.match(visual.field.bg,/gradient/i,'field mode remains the dominant dock a
 
 const firstBox=await page.locator('#result .firstCast').boundingBox();
 const planBox=await page.locator('#result .planCard').boundingBox();
-assert.ok(firstBox&&planBox&&firstBox.y<planBox.y,'visual pass preserves answer-first UX23 hierarchy');
+assert.ok(firstBox&&planBox&&planBox.y<firstBox.y,'visual pass preserves RC32 method → FIRST CAST hierarchy');
 const touchTargets=await page.locator('#ux23MethodChange,#favoriteBtn,#resultDockV20 button:visible').evaluateAll(els=>els.map(el=>({w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})));
 assert.ok(touchTargets.every(x=>x.h>=44&&x.w>=44),`visual pass preserves 44px touch targets: ${JSON.stringify(touchTargets)}`);
 const overflow=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,viewport:innerWidth}));
