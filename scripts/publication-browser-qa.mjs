@@ -54,6 +54,8 @@ try{
     catalogFacadePresent:Boolean(globalThis.FISH_TARGET_CATALOG),
     lureEntryPresent:Boolean(globalThis.FISH_TARGET_LURE_CATALOG_ENTRY),
     lureLoaderPresent:Boolean(globalThis.FISH_TARGET_LURE_CATALOG),
+    tackleSetResolver:globalThis.FISH_TARGET_TACKLE_SET_RESOLVER?.version||null,
+    autoBuild:globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.version||null,
     targets:document.querySelectorAll('#grid .fish').length,
     plans:globalThis.FISH_TARGET_METHOD_REGISTRY?.count
   }));
@@ -66,6 +68,8 @@ try{
   assert.equal(boot.catalogFacadePresent,false,'publication build with zero approved batches must not expose Catalog facade');
   assert.equal(boot.lureEntryPresent,false,'publication build must not expose research lure UI');
   assert.equal(boot.lureLoaderPresent,false,'publication build must not expose research lure loader');
+  assert.equal(boot.tackleSetResolver,'TACKLE-SET-RESOLVER-V31','spec/MY SET resolver must remain in publication shell');
+  assert.equal(boot.autoBuild,'TACKLE-AUTO-BUILD-V31','AUTO BUILD core must remain in publication shell');
   assert.equal(boot.targets,63,'publication build must retain all target decisions');
   assert.equal(boot.plans,158,'publication build must retain all approved fishing plans');
   assert.deepEqual(lureRequests,[],'publication boot must never request research lure assets');
@@ -112,11 +116,31 @@ try{
   const fitText=await page.locator('#tackleFitBody').innerText();
   assert.match(fitText,/PUBLICATION MANUAL|このセット|条件付き|見直し|推奨/,'manual MY TACKLE must participate in result decision UI');
 
+  await page.locator('#autoBuildRunV29').waitFor({state:'visible'});
+  assert.equal(await page.locator('#autoBuildRunV29').isEnabled(),true,'Catalog OFF must not disable AUTO BUILD core');
+  const ownedBeforeAuto=await page.evaluate(()=>localStorage.getItem('fish_target_v17_tackle'));
+  await page.locator('#autoBuildRunV29').click();
+  await page.waitForFunction(()=>['ready','error'].includes(globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.().status),{timeout:10000});
+  const auto=await page.evaluate(()=>({
+    state:globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.(),
+    catalog:{disabled:globalThis.FISH_TARGET_CATALOG_LOADER?.disabled===true,status:globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status||null,productCount:globalThis.FISH_TARGET_CATALOG_LOADER?.state?.productCount||0},
+    owned:localStorage.getItem('fish_target_v17_tackle')
+  }));
+  assert.equal(auto.state?.status,'ready',`publication AUTO BUILD must resolve without Catalog: ${JSON.stringify(auto)}`);
+  assert.ok(auto.state?.setResult?.idealSet,'publication AUTO BUILD must return idealSet');
+  assert.ok(auto.state?.setResult?.myBestSet,'publication AUTO BUILD must evaluate manual MY TACKLE');
+  assert.equal(auto.state.catalogReady,false,'publication must not expose product picks');
+  assert.equal(auto.catalog.disabled,true,'publication Catalog loader remains fail closed');
+  assert.equal(auto.catalog.productCount,0,'publication AUTO BUILD must not hydrate product rows');
+  assert.equal(auto.owned,ownedBeforeAuto,'publication AUTO BUILD must not mutate MY TACKLE');
+  assert.deepEqual(await page.locator('.autoBuildSetSummaryV31 article>span').allTextContents(),['IDEAL SET','MY SET','MISSING']);
+  assert.equal(await page.locator('#autoBuildDetailsV31').getAttribute('hidden'),'','product detail remains hidden when Catalog is off');
+
   assert.deepEqual(pageErrors,[],'publication smoke must not raise page errors');
   assert.deepEqual(localFailures,[],'publication smoke must not request missing local assets');
   assert.deepEqual(removedBinaryRequests,[],'publication runtime must not request excluded unverified fish binary');
   assert.deepEqual(lureRequests,[],'publication runtime must never request research lure assets');
-  console.log('PUBLICATION BROWSER QA PASS · 63 targets · 158 plans · Catalog off · lure Catalog off · Katsuo jigging operational · manual MY TACKLE operational · external network blocked');
+  console.log('PUBLICATION BROWSER QA PASS · 63 targets · 158 plans · Catalog off · AUTO BUILD spec/MY SET operational · lure Catalog off · Katsuo jigging operational · manual MY TACKLE operational · external network blocked');
 }catch(error){
   primaryError=error;
 }finally{
