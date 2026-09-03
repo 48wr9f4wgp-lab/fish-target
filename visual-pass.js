@@ -69,11 +69,10 @@
   }
 
   function copyText(){
-    const hero=document.querySelector('#home .hero');
-    const title=hero?.querySelector('h1');
-    const lead=hero?.querySelector(':scope > p');
+    const hero=document.querySelector('.hero > p');
+    const title=document.querySelector('.hero h1');
     if(title)title.innerHTML='この魚、<br/>どう釣る？';
-    if(lead)lead.textContent='魚を選ぶだけで、釣り方・最初の1投・手持ちタックルの適合まで一気にわかる。';
+    if(hero)hero.textContent='魚を選ぶだけで、釣り方・最初の1投・手持ちタックルの適合まで一気にわかる。';
     const search=document.getElementById('q');if(search)search.placeholder='魚を検索　例：ヒラメ、アジ、青物';
     document.querySelectorAll('#home .head').forEach(head=>{
       const h=head.querySelector('h2'),sub=head.querySelector(':scope > span');
@@ -91,7 +90,7 @@
 
     const result=document.getElementById('result');
     if(result){
-      const recommend=result.querySelector('.recommend');if(recommend)recommend.textContent='おすすめの釣り方';
+      const recommend=result.querySelector('.recommend');if(recommend)recommend.textContent='STEP 1 · 釣り方';
       result.querySelectorAll('.sectionTitle').forEach(h=>{
         const raw=[...h.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent).join('').trim();
         const small=h.querySelector('small');
