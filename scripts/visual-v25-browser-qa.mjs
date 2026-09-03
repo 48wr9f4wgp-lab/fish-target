@@ -58,7 +58,7 @@ assert.match(titleAccent,/gradient/i,'section titles receive a consistent mint i
 const touchTargets=await page.locator('#ux23MethodChange,#favoriteBtn,#resultDockV20 button:visible').evaluateAll(els=>els.map(el=>({w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})));
 assert.ok(touchTargets.every(x=>x.h>=44&&x.w>=44),`V25 preserves 44px touch targets: ${JSON.stringify(touchTargets)}`);
 const firstBox=await page.locator('#result .firstCast').boundingBox(),planBox=await page.locator('#result .planCard').boundingBox(),fitBox=await page.locator('#tackleFitCard').boundingBox(),gearBox=await page.locator('#gear').boundingBox();
-assert.ok(firstBox&&planBox&&fitBox&&gearBox&&firstBox.y<planBox.y&&planBox.y<fitBox.y&&fitBox.y<gearBox.y,'V25 preserves answer-first UX hierarchy');
+assert.ok(firstBox&&planBox&&fitBox&&gearBox&&planBox.y<firstBox.y&&firstBox.y<fitBox.y&&fitBox.y<gearBox.y,'V25 preserves RC32 method → FIRST CAST → MY TACKLE hierarchy');
 const overflow=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,viewport:innerWidth}));
 assert.ok(overflow.doc<=391&&overflow.viewport===390,'V25 introduces no horizontal overflow');
 assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
