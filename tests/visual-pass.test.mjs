@@ -17,12 +17,14 @@ test('visual pass explicitly themes all 19 target groups',()=>{
   assert.match(js,/linearGradient/);
 });
 
-test('VISUAL2 uses clearer hero and section copy',()=>{
+test('VISUAL2 uses clearer hero and RC32 result copy',()=>{
   assert.match(js,/この魚、/);
   assert.match(js,/どう釣る？/);
   assert.match(js,/魚を選ぶだけで、釣り方・最初の1投・手持ちタックルの適合まで一気にわかる。/);
   assert.match(js,/人気の魚から選ぶ/);
   assert.match(js,/釣りたい魚を選ぶ/);
+  assert.match(js,/STEP 1 · 釣り方/);
+  assert.doesNotMatch(js,/おすすめの釣り方/,'visual pass must not overwrite the numbered method step');
   assert.match(js,/必要なタックル/);
   assert.match(js,/現場でやること 3つ/);
 });
