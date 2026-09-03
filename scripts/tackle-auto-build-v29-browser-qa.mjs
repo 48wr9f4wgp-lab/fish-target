@@ -53,7 +53,8 @@ const altPossible=await page.evaluate(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUI
 if(altPossible){const before=(await page.locator('.autoBuildStageV29[data-stage="rod"]>b').textContent())?.trim();await page.locator('[data-alt="rod"]').click();const after=(await page.locator('.autoBuildStageV29[data-stage="rod"]>b').textContent())?.trim();assert.notEqual(after,before,'rod alternative changes candidate')}
 
 assert.equal(await page.locator('#resultDockV20 button:visible').count(),2,'existing two-button result dock is preserved');
-assert.equal(await page.locator('#quickPackV28').isVisible(),true,'quick pack remains visible');
+assert.equal(await page.locator('#result #quickPackV28').count(),0,'packing checklist stays outside result flow');
+assert.equal(await page.locator('#appPackTabV30').count(),1,'standalone packing entry remains available from app shell');
 const overflow=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
 assert.ok(overflow.doc<=391&&overflow.body<=391&&overflow.viewport===390,`390px overflow: ${JSON.stringify(overflow)}`);
 assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.version),'TACKLE-AUTO-BUILD-V29');
