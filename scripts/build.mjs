@@ -64,14 +64,14 @@ const allLazyRuntimeAssets=[...lazyRuntimeAssets,...lureLazyRuntimeAssets];
 
 const copiedAssets=[...new Set([
   'style.css','quick-plan.css','field-mode.css','pwa.css',
-  'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','fish-photo-v27.css','visual-v8.css','result-ux-v20.css','result-ux-v23.css','visual-v24.css','visual-v25.css','visual-v26.css',
+  'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','visual-pass.css','visual-typography.css','fish-real.css','fish-photo-v27.css','visual-v8.css','result-ux-v20.css','result-ux-v23.css','visual-v24.css','visual-v25.css','visual-v26.css','game-feel-v28.css',
   'data.js','products.js','app.js','field-mode.js','pwa.js',
   'continuity.js',
   'target-method-data-v1-part1.js','target-method-data-v1-part2.js','target-method-data-v1-part3.js','target-method-data-v1-part4.js','target-method-data-v1-part5.js','target-method-data-v1.js',
   'target-method-data-v2-part1.js','target-method-data-v2-part2.js','target-method-data-v2-part3.js','target-method-data-v2-part4.js','target-method-data-v2-part5.js','target-method-data-v2.js',
   'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js',
   'target-method-data-v4-part1.js','target-method-data-v4-part2.js','target-method-data-v4-part3.js','target-method-data-v4-part4.js','target-method-data-v4-part5.js','target-method-data-v4.js','species-method-authoring-generated.js','species-method-authoring-runtime.js','target-methods-v1.js','species-registry.js','fish-asset-authoring-generated.js','fish-asset-manifest.js','method-registry.js','resolver-engine.js','resolver-shadow.js','resolver-tackle-ui.js',
-  'catalog-loader.js',...catalogDistributionAssets,...lureLazyRuntimeAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','fish-photo-v27.js','visual-v8.js','result-ux-v20.js','result-ux-v21.js','result-ux-v23.js','app-shell-v26.js',
+  'catalog-loader.js',...catalogDistributionAssets,...lureLazyRuntimeAssets,'tackle.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','fish-photo-v27.js','visual-v8.js','result-ux-v20.js','result-ux-v21.js','result-ux-v23.js','app-shell-v26.js','pack-checklist-v28.js',
   ...fishAssetFiles,
   'manifest.webmanifest','icon.svg'
 ])];
