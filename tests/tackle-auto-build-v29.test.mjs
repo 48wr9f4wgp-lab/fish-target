@@ -42,7 +42,8 @@ test('RC32 makes auto build the immediate post-FIRST-CAST action',()=>{
   assert.match(auto,/理想＋MY TACKLE＋不足を一発判定/);
   assert.match(auto,/autoBuildStatusV29" id="autoBuildStatusV29" hidden/);
   assert.match(css,/min-height:48px/,'primary AUTO BUILD tap target must be at least 48px');
-  assert.match(css,/autoBuildReadyV29 button\{[^}]*min-height:44px/,'next-action tap target must be at least 44px');
+  assert.match(css,/autoBuildReadyV29 button\{[^}]*min-height:48px/,'animated next-action tap target must keep a 48px source floor');
+  assert.match(css,/@keyframes autoBuildReadyInV29\{0%\{transform:scale\(\.985\)/,'READY entrance animation contract stays covered by the 48px source floor');
 });
 
 test('optional product detail retains rod reel line rig and accessible alternatives',()=>{

@@ -1,0 +1,41 @@
+name: rc-ios-webkit-qa
+
+on:
+  push:
+    branches: [chatgpt/rc-ios-webkit-*]
+  pull_request:
+    branches: [chatgpt/rc-integration-2026-09-03]
+
+concurrency:
+  group: rc-ios-webkit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ios-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build RC
+        run: npm run build
+      - name: Install WebKit QA runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps webkit
+      - name: iPhone WebKit RC smoke
+        run: |
+          npm run serve > /tmp/fish-target-serve.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/dist/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/dist/ >/dev/null
+          node scripts/ios-webkit-rc-qa.mjs
