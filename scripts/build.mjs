@@ -49,7 +49,7 @@ if(!lureCatalogManifest||!Array.isArray(lureCatalogManifest.batches))throw new E
 const selectedLureBatches=publicationBuild?lureCatalogManifest.batches.filter(batch=>batch?.stage==='production'):lureCatalogManifest.batches;
 const lureBatchIds=new Set(),lureBatchFiles=[],lureTargets=new Set();
 for(const batch of selectedLureBatches){
-  if(!batch?.id||lureBatchIds.has(batch.id))throw new Error(`Invalid/duplicate lure batch id: ${batch.id||'missing'}`);
+  if(!batch?.id||lureBatchIds.has(batch.id))throw new Error(`Invalid/duplicate lure batch id: ${batch?.id||'missing'}`);
   lureBatchIds.add(batch.id);
   if(typeof batch.file!=='string'||!batch.file.trim())throw new Error(`Lure batch has no file: ${batch.id}`);
   if(!Array.isArray(batch.targets)||!batch.targets.length||batch.targets.some(target=>!String(target||'').trim()))throw new Error(`Lure batch has invalid targets: ${batch.id}`);
