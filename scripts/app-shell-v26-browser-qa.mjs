@@ -13,7 +13,7 @@ assert.ok(await page.locator('html.clarity-v27').count(),'clarity pass active');
 await page.locator('#grid .fish').first().waitFor({state:'visible'});
 assert.equal(await page.locator('#appTabBarV26').count(),1,'native bottom tab bar exists');
 const tabs=await page.locator('#appTabBarV26 button').evaluateAll(els=>els.map(el=>({text:el.textContent.trim(),h:el.getBoundingClientRect().height})));
-assert.equal(tabs.length,3,'three primary app tabs');assert.ok(tabs.every(x=>x.h>=44),'app tabs preserve 44px touch targets');
+assert.equal(tabs.length,4,'four primary app tabs');assert.deepEqual(tabs.map(x=>x.text),['⌕探す','▣保存','◎タックル','✓持ち物']);assert.ok(tabs.every(x=>x.h>=44),'app tabs preserve 44px touch targets');
 const cards=await page.locator('#grid .fish.discoveryCardV26').count();assert.ok(cards>=6,'fish discovery cards upgraded');
 const homeOverflow=await page.evaluate(()=>{
   const vw=innerWidth;const all=[...document.querySelectorAll('body *')];
