@@ -10,7 +10,8 @@
   const powerRange=value=>{
     const source=text(value).toUpperCase();
     const tail=source.includes('/')?source.split('/').slice(1).join('/'):source;
-    const hits=POWER.filter(power=>new RegExp(`(^|[^A-Z])${power}([^A-Z]|$)`).test(tail));
+    const safeTail=tail.replace(/\d+(?:\.\d+)?\s*(?:(?:〜|～|~|-)\s*\d+(?:\.\d+)?\s*)?M(?:級|前後)?/g,' ');
+    const hits=POWER.filter(power=>new RegExp(`(^|[^A-Z])${power}([^A-Z]|$)`).test(safeTail));
     if(!hits.length)return null;
     const ranks=hits.map(power=>POWER.indexOf(power));
     return Object.freeze({min:Math.min(...ranks),max:Math.max(...ranks)});
