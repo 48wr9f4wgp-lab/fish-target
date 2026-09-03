@@ -9,7 +9,7 @@ const build=await readFile(new URL('../scripts/build.mjs',import.meta.url),'utf8
 
 const count=(source,token)=>source.split(token).length-1;
 
-test('auto build v31 resolves ideal set MY SET and gaps before optional product picks',()=>{
+test('auto build resolves ideal set MY SET and gaps before optional product picks',()=>{
   assert.match(auto,/FISH_TARGET_TACKLE_SET_RESOLVER/);
   assert.match(auto,/setResolver\.resolvePlan\(plan,readOwned\(\)\)/);
   for(const token of ['IDEAL SET','MY SET','MISSING'])assert.ok(auto.includes(token),`missing ${token}`);
@@ -17,19 +17,32 @@ test('auto build v31 resolves ideal set MY SET and gaps before optional product 
   assert.doesNotMatch(auto,/DAIWA|SHIMANO/,'AUTO BUILD must stay maker-neutral');
 });
 
-test('MY TACKLE is read-only during auto build',()=>{
+test('MY TACKLE is read-only during auto build and next action is explicit',()=>{
   assert.match(auto,/fish_target_v17_tackle/);
   assert.match(auto,/localStorage\.getItem\(OWNED_KEY\)/);
   assert.doesNotMatch(auto,/localStorage\.(?:setItem|removeItem|clear)/);
-  assert.match(auto,/MY TACKLEは読み取りだけ/);
-  assert.match(auto,/自動登録・自動変更はしません/);
+  assert.match(auto,/手持ちは変更しません/);
+  assert.match(auto,/STEP 4 · 現場へ/);
+  assert.match(auto,/MY TACKLEを編集/);
+  assert.match(auto,/MY TACKLEを追加/);
+  assert.match(auto,/compatibleForField/);
+  assert.match(auto,/fieldModeBtn/);
+  assert.match(auto,/tackleManage/);
 });
 
 test('catalog is optional and remains user-triggered',()=>{
   assert.equal(count(auto,'loader.ensureLoaded()'),1,'Catalog hydration has one explicit AUTO BUILD trigger');
   assert.match(auto,/if\(catalogEnabled\(\)&&loader\?\.ensureLoaded&&resolver\?\.matchCatalog\)/);
-  assert.match(auto,/商品候補は非表示/);
   assert.doesNotMatch(auto,/if\(!catalogEnabled\(\)\).*return/,'Catalog OFF must not block spec/MY SET resolution');
+});
+
+test('RC32 makes auto build the immediate post-FIRST-CAST action',()=>{
+  assert.match(auto,/const anchor=\$\('#result \.firstCast'\)/);
+  assert.match(auto,/STEP 3 · セットを組む/);
+  assert.match(auto,/理想＋MY TACKLE＋不足を一発判定/);
+  assert.match(auto,/autoBuildStatusV29" id="autoBuildStatusV29" hidden/);
+  assert.match(css,/min-height:48px/,'primary AUTO BUILD tap target must be at least 48px');
+  assert.match(css,/autoBuildReadyV29 button\{[^}]*min-height:44px/,'next-action tap target must be at least 44px');
 });
 
 test('optional product detail retains rod reel line rig and accessible alternatives',()=>{
