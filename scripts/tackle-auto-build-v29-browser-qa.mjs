@@ -21,8 +21,22 @@ await page.locator('#grid .fish').first().waitFor({state:'visible'});
 await page.locator('button.fish[data-fish="ブリ・ワラサ"]').click();
 await page.locator('#result.on').waitFor({state:'visible'});
 await page.locator('#tackleAutoBuildV29').waitFor({state:'visible'});
-assert.equal((await page.locator('#autoBuildRunV29').textContent())?.trim(),'AUTO BUILD');
+assert.equal((await page.locator('#autoBuildRunV29').textContent())?.trim(),'組む');
 assert.equal(await page.locator('#autoBuildResultV29').isVisible(),false,'AUTO BUILD result starts collapsed');
+assert.equal(await page.locator('#autoBuildStatusV29').isVisible(),false,'idle explanatory status stays out of the first-use path');
+
+const order=await page.evaluate(()=>{
+  const body=document.querySelector('#result .body');
+  const children=[...body.children];
+  const index=selector=>children.indexOf(body.querySelector(selector));
+  return {plan:index('.planCard'),answer:index('.ux23AnswerTitle'),first:index('.firstCast'),auto:index('#tackleAutoBuildV29')};
+});
+assert.ok(order.plan>=0&&order.answer>order.plan&&order.first>order.answer&&order.auto>order.first,`result order must be method → FIRST CAST → AUTO BUILD: ${JSON.stringify(order)}`);
+assert.equal((await page.locator('#result .planCard .recommend').textContent())?.trim(),'STEP 1 · 釣り方');
+assert.match((await page.locator('#result .ux23AnswerTitle').innerText())||'',/STEP 2 · 最初の1投/);
+assert.match((await page.locator('.autoBuildHeadV29 strong').textContent())||'',/STEP 3 · セットを組む/);
+assert.deepEqual(await page.locator('#resultRailV26 button').allTextContents(),['釣り方','セット','現場']);
+assert.equal((await page.locator('#fieldModeBtn').textContent())?.trim(),'STEP 4 · 現場へ');
 
 const ownedBefore=await page.evaluate(()=>{
   const plan=globalThis.FISH_TARGET_TACKLE_AUTO_BUILD.currentPlan();
@@ -75,6 +89,7 @@ const labels=await page.locator('.autoBuildStageV29 .autoBuildStageTopV29>span')
 assert.deepEqual(labels,['01 · ROD','02 · REEL','03 · LINE','04 · RIG']);
 for(const kind of ['rod','reel','line','rig'])assert.ok((await page.locator(`.autoBuildStageV29[data-stage="${kind}"]>b`).textContent())?.trim(),`${kind} stage has content`);
 assert.equal(await page.locator('.autoBuildReadyV29').isVisible(),true,'set decision bar is visible');
+assert.equal((await page.locator('#autoBuildNextV32').textContent())?.trim(),'STEP 4 · 現場へ','compatible set gets an immediate field action');
 assert.equal(await page.evaluate(()=>localStorage.getItem('fish_target_v17_tackle')),ownedBefore,'AUTO BUILD reads but does not mutate MY TACKLE ownership');
 
 const altPossible=await page.evaluate(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD.getState().rods.length>1);
@@ -85,10 +100,14 @@ assert.equal(await page.locator('#result #quickPackV28').count(),0,'packing chec
 assert.equal(await page.locator('#appPackTabV30').count(),1,'standalone packing entry remains available from app shell');
 const overflow=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
 assert.ok(overflow.doc<=391&&overflow.body<=391&&overflow.viewport===390,`390px overflow: ${JSON.stringify(overflow)}`);
-assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.version),'TACKLE-AUTO-BUILD-V31');
+assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.version),'TACKLE-AUTO-BUILD-V32');
 assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_TACKLE_SET_RESOLVER?.version),'TACKLE-SET-RESOLVER-V31');
+
+await page.locator('#autoBuildNextV32').click();
+await page.locator('#fieldmode.on').waitFor({state:'visible'});
+assert.equal(await page.locator('#fieldmode.on').count(),1,'SET READY next action opens FIELD MODE');
 assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
 assert.deepEqual(consoleErrors,[],`console errors: ${consoleErrors.join('\n')}`);
 
 await browser.close();
-console.log('TACKLE_AUTO_BUILD_V31_BROWSER_QA_PASS',JSON.stringify({elapsedMs:terminal.elapsedMs,compatibility:runtime.state.setResult.compatibility,gaps:runtime.state.setResult.gaps.length}));
+console.log('TACKLE_AUTO_BUILD_V32_BROWSER_QA_PASS',JSON.stringify({elapsedMs:terminal.elapsedMs,compatibility:runtime.state.setResult.compatibility,gaps:runtime.state.setResult.gaps.length}));
