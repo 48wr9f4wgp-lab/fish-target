@@ -5,6 +5,8 @@ on:
       - chatgpt/rc33-preview-bundle
     paths-ignore:
       - rc-preview-bundle.json
+      - rc-preview-manifest.json
+      - rc-preview-chunks/**
 
 permissions:
   contents: write
@@ -21,13 +23,13 @@ jobs:
           node-version: 22
       - name: Build RC33
         run: npm run build
-      - name: Pack dist as base64 JSON
+      - name: Pack dist into bounded base64 chunks
         run: |
           node --input-type=module <<'NODE'
-          import {readdir, readFile, writeFile} from 'node:fs/promises';
+          import {mkdir,readdir,readFile,rm,writeFile} from 'node:fs/promises';
           import path from 'node:path';
           const root='dist';
-          const out=[];
+          const entries=[];
           async function walk(dir){
             for(const ent of await readdir(dir,{withFileTypes:true})){
               const full=path.join(dir,ent.name);
@@ -35,24 +37,44 @@ jobs:
               else {
                 const rel=path.relative(root,full).replaceAll('\\','/');
                 const buf=await readFile(full);
-                out.push({file:rel,data:buf.toString('base64')});
+                entries.push({file:rel,data:buf.toString('base64')});
               }
             }
           }
           await walk(root);
-          out.sort((a,b)=>a.file.localeCompare(b.file));
-          await writeFile('rc-preview-bundle.json',JSON.stringify({
+          entries.sort((a,b)=>a.file.localeCompare(b.file));
+          await rm('rc-preview-chunks',{recursive:true,force:true});
+          await mkdir('rc-preview-chunks',{recursive:true});
+          const chunks=[];
+          let current=[], currentSize=2;
+          const MAX=180000;
+          for(const entry of entries){
+            const size=JSON.stringify(entry).length+1;
+            if(current.length && currentSize+size>MAX){
+              chunks.push(current); current=[]; currentSize=2;
+            }
+            current.push(entry); currentSize+=size;
+          }
+          if(current.length) chunks.push(current);
+          const names=[];
+          for(let i=0;i<chunks.length;i++){
+            const name=`rc-preview-chunks/chunk-${String(i).padStart(3,'0')}.json`;
+            names.push(name);
+            await writeFile(name,JSON.stringify(chunks[i]));
+          }
+          await writeFile('rc-preview-manifest.json',JSON.stringify({
             sourceCommit:'56ccf4c97bcf3040a4d7169f456a71266717efdc',
             generatedAt:new Date().toISOString(),
-            fileCount:out.length,
-            files:out
+            fileCount:entries.length,
+            chunkCount:names.length,
+            chunks:names
           }));
-          console.log('BUNDLED',out.length,'files');
+          console.log('BUNDLED',entries.length,'files into',names.length,'chunks');
           NODE
-      - name: Commit bundle to temp branch
+      - name: Commit chunks to temp branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add rc-preview-bundle.json
-          git commit -m "chore: generate RC33 preview bundle"
+          git add rc-preview-manifest.json rc-preview-chunks
+          git commit -m "chore: generate chunked RC33 preview bundle"
           git push origin HEAD:chatgpt/rc33-preview-bundle
