@@ -1,0 +1,58 @@
+name: rc-preview-bundle
+on:
+  push:
+    branches:
+      - chatgpt/rc33-preview-bundle
+    paths-ignore:
+      - rc-preview-bundle.json
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chatgpt/rc33-preview-bundle
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build RC33
+        run: npm run build
+      - name: Pack dist as base64 JSON
+        run: |
+          node --input-type=module <<'NODE'
+          import {readdir, readFile, writeFile} from 'node:fs/promises';
+          import path from 'node:path';
+          const root='dist';
+          const out=[];
+          async function walk(dir){
+            for(const ent of await readdir(dir,{withFileTypes:true})){
+              const full=path.join(dir,ent.name);
+              if(ent.isDirectory()) await walk(full);
+              else {
+                const rel=path.relative(root,full).replaceAll('\\','/');
+                const buf=await readFile(full);
+                out.push({file:rel,data:buf.toString('base64')});
+              }
+            }
+          }
+          await walk(root);
+          out.sort((a,b)=>a.file.localeCompare(b.file));
+          await writeFile('rc-preview-bundle.json',JSON.stringify({
+            sourceCommit:'56ccf4c97bcf3040a4d7169f456a71266717efdc',
+            generatedAt:new Date().toISOString(),
+            fileCount:out.length,
+            files:out
+          }));
+          console.log('BUNDLED',out.length,'files');
+          NODE
+      - name: Commit bundle to temp branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rc-preview-bundle.json
+          git commit -m "chore: generate RC33 preview bundle"
+          git push origin HEAD:chatgpt/rc33-preview-bundle
