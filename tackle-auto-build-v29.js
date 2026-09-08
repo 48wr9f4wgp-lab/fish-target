@@ -16,6 +16,7 @@
   const gapLabels=Object.freeze({missing_component:'未登録',acceptable_substitution:'代用可',underspec:'不足',overspec:'過剰',incompatible:'不適合'});
   const componentLabels=Object.freeze({rod:'ROD',reel:'REEL',pair:'組み合わせ'});
   let state={status:'idle',plan:null,setResult:null,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};
+  let runEpoch=0;
 
   const catalogEnabled=()=>document.documentElement.dataset.catalogRuntime!=='off';
   const readOwned=()=>{try{const raw=typeof globalThis.storeGet==='function'?globalThis.storeGet(OWNED_KEY):localStorage.getItem(OWNED_KEY);const value=raw?JSON.parse(raw):{};return {rods:Array.isArray(value.rods)?value.rods:[],reels:Array.isArray(value.reels)?value.reels:[]}}catch{return {rods:[],reels:[]}}};
@@ -27,6 +28,8 @@
     const plans=resolver.resolveMethods(species)||[];
     return plans.find(plan=>String(plan?.method||'').trim()===method)||plans[0]||null;
   };
+  const planKey=plan=>String(plan?.plan_id||'');
+  const runStillCurrent=(epoch,plan)=>epoch===runEpoch&&planKey(currentPlan())===planKey(plan);
   const fitLevel=item=>Number.isFinite(Number(item?.fit?.level))?Number(item.fit.level):99;
   const productStatus=item=>String(item?.product?.status||'unknown');
   const rankCategory=(matches,category)=>matches
@@ -156,17 +159,20 @@
     if(!plan||!setResolver?.resolvePlan){state={...state,status:'error',error:'set-resolver-unavailable'};if(status){status.hidden=false;status.textContent='セット判定を取得できません。'}return}
     const setResult=setResolver.resolvePlan(plan,readOwned());
     if(!setResult){state={...state,status:'error',error:'set-resolution-failed'};if(status){status.hidden=false;status.textContent='セットを構成できませんでした。'}return}
+    const epoch=++runEpoch;
     state={status:'loading',plan,setResult,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};
     const runButton=$('#autoBuildRunV29'),result=$('#autoBuildResultV29');
     if(runButton){runButton.disabled=true;runButton.textContent='構成中…'}if(status){status.hidden=false;status.textContent='理想セットとMY TACKLEを照合中…'}if(result)result.hidden=true;
     if(catalogEnabled()&&loader?.ensureLoaded&&resolver?.matchCatalog){
       try{
         const catalog=await loader.ensureLoaded();
+        if(!runStillCurrent(epoch,plan))return;
         const matches=resolver.matchCatalog(plan.plan_id,'default',{catalog,includeResearch:true,includeSynthetic:false});
         const rods=rankCategory(matches,'rod'),reels=rankCategory(matches,'reel');
         state={...state,rods,reels,catalogReady:Boolean(rods.length&&reels.length)};
-      }catch(error){state={...state,error:`catalog:${String(error?.message||error)}`}}
+      }catch(error){if(!runStillCurrent(epoch,plan))return;state={...state,error:`catalog:${String(error?.message||error)}`}}
     }
+    if(!runStillCurrent(epoch,plan))return;
     state={...state,status:'ready'};renderBuild();
   }
   function cycle(kind){
@@ -175,7 +181,7 @@
     if(kind==='reel'&&state.reels.length)state.reelIndex=(state.reelIndex+1)%Math.min(MAX_ALTERNATES,state.reels.length);
     renderBuild();
   }
-  function resetForPlanChange(){state={status:'idle',plan:null,setResult:null,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};ensureUi();syncPlanLabel();renderIdle()}
+  function resetForPlanChange(){runEpoch+=1;state={status:'idle',plan:null,setResult:null,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};ensureUi();syncPlanLabel();renderIdle()}
 
   ensureUi();
   const watch=selector=>{const el=$(selector);if(el)new MutationObserver(resetForPlanChange).observe(el,{childList:true,subtree:true,characterData:true})};

@@ -109,5 +109,38 @@ assert.equal(await page.locator('#fieldmode.on').count(),1,'SET READY next actio
 assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
 assert.deepEqual(consoleErrors,[],`console errors: ${consoleErrors.join('\n')}`);
 
+
+const raceContext=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
+const racePage=await raceContext.newPage();
+let releaseManifest;
+const manifestGate=new Promise(resolve=>{releaseManifest=resolve});
+await racePage.route('**/catalog-batch-manifest.json*',async route=>{await manifestGate;await route.continue()});
+await racePage.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
+await racePage.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),null,{timeout:20000});
+await racePage.locator('#grid .fish').first().waitFor({state:'visible'});
+await racePage.locator('button.fish[data-fish="ブリ・ワラサ"]').click();
+await racePage.locator('#result.on').waitFor({state:'visible'});
+await racePage.locator('#tackleAutoBuildV29').waitFor({state:'visible'});
+await racePage.locator('#autoBuildRunV29').click();
+await racePage.waitForFunction(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState().status==='loading');
+await racePage.locator('#back').click();
+await racePage.locator('#home.on').waitFor({state:'visible'});
+await racePage.locator('button.fish[data-fish="シロギス"]').click();
+await racePage.locator('#result.on').waitFor({state:'visible'});
+await racePage.locator('#tackleAutoBuildV29').waitFor({state:'visible'});
+releaseManifest();
+await racePage.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER?.state?.status==='ready',null,{timeout:45000});
+await racePage.waitForTimeout(100);
+const race=await racePage.evaluate(()=>({
+  state:globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.(),
+  current:globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.currentPlan?.(),
+  label:document.getElementById('autoBuildPlanV29')?.textContent||''
+}));
+assert.equal(race.state?.status,'idle','late Catalog completion must not revive the previous fish AUTO BUILD');
+assert.equal(race.state?.plan,null,'late Catalog completion must not restore the previous plan');
+assert.equal(race.current?.species_name,'シロギス','current AUTO BUILD plan stays on the newly selected fish');
+assert.match(race.label,/シロギス/,'AUTO BUILD label stays synchronized to the newly selected fish');
+await raceContext.close();
+
 await browser.close();
-console.log('TACKLE_AUTO_BUILD_V32_BROWSER_QA_PASS',JSON.stringify({elapsedMs:terminal.elapsedMs,compatibility:runtime.state.setResult.compatibility,gaps:runtime.state.setResult.gaps.length}));
+console.log('TACKLE_AUTO_BUILD_V32_BROWSER_QA_PASS',JSON.stringify({elapsedMs:terminal.elapsedMs,compatibility:runtime.state.setResult.compatibility,gaps:runtime.state.setResult.gaps.length,raceGuard:'pass'}));

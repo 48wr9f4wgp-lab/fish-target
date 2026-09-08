@@ -62,3 +62,10 @@ test('build and PWA shell include resolver before AUTO BUILD runtime',()=>{
   assert.ok(rulesIndex>=0&&resolverIndex>rulesIndex&&autoIndex>resolverIndex,'PWA must load rules → resolver → AUTO BUILD');
   assert.match(pwa,/tackle-auto-build-v29-css/);
 });
+test('in-flight Catalog results are invalidated by a fish or method change',()=>{
+  assert.match(auto,/let runEpoch=0/);
+  assert.match(auto,/runStillCurrent/);
+  assert.match(auto,/const epoch=\+\+runEpoch/);
+  assert.match(auto,/if\(!runStillCurrent\(epoch,plan\)\)return/);
+  assert.match(auto,/function resetForPlanChange\(\)\{runEpoch\+=1/);
+});

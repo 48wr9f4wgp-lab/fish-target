@@ -18,20 +18,22 @@
   const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   let editMode=false;
   let returnFocus=null;
+  const SAVE_FAILURE='保存できません。ブラウザの空き容量・サイトデータ設定を確認してください。';
 
   const isRecord=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
   const readStore=()=>{try{const value=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');return isRecord(value)?value:{}}catch{return{}}};
-  const writeStore=store=>{try{localStorage.setItem(STORE_KEY,JSON.stringify(store));return true}catch(error){console.warn('quick pack save failed',error);return false}};
+  const setSaveStatus=message=>{if(typeof document==='undefined')return;const el=document.getElementById('quickPackSaveStatusV30');if(!el)return;el.textContent=message||'';el.hidden=!message};
+  const writeStore=store=>{try{localStorage.setItem(STORE_KEY,JSON.stringify(store));setSaveStatus('');return true}catch(error){console.warn('quick pack save failed',error);setSaveStatus(SAVE_FAILURE);return false}};
   const cloneDefaults=()=>DEFAULTS.map(item=>({...item}));
   const getConfig=()=>{
     const store=readStore();
     const config=store[CONFIG_KEY];
     return Array.isArray(config)?config.filter(item=>item&&item.id&&item.name).map(item=>({id:String(item.id),name:String(item.name)})):cloneDefaults();
   };
-  const saveConfig=config=>{const store=readStore();store[CONFIG_KEY]=config;writeStore(store)};
+  const saveConfig=config=>{const store=readStore();store[CONFIG_KEY]=config;return writeStore(store)};
   const getChecked=()=>{const store=readStore();const all=store[CHECKED_KEY]||{};const list=all[ACTIVE_KEY];return new Set(Array.isArray(list)?list:[])};
-  const saveChecked=checked=>{const store=readStore();const all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{};all[ACTIVE_KEY]=[...checked];store[CHECKED_KEY]=all;writeStore(store)};
-  const clearChecks=()=>{const store=readStore();store[CHECKED_KEY]={};writeStore(store)};
+  const saveChecked=checked=>{const store=readStore();const all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{};all[ACTIVE_KEY]=[...checked];store[CHECKED_KEY]=all;return writeStore(store)};
+  const clearChecks=()=>{const store=readStore();store[CHECKED_KEY]={};return writeStore(store)};
   const pulse=(el,klass='quickPackPulseV28')=>{if(!el)return;el.classList.remove(klass);void el.offsetWidth;el.classList.add(klass);setTimeout(()=>el.classList.remove(klass),360)};
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
 
@@ -68,6 +70,7 @@
           <div><strong>チェックリスト</strong><small>必要な物だけ自由に編集</small></div>
           <div class="quickPackHeadActionsV28"><span id="quickPackCountV28">0/0</span><button id="quickPackEditV28" type="button" aria-expanded="false">編集</button></div>
         </div>
+        <div class="quickPackSaveStatusV30" id="quickPackSaveStatusV30" role="status" aria-live="polite" hidden></div>
         <div class="quickPackListV28" id="quickPackListV28"></div>
         <div class="quickPackEditorV28" id="quickPackEditorV28" hidden>
           <form id="quickPackAddFormV28"><input id="quickPackAddInputV28" maxlength="24" autocomplete="off" placeholder="持ち物を追加" aria-label="持ち物を追加"><button type="submit">追加</button></form>
@@ -80,11 +83,11 @@
     $('#quickPackAddFormV28')?.addEventListener('submit',event=>{
       event.preventDefault();const input=$('#quickPackAddInputV28');const name=String(input?.value||'').trim();if(!name)return;
       const config=getConfig();if(config.some(item=>item.name===name)){input.value='';return}
-      config.push({id:`custom-${Date.now().toString(36)}`,name});saveConfig(config);input.value='';render();pulse($('#quickPackV28'));
+      config.push({id:`custom-${Date.now().toString(36)}`,name});if(!saveConfig(config))return;input.value='';render();pulse($('#quickPackV28'));
     });
-    $('#quickPackClearV28')?.addEventListener('click',()=>{clearChecks();render();pulse($('#quickPackV28'))});
+    $('#quickPackClearV28')?.addEventListener('click',()=>{if(clearChecks()){render();pulse($('#quickPackV28'))}});
     $('#quickPackResetV28')?.addEventListener('click',()=>{
-      const store=readStore();store[CONFIG_KEY]=cloneDefaults();store[CHECKED_KEY]={};writeStore(store);render();pulse($('#quickPackV28'));
+      const store=readStore();store[CONFIG_KEY]=cloneDefaults();store[CHECKED_KEY]={};if(writeStore(store)){render();pulse($('#quickPackV28'))}
     });
   }
 
@@ -96,10 +99,14 @@
     $$('.quickPackRowV28',list).forEach(row=>{
       const input=$('input',row),id=row.dataset.id;
       input.addEventListener('change',()=>{
-        const next=getChecked();input.checked?next.add(id):next.delete(id);saveChecked(next);pulse(row);haptic(input.checked?8:5);updateProgress(config,next);
+        const wanted=input.checked,next=getChecked();wanted?next.add(id):next.delete(id);
+        if(!saveChecked(next)){input.checked=!wanted;render();return}
+        pulse(row);haptic(wanted?8:5);updateProgress(config,next);
       });
       $('.quickPackDeleteV28',row)?.addEventListener('click',()=>{
-        const nextConfig=getConfig().filter(item=>item.id!==id);saveConfig(nextConfig);const next=getChecked();next.delete(id);saveChecked(next);render();
+        const store=readStore(),nextConfig=getConfig().filter(item=>item.id!==id),next=getChecked();next.delete(id);
+        store[CONFIG_KEY]=nextConfig;const all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{};all[ACTIVE_KEY]=[...next];store[CHECKED_KEY]=all;
+        if(writeStore(store))render();
       });
     });
     const editor=$('#quickPackEditorV28');editor.hidden=!editMode;
