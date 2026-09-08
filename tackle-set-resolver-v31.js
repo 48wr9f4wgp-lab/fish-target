@@ -50,8 +50,9 @@
     const idealSet=buildIdealSet(plan);
     if(!idealSet)return null;
     const logic=globalThis.FISH_TARGET_TACKLE_LOGIC;
-    const rods=Array.isArray(ownedTackle?.rods)?ownedTackle.rods:[];
-    const reels=Array.isArray(ownedTackle?.reels)?ownedTackle.reels:[];
+    const validItem=item=>item!==null&&typeof item==='object'&&!Array.isArray(item);
+    const rods=Array.isArray(ownedTackle?.rods)?ownedTackle.rods.filter(validItem):[];
+    const reels=Array.isArray(ownedTackle?.reels)?ownedTackle.reels.filter(validItem):[];
     if(!logic?.rodFit||!logic?.reelFit){
       const gaps=[idealSet.rod.required?{type:'missing_component',component:'rod',severity:2}:null,idealSet.reel.required?{type:'missing_component',component:'reel',severity:2}:null].filter(Boolean).map(freeze);
       return Object.freeze({idealSet,myBestSet:null,gaps:Object.freeze(gaps),compatibility:'incompatible',reasons:Object.freeze([Object.freeze({code:'tackle-logic-unavailable',component:'set',level:2})])});

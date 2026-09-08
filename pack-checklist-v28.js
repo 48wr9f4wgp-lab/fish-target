@@ -19,7 +19,8 @@
   let editMode=false;
   let returnFocus=null;
 
-  const readStore=()=>{try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}')}catch{return{}}};
+  const isRecord=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  const readStore=()=>{try{const value=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');return isRecord(value)?value:{}}catch{return{}}};
   const writeStore=store=>{try{localStorage.setItem(STORE_KEY,JSON.stringify(store));return true}catch(error){console.warn('quick pack save failed',error);return false}};
   const cloneDefaults=()=>DEFAULTS.map(item=>({...item}));
   const getConfig=()=>{
@@ -29,7 +30,7 @@
   };
   const saveConfig=config=>{const store=readStore();store[CONFIG_KEY]=config;writeStore(store)};
   const getChecked=()=>{const store=readStore();const all=store[CHECKED_KEY]||{};const list=all[ACTIVE_KEY];return new Set(Array.isArray(list)?list:[])};
-  const saveChecked=checked=>{const store=readStore();const all=store[CHECKED_KEY]&&typeof store[CHECKED_KEY]==='object'?store[CHECKED_KEY]:{};all[ACTIVE_KEY]=[...checked];store[CHECKED_KEY]=all;writeStore(store)};
+  const saveChecked=checked=>{const store=readStore();const all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{};all[ACTIVE_KEY]=[...checked];store[CHECKED_KEY]=all;writeStore(store)};
   const clearChecks=()=>{const store=readStore();store[CHECKED_KEY]={};writeStore(store)};
   const pulse=(el,klass='quickPackPulseV28')=>{if(!el)return;el.classList.remove(klass);void el.offsetWidth;el.classList.add(klass);setTimeout(()=>el.classList.remove(klass),360)};
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
