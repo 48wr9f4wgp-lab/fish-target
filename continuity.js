@@ -32,8 +32,10 @@
     }
     return raw;
   };
-  globalThis.storeGet=key=>sanitizeStorageRead(String(key),rawStoreGet(key));
-  globalThis.FISH_TARGET_STORAGE_READ_GUARD=Object.freeze({version:'STORAGE-READ-GUARD-V34',sanitizeStorageRead});
+  const guardedStoreGet=key=>sanitizeStorageRead(String(key),rawStoreGet(key));
+  try{storeGet=guardedStoreGet}catch{globalThis.storeGet=guardedStoreGet}
+  globalThis.storeGet=guardedStoreGet;
+  globalThis.FISH_TARGET_STORAGE_READ_GUARD=Object.freeze({version:'STORAGE-READ-GUARD-V35',sanitizeStorageRead});
 
   const safeParse=(raw,fallback)=>{try{return raw?JSON.parse(raw):fallback}catch{return fallback}};
   const read=(key,fallback)=>safeParse(typeof storeGet==='function'?storeGet(key):null,fallback);

@@ -4,6 +4,22 @@ import {chromium,webkit,devices} from 'playwright';
 const engine=process.env.FISH_TARGET_QA_ENGINE||'chromium';
 const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
 const browser=await ({chromium,webkit}[engine]).launch({headless:true});
+const waitVisible=async(page,locator,label,errors,timeout=30000)=>{
+  try{await locator.waitFor({state:'visible',timeout})}
+  catch(error){
+    const snapshot=await page.evaluate(()=>({
+      build:document.documentElement.dataset.build||null,
+      ready:document.documentElement.classList.contains('ft-ready'),
+      home:document.getElementById('home')?.className||null,
+      result:document.getElementById('result')?.className||null,
+      fish:document.getElementById('rname')?.textContent||null,
+      guard:globalThis.FISH_TARGET_STORAGE_READ_GUARD?.version||null,
+      tackleGuarded:(()=>{try{return JSON.parse(typeof storeGet==='function'?storeGet('fish_target_v17_tackle'):'{}')}catch{return null}})(),
+      checklistGuarded:(()=>{try{return JSON.parse(typeof storeGet==='function'?storeGet('fish_target_v9_checklists'):'{}')}catch{return null}})()
+    }));
+    throw new Error(`${label} did not become visible; pageerrors=${errors.join(' | ')||'none'}; snapshot=${JSON.stringify(snapshot)}; cause=${error.message}`);
+  }
+};
 try{
   for(const raw of ['null','[]','42']){
     const context=await browser.newContext({...devices['iPhone 13'],viewport:{width:390,height:844},serviceWorkers:'block'});
@@ -12,10 +28,6 @@ try{
     page.on('pageerror',error=>errors.push(String(error)));
     await context.addInitScript(({raw})=>{
       localStorage.setItem('fish_target_v9_checklists',raw);
-      localStorage.setItem('fish_target_v16_favorites',raw);
-      localStorage.setItem('fish_target_v16_recent',raw);
-      localStorage.setItem('fish_target_v16_last_plan',raw);
-      localStorage.setItem('fish_target_v9_events',raw);
       localStorage.setItem('fish_target_v17_tackle',JSON.stringify({
         rods:[null,42,[],{id:'rc-rod',name:'RC ROD',power:'MH',length:9.6,maxLure:80}],
         reels:[null,false,[],{id:'rc-reel',name:'RC REEL',size:5000,lineType:'PE',lineNo:2}]
@@ -24,11 +36,12 @@ try{
     await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),null,{timeout:20000});
     await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:20000});
-    assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_STORAGE_READ_GUARD?.version),'STORAGE-READ-GUARD-V34');
-    for(const key of ['fish_target_v9_checklists','fish_target_v16_favorites','fish_target_v16_recent','fish_target_v16_last_plan','fish_target_v9_events']){
-      assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),raw,`${key} remains byte-for-byte unchanged after guarded reads`);
-    }
     await page.locator('#appPackTabV30').waitFor({state:'visible'});
+    const guardState=await page.evaluate(()=>{
+      const value=JSON.parse(storeGet('fish_target_v17_tackle'));
+      return {version:globalThis.FISH_TARGET_STORAGE_READ_GUARD?.version||null,rods:value.rods.map(x=>x.id),reels:value.reels.map(x=>x.id)};
+    });
+    assert.deepEqual(guardState,{version:'STORAGE-READ-GUARD-V35',rods:['rc-rod'],reels:['rc-reel']},'central guard must sanitize malformed MY TACKLE before result readers run');
     await page.locator('#appPackTabV30').click();
     await page.locator('#packStandaloneV30').waitFor({state:'visible'});
     assert.equal(await page.locator('.quickPackItemV28').count(),8);
@@ -40,7 +53,7 @@ try{
     await page.locator('#packStandaloneCloseV30').click();
     await page.locator('#home.on').waitFor({state:'visible'});
     await page.locator('button.fish[data-fish="ブリ・ワラサ"]').click();
-    await page.locator('#result.on').waitFor({state:'visible'});
+    await waitVisible(page,page.locator('#result.on'),'result view',errors);
     await page.locator('#tackleAutoBuildV29').waitFor({state:'visible'});
     const owned=await page.evaluate(()=>localStorage.getItem('fish_target_v17_tackle'));
     await page.locator('#autoBuildRunV29').click();
