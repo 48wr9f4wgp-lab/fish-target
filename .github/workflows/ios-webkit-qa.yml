@@ -39,3 +39,4 @@ jobs:
           done
           curl -fsS http://127.0.0.1:4173/dist/ >/dev/null
           node scripts/ios-webkit-rc-qa.mjs
+          FISH_TARGET_QA_ENGINE=webkit node scripts/rc-storage-resilience-browser-qa.mjs

@@ -24,6 +24,8 @@ test('packing surface is independent from fish result flow',()=>{
 
 test('packing surface reuses owned checklist storage and stays editable',()=>{
   assert.match(runtime,/fish_target_v9_checklists/);
+  assert.match(runtime,/quickPackSaveStatusV30/);
+  assert.match(runtime,/保存できません。ブラウザの空き容量・サイトデータ設定を確認してください。/);
   assert.match(runtime,/__quick_pack_v28_config/);
   assert.match(runtime,/__quick_pack_v28_checked/);
   assert.match(runtime,/quickPackEditV28/);

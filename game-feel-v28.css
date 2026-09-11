@@ -14,6 +14,8 @@ body.packOpenV30{overflow:hidden!important}
 .quickPackHeadActionsV28{display:flex;align-items:center;gap:6px}
 .quickPackHeadActionsV28>span{min-width:38px;text-align:center;font-size:10px;font-weight:950;color:#087f75;background:var(--mint);padding:6px 8px;border-radius:999px}
 .quickPackHeadActionsV28 button,.quickPackClearV28,.quickPackResetV28{border:1px solid var(--line);background:#fff;color:#51676c;border-radius:999px;min-height:36px;padding:7px 10px;font-size:9px;font-weight:900}
+.quickPackSaveStatusV30{margin:0 0 8px;padding:9px 10px;border:1px solid #e6c8c8;border-radius:11px;background:#fff4f4;color:#8a3d3d;font-size:10px;font-weight:850;line-height:1.45}
+.quickPackSaveStatusV30[hidden]{display:none!important}
 .quickPackListV28{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .quickPackRowV28{position:relative;display:grid;grid-template-columns:1fr auto;gap:6px;align-items:stretch;border-radius:13px}
 .quickPackItemV28{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:center;min-height:48px;padding:9px 10px;background:#f6f9f9;border:1px solid #e3ebec;border-radius:13px;font-size:10px;font-weight:850;transition:transform .14s ease,background .18s ease,border-color .18s ease,opacity .18s ease}
