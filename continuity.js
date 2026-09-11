@@ -2,6 +2,39 @@
   const LAST_KEY='fish_target_v16_last_plan';
   const RECENT_KEY='fish_target_v16_recent';
   const FAVORITES_KEY='fish_target_v16_favorites';
+  const rawStoreGet=typeof globalThis.storeGet==='function'?globalThis.storeGet.bind(globalThis):key=>{try{return localStorage.getItem(key)}catch{return null}};
+  const isRecord=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  const parseStored=(raw,fallback)=>{try{return raw==null?fallback:JSON.parse(raw)}catch{return fallback}};
+  const recordItems=value=>Array.isArray(value)?value.filter(isRecord):[];
+  const sanitizeStorageRead=(key,raw)=>{
+    if(raw==null)return raw;
+    if(key==='fish_target_v17_tackle'){
+      const value=parseStored(raw,{});
+      return JSON.stringify({rods:recordItems(value?.rods),reels:recordItems(value?.reels)});
+    }
+    if(key==='fish_target_v9_checklists'){
+      const value=parseStored(raw,{});
+      if(!isRecord(value))return '{}';
+      const safe={};
+      for(const [name,items] of Object.entries(value)){
+        if(name.startsWith('__'))safe[name]=items;
+        else if(Array.isArray(items))safe[name]=items;
+      }
+      return JSON.stringify(safe);
+    }
+    if(key===RECENT_KEY||key===FAVORITES_KEY||key==='fish_target_v9_events'){
+      const value=parseStored(raw,[]);
+      return JSON.stringify(Array.isArray(value)?value:[]);
+    }
+    if(key===LAST_KEY){
+      const value=parseStored(raw,null);
+      return JSON.stringify(isRecord(value)?value:null);
+    }
+    return raw;
+  };
+  globalThis.storeGet=key=>sanitizeStorageRead(String(key),rawStoreGet(key));
+  globalThis.FISH_TARGET_STORAGE_READ_GUARD=Object.freeze({version:'STORAGE-READ-GUARD-V34',sanitizeStorageRead});
+
   const safeParse=(raw,fallback)=>{try{return raw?JSON.parse(raw):fallback}catch{return fallback}};
   const read=(key,fallback)=>safeParse(typeof storeGet==='function'?storeGet(key):null,fallback);
   const write=(key,value)=>{if(typeof storeSet==='function')storeSet(key,JSON.stringify(value))};
