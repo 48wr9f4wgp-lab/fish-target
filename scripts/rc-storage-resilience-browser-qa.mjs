@@ -12,6 +12,10 @@ try{
     page.on('pageerror',error=>errors.push(String(error)));
     await context.addInitScript(({raw})=>{
       localStorage.setItem('fish_target_v9_checklists',raw);
+      localStorage.setItem('fish_target_v16_favorites',raw);
+      localStorage.setItem('fish_target_v16_recent',raw);
+      localStorage.setItem('fish_target_v16_last_plan',raw);
+      localStorage.setItem('fish_target_v9_events',raw);
       localStorage.setItem('fish_target_v17_tackle',JSON.stringify({
         rods:[null,42,[],{id:'rc-rod',name:'RC ROD',power:'MH',length:9.6,maxLure:80}],
         reels:[null,false,[],{id:'rc-reel',name:'RC REEL',size:5000,lineType:'PE',lineNo:2}]
@@ -20,6 +24,10 @@ try{
     await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),null,{timeout:20000});
     await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:20000});
+    assert.equal(await page.evaluate(()=>globalThis.FISH_TARGET_STORAGE_READ_GUARD?.version),'STORAGE-READ-GUARD-V34');
+    for(const key of ['fish_target_v9_checklists','fish_target_v16_favorites','fish_target_v16_recent','fish_target_v16_last_plan','fish_target_v9_events']){
+      assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),raw,`${key} remains byte-for-byte unchanged after guarded reads`);
+    }
     await page.locator('#appPackTabV30').waitFor({state:'visible'});
     await page.locator('#appPackTabV30').click();
     await page.locator('#packStandaloneV30').waitFor({state:'visible'});
