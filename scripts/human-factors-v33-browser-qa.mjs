@@ -98,12 +98,16 @@ await page.locator('#fieldmode.on').waitFor({state:'visible'});
 assert.match((await page.locator('#fmTackle').innerText())||'',/HUMAN FACTORS ROD/);
 assert.match((await page.locator('#fmTackle').innerText())||'',/HUMAN FACTORS REEL/);
 assert.equal((await page.locator('.fmNext span').textContent())?.trim(),'反応がなければ');
-assert.deepEqual(await page.locator('.fmTitle').allTextContents(),['今回のセット','現場の3手']);
+assert.deepEqual(await page.locator('.fmTitle').allTextContents(),['現場の3手','今回のセット']);
 const field=await page.evaluate(()=>{
   const r=document.querySelector('.fieldBack').getBoundingClientRect();
+  const first=document.querySelector('.fmFirst').getBoundingClientRect();
+  const steps=document.querySelector('#fmSteps').getBoundingClientRect();
+  const tackle=document.querySelector('#fmTackle').getBoundingClientRect();
   const size=selector=>parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
-  return {backW:r.width,backH:r.height,step:size('.fmStep span'),condition:size('.fmCondition'),overflow:document.documentElement.scrollWidth};
+  return {backW:r.width,backH:r.height,step:size('.fmStep span'),condition:size('.fmCondition'),overflow:document.documentElement.scrollWidth,firstTop:first.top,stepsTop:steps.top,tackleTop:tackle.top};
 });
+assert.ok(field.firstTop<field.stepsTop&&field.stepsTop<field.tackleTop,`FIELD must show FIRST CAST → 3 actions → set: ${JSON.stringify(field)}`);
 assert.ok(field.backW>=44&&field.backH>=44,`FIELD back target must be >=44px: ${JSON.stringify(field)}`);
 assert.ok(field.step>=15&&field.condition>=12,`FIELD glance typography: ${JSON.stringify(field)}`);
 assert.ok(field.overflow<=391,`FIELD overflow at 390px: ${JSON.stringify(field)}`);
