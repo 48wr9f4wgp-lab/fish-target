@@ -77,8 +77,9 @@ assert.equal(runtime.products,985,'explicit product action hydrates the current 
 assert.equal(runtime.batches,46,'explicit product action uses all current Catalog batches');
 assert.ok(runtime.state.rods.length>0,'rod product candidates exist');
 assert.ok(runtime.state.reels.length>0,'reel product candidates exist');
-assert.equal(await page.locator('#autoBuildProductDetailV33').isVisible(),true,'product detail becomes available after explicit request');
+assert.equal(await page.locator('#autoBuildProductDetailV33').getAttribute('hidden'),null,'product detail becomes available after explicit request');
 await page.locator('#autoBuildDetailsV31 summary').click();
+assert.equal(await page.locator('#autoBuildProductDetailV33').isVisible(),true,'product detail becomes visible after opening evidence');
 const labels=await page.locator('.autoBuildStageV29 .autoBuildStageTopV29>span').allTextContents();
 assert.deepEqual(labels,['01 · ROD','02 · REEL','03 · LINE','04 · RIG']);
 for(const kind of ['rod','reel','line','rig'])assert.ok((await page.locator(`.autoBuildStageV29[data-stage="${kind}"]>b`).textContent())?.trim(),`${kind} stage has content`);
@@ -91,7 +92,6 @@ if(altPossible){const before=(await page.locator('.autoBuildStageV29[data-stage=
 
 const ergonomics=await page.evaluate(()=>{
   const style=selector=>getComputedStyle(document.querySelector(selector));
-  const px=value=>parseFloat(value)||0;
   const run=document.querySelector('#autoBuildRunV29').getBoundingClientRect();
   const next=document.querySelector('#autoBuildNextV32').getBoundingClientRect();
   return {runH:run.height,nextH:next.height,decision:style('[data-set-card="owned"]>b').fontSize,detail:style('.autoBuildStageV29>small').fontSize};
