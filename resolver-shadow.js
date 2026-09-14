@@ -3,8 +3,10 @@
   const logic=globalThis.FISH_TARGET_TACKLE_LOGIC;
   if(!resolver||!logic?.rodFit||!logic?.reelFit)return;
   const KEY='fish_target_v17_tackle';
-  const read=()=>{try{const raw=localStorage.getItem(KEY);const data=raw?JSON.parse(raw):{};return {rods:Array.isArray(data.rods)?data.rods:[],reels:Array.isArray(data.reels)?data.reels:[]}}catch{return {rods:[],reels:[]}}};
-  const best=(items,fitFn)=>items.map(item=>({item,fit:fitFn(item)})).sort((a,b)=>(a.fit?.level??99)-(b.fit?.level??99))[0]||null;
+  const isRecord=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  const recordItems=value=>Array.isArray(value)?value.filter(isRecord):[];
+  const read=()=>{try{const raw=localStorage.getItem(KEY);const data=raw?JSON.parse(raw):{};return {rods:recordItems(data?.rods),reels:recordItems(data?.reels)}}catch{return {rods:[],reels:[]}}};
+  const best=(items,fitFn)=>recordItems(items).map(item=>({item,fit:fitFn(item)})).sort((a,b)=>(a.fit?.level??99)-(b.fit?.level??99))[0]||null;
   const keyOf=candidate=>candidate?.item?.id||candidate?.item?.product_id||candidate?.item?.name||null;
   const sameCandidate=(a,b)=>keyOf(a)===keyOf(b)&&(a?.fit?.level??null)===(b?.fit?.level??null);
   const normalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,'').replace(/[·・\-_/]/g,'');
@@ -50,7 +52,7 @@
   const check=()=>{
     if(typeof cur==='undefined'||!cur||typeof basePlan!=='function'){
       checkCatalog();
-      return publish({version:'RESOLVER-SHADOW-1',ready:false,parity:null,reason:'no-current-species'});
+      return publish({version:'RESOLVER-SHADOW-2',ready:false,parity:null,reason:'no-current-species'});
     }
     const db=read();
     const plan=basePlan();
@@ -58,13 +60,13 @@
     const methodId=typeof state!=='undefined'&&state?.methodKey?state.methodKey:'default';
     const resolved=resolver.evaluateOwnedTackle(cur.name,methodId,db,{plan,rotation});
     checkCatalog();
-    if(!resolved?.ready)return publish({version:'RESOLVER-SHADOW-1',ready:false,parity:null,reason:resolved?.reason||'resolver-unavailable',species:cur.name,method_id:methodId});
+    if(!resolved?.ready)return publish({version:'RESOLVER-SHADOW-2',ready:false,parity:null,reason:resolved?.reason||'resolver-unavailable',species:cur.name,method_id:methodId});
     const legacyRod=best(db.rods,item=>logic.rodFit(item,plan,rotation));
     const legacyReel=best(db.reels,item=>logic.reelFit(item,plan));
     const rodParity=sameCandidate(legacyRod,resolved.rod);
     const reelParity=sameCandidate(legacyReel,resolved.reel);
     return publish({
-      version:'RESOLVER-SHADOW-1',ready:true,parity:rodParity&&reelParity,
+      version:'RESOLVER-SHADOW-2',ready:true,parity:rodParity&&reelParity,
       species:cur.name,method_id:methodId,plan_id:resolved.plan_id,
       rod_parity:rodParity,reel_parity:reelParity,
       legacy_rod:keyOf(legacyRod),resolver_rod:keyOf(resolved.rod),
@@ -77,5 +79,5 @@
     renderResult=function(...args){const out=previous.apply(this,args);check();return out};
   }
   queueMicrotask(check);
-  globalThis.FISH_TARGET_RESOLVER_SHADOW=Object.freeze({version:'RESOLVER-SHADOW-1',check,checkCatalog});
+  globalThis.FISH_TARGET_RESOLVER_SHADOW=Object.freeze({version:'RESOLVER-SHADOW-2',check,checkCatalog});
 })();
