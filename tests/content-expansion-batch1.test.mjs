@@ -47,29 +47,39 @@ test('rod expansion stays inside the existing lazy rod/reel catalog boundary',as
   assert.ok(rods.every(x=>/^\d{13}$/.test(x.identifiers.jan)));
 });
 
-test('lure catalog is target-sharded, research-only, and excludes color-SKU/image bloat',async()=>{
+test('lure catalog stays target-sharded, research-only, maker-neutral, and free of SKU/image bloat as it grows',async()=>{
   const {manifest,rows}=await loadLureRows();
-  assert.equal(manifest.batches.length,2);
-  assert.deepEqual(manifest.batches.map(x=>x.targets),[['カマス'],['サワラ']]);
-  assert.equal(rows.length,5);
+  assert.ok(manifest.batches.length>=4,'later product-completion batches are additive');
+  assert.ok(manifest.batches.every(x=>x.stage==='research'),'lure candidates stay research-only until publication review');
+  const targets=new Set(manifest.batches.flatMap(x=>x.targets||[]));
+  for(const target of ['カマス','サワラ','ブリ・ワラサ'])assert.ok(targets.has(target),`missing lure target ${target}`);
   assert.equal(rows.filter(x=>x.targets.includes('カマス')).length,3);
   assert.equal(rows.filter(x=>x.targets.includes('サワラ')).length,2);
+  const bluefish=rows.filter(x=>x.targets.includes('ブリ・ワラサ')&&x.methods?.includes('ショアジギング'));
+  assert.equal(bluefish.length,4,'bluefish shore-jig cluster has four functional-size research candidates');
+  assert.deepEqual([...new Set(bluefish.map(x=>x.maker))].sort(),['DAIWA','SHIMANO'],'bluefish research must not collapse to one maker');
   assert.ok(rows.every(x=>x.publication_ready===false));
   assert.ok(rows.every(x=>x.variant_scope==='functional-size'));
   const serialized=JSON.stringify(rows);
   assert.doesNotMatch(serialized,/image|thumbnail|color_sku|price|stock/i);
-  const batchBytes=(await Promise.all(manifest.batches.map(async x=>(await stat(path.join(root,x.file))).size))).reduce((a,b)=>a+b,0);
-  assert.ok(batchBytes<6000,`lure target shards too large: ${batchBytes} bytes`);
+  for(const batch of manifest.batches){
+    const bytes=(await stat(path.join(root,batch.file))).size;
+    assert.ok(bytes<5000,`${batch.file} target shard too large: ${bytes} bytes`);
+  }
   assert.ok((await stat(path.join(root,'lure-catalog-loader.js'))).size<5000);
   assert.ok((await stat(path.join(root,'lure-catalog-entry.js'))).size<5000);
   assert.ok((await stat(path.join(root,'pwa.js'))).size<8000,'lure demand gate must not bloat the startup bootstrap');
 });
 
-test('research build keeps every lure asset out of install-time shell and exposes only target metadata',async()=>{
-  const [html,sw,pwa,build]=await Promise.all([text('dist/index.html'),text('dist/sw.js'),text('pwa.js'),text('scripts/build.mjs')]);
+test('research build keeps every lure asset out of install-time shell and derives target metadata from the manifest',async()=>{
+  const [html,sw,pwa,build,manifest]=await Promise.all([text('dist/index.html'),text('dist/sw.js'),text('pwa.js'),text('scripts/build.mjs'),json('lure-catalog-manifest.json')]);
   assert.match(html,/data-lure-catalog-runtime="on"/);
-  assert.match(html,/data-lure-catalog-targets="カマス\|サワラ"/);
-  for(const lazy of ['lure-catalog.css','lure-catalog-entry.js','lure-catalog-loader.js','lure-catalog-manifest.json','lure-catalog-daiwa-kamasu-light-2026.js','lure-catalog-daiwa-sawara-blade-2026.js']){
+  const expectedTargets=[...new Set(manifest.batches.flatMap(batch=>batch.targets||[]))];
+  const metadata=html.match(/data-lure-catalog-targets="([^"]*)"/);
+  assert.ok(metadata,'research build exposes lure target metadata');
+  assert.deepEqual(metadata[1].split('|').filter(Boolean),expectedTargets,'build target metadata follows the additive manifest');
+  const lazyAssets=['lure-catalog.css','lure-catalog-entry.js','lure-catalog-loader.js','lure-catalog-manifest.json',...manifest.batches.map(batch=>batch.file)];
+  for(const lazy of lazyAssets){
     assert.doesNotMatch(sw,new RegExp(`\\./${lazy.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}(?:["'])`),`${lazy} must not be install-time shell`);
   }
   assert.match(pwa,/dataset\.lureCatalogTargets/);
