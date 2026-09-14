@@ -46,11 +46,10 @@
   function handlingItems(plan){
     if(!plan)return [];
     const req=plan.requirements||{},cast=plan.first_cast||{},species=currentSpecies(plan);
-    const method=text(plan.method),bait=text(cast.bait);
-    const styles=Array.isArray(species?.styles)?species.styles.map(text):[];
+    const method=text(plan.method),bait=text(cast.bait),style=text(plan.style);
     const tags=Array.isArray(species?.tags)?species.tags.map(text):[];
-    const lureLike=styles.includes('lure')||/ルアー|ジグ|エギ|スプーン|ミノー|ワーム|トップ|プラグ/i.test(`${method} ${bait}`);
-    const largeGame=tags.some(tag=>/青物|大型|回遊魚/.test(tag))||/ショアジギング|オフショア|船ジギング|キャスティング|泳がせ/i.test(method);
+    const lureLike=style==='lure'||/ルアー|ジグ|エギ|スプーン|ミノー|ワーム|トップ|プラグ/i.test(`${method} ${bait}`);
+    const largeGame=tags.some(tag=>/青物|大型/.test(tag))||/ショアジギング|オフショア|船ジギング|キャスティング|泳がせ/i.test(method);
     const result=[];
     if(text(req.line)||text(req.leader)||text(req.rig))result.push(item('handling-line-cutter','ラインカッター / ハサミ','ツール','recommended','結束・仕掛け交換時のライン処理'));
     if(lureLike)result.push(item('handling-pliers','プライヤー','ツール','recommended','フック・リング交換や安全な針外し'));
