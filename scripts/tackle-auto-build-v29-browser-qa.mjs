@@ -111,7 +111,9 @@ assert.equal(await page.locator('#fmTackle').getAttribute('data-owned-set'),'','
 assert.match((await page.locator('#fmTackle').innerText())||'',/QA OWNED ROD/);
 assert.match((await page.locator('#fmTackle').innerText())||'',/QA OWNED REEL/);
 assert.equal((await page.locator('.fmNext span').textContent())?.trim(),'反応がなければ');
-assert.deepEqual(await page.locator('.fmTitle').allTextContents(),['今回のセット','現場の3手']);
+assert.deepEqual(await page.locator('.fmTitle').allTextContents(),['現場の3手','今回のセット']);
+const fieldOrder=await page.evaluate(()=>{const first=document.querySelector('.fmFirst').getBoundingClientRect(),steps=document.querySelector('#fmSteps').getBoundingClientRect(),tackle=document.querySelector('#fmTackle').getBoundingClientRect();return {first:first.top,steps:steps.top,tackle:tackle.top}});
+assert.ok(fieldOrder.first<fieldOrder.steps&&fieldOrder.steps<fieldOrder.tackle,`FIELD visual order must be FIRST CAST → 3 actions → set: ${JSON.stringify(fieldOrder)}`);
 const fieldErgonomics=await page.evaluate(()=>{const back=document.querySelector('.fieldBack').getBoundingClientRect(),step=getComputedStyle(document.querySelector('.fmStep span')),condition=getComputedStyle(document.querySelector('.fmCondition'));return {backW:back.width,backH:back.height,step:parseFloat(step.fontSize),condition:parseFloat(condition.fontSize)}});
 assert.ok(fieldErgonomics.backW>=44&&fieldErgonomics.backH>=44&&fieldErgonomics.step>=15&&fieldErgonomics.condition>=12,`field ergonomics: ${JSON.stringify(fieldErgonomics)}`);
 assert.deepEqual(errors,[],`page errors: ${errors.join('\n')}`);
