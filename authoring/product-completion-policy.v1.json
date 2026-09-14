@@ -1,0 +1,52 @@
+{
+  "version": "PRODUCT-COMPLETION-POLICY-1",
+  "primary_metric": "plan_readiness",
+  "principles": {
+    "owned_tackle_first": true,
+    "catalog_optional": true,
+    "catalog_must_not_change_core_requirement": true,
+    "maker_neutral_core": true,
+    "unknown_is_not_ready": true
+  },
+  "technical_layers": [
+    {"id":"rod","label":"ロッド","required_when":"plan requirement exists"},
+    {"id":"reel","label":"リール","required_when":"plan requirement exists"},
+    {"id":"main_line","label":"メインライン","required_when":"plan requirement exists"},
+    {"id":"leader","label":"リーダー / ハリス","required_when":"plan requirement exists"},
+    {"id":"first_cast","label":"FIRST CAST / エサ・ルアー","required_when":"first_cast exists"},
+    {"id":"terminal","label":"仕掛け / 端末","required_when":"rig requirement exists"}
+  ],
+  "trip_support_layers": [
+    {"id":"landing","label":"ランディング / 魚処理","required_by_context":true},
+    {"id":"safety","label":"安全装備","required_by_context":true},
+    {"id":"consumable","label":"消耗品 / 予備","required_by_context":true},
+    {"id":"accessory","label":"補助用品","required_by_context":true}
+  ],
+  "commercial_categories": [
+    "rod",
+    "reel",
+    "line",
+    "leader",
+    "lure_or_bait",
+    "terminal",
+    "landing",
+    "safety",
+    "accessory"
+  ],
+  "cluster_order": [
+    "shore_jigging_bluefish",
+    "light_game_aji_mebaru",
+    "eging_squid",
+    "seabass",
+    "surf_flatfish",
+    "harbor_sabiki_bait",
+    "bass_trout",
+    "offshore_boat"
+  ],
+  "publication_gate": {
+    "technical_plan_coverage_target": 1.0,
+    "commercial_candidate_is_optional": true,
+    "research_stage_is_not_publication_ready": true,
+    "price_stock_affiliate_not_required_for_v34": true
+  }
+}
