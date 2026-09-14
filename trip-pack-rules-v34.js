@@ -62,20 +62,24 @@
     if(!plan)return [];
     const result=[];
     const method=text(plan.method);
-    const places=Array.isArray(plan.places)?plan.places.map(text).join(' '):'';
+    const places=Array.isArray(plan.places)?plan.places.map(text):[];
     const time=text(plan.first_cast?.time);
     const species=currentSpecies(plan);
-    const isBoat=/船|ボート|オフショア/i.test(`${method} ${places}`);
-    const isRock=/磯|ロックショア/i.test(`${method} ${places}`);
+    const methodBoat=/船|ボート|オフショア/i.test(method);
+    const methodRock=/ロックショア/i.test(method);
+    const possibleBoat=places.some(place=>/船|ボート|沖/i.test(place));
+    const possibleRock=places.some(place=>/磯|岩場/i.test(place));
     const isNight=/夜|ナイト/i.test(time);
     const isDawnDusk=/朝夕|朝|夕|マヅメ|マズメ/i.test(time);
 
-    if(isBoat||isRock){
-      result.push(item('safety-lifejacket','ライフジャケット','安全','required',isBoat?'船・ボート系プランの安全装備':'磯系プランの安全装備',{safetyCritical:true}));
-    }else if(species?.water==='salt'){
-      result.push(item('safety-lifejacket','ライフジャケット','安全','recommended','海辺の釣行前に安全装備を確認',{safetyCritical:true}));
+    if(methodBoat||methodRock){
+      result.push(item('safety-lifejacket','ライフジャケット','安全','required',methodBoat?'船・ボート系釣法の安全装備':'ロックショア釣法の安全装備',{safetyCritical:true}));
+    }else if(species?.water==='salt'||possibleBoat||possibleRock){
+      const reason=possibleRock?'磯へ入る場合を含め、海辺の安全装備を確認':possibleBoat?'船へ乗る場合を含め、安全装備を確認':'海辺の釣行前に安全装備を確認';
+      result.push(item('safety-lifejacket','ライフジャケット','安全','recommended',reason,{safetyCritical:true}));
     }
-    if(isRock)result.push(item('safety-footwear','滑りにくい履物','安全','recommended','磯・岩場での足元対策',{safetyCritical:true}));
+    if(methodRock)result.push(item('safety-footwear','滑りにくい履物','安全','recommended','ロックショアでの足元対策',{safetyCritical:true}));
+    else if(possibleRock)result.push(item('safety-footwear','滑りにくい履物','安全','recommended','磯・岩場へ入る場合の足元対策',{safetyCritical:true}));
     if(isNight){
       result.push(item('condition-light','ヘッドライト / ライト','安全','required','夜のプランで手元と足元を照らす',{safetyCritical:true}));
       result.push(item('condition-light-spare','ライト用の予備電源','電源','recommended','夜間のライト停止に備える',{safetyCritical:true}));
