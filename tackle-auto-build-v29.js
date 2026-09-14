@@ -147,13 +147,22 @@
     renderBuild();
   }
   function scheduleLocalResolve(){if(autoResolveQueued)return;autoResolveQueued=true;queueMicrotask(()=>{autoResolveQueued=false;run({loadCatalog:false,automatic:true})})}
+  function refreshOwnedDecision(){
+    const plan=currentPlan(),setResolver=globalThis.FISH_TARGET_TACKLE_SET_RESOLVER;
+    if(!plan||!setResolver?.resolvePlan)return;
+    if(planKey(state.plan)!==planKey(plan)){scheduleLocalResolve();return}
+    const setResult=setResolver.resolvePlan(plan,readOwned());
+    if(!setResult)return;
+    state={...state,plan,setResult};
+    renderBuild();
+  }
   function resetForPlanChange(){runEpoch+=1;state={status:'idle',plan:null,setResult:null,rods:[],reels:[],rodIndex:0,reelIndex:0,catalogReady:false,error:null};ensureUi();syncPlanLabel();renderIdle();scheduleLocalResolve()}
 
   ensureUi();
   const watch=selector=>{const el=$(selector);if(el)new MutationObserver(resetForPlanChange).observe(el,{childList:true,subtree:true,characterData:true})};
   watch('#rname');watch('#pmethod');
   const ownedSummary=$('#tackleSummary');
-  if(ownedSummary)new MutationObserver(()=>scheduleLocalResolve()).observe(ownedSummary,{childList:true,subtree:true,characterData:true});
+  if(ownedSummary)new MutationObserver(refreshOwnedDecision).observe(ownedSummary,{childList:true,subtree:true,characterData:true});
   scheduleLocalResolve();
   globalThis.FISH_TARGET_TACKLE_AUTO_BUILD=Object.freeze({version:VERSION,currentPlan,run,cycle,readOwned,getState:()=>({...state,rods:state.rods.slice(),reels:state.reels.slice()})});
 })();
