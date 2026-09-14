@@ -7,15 +7,15 @@ const css=readFileSync(new URL('../fish-photo-v27.css',import.meta.url),'utf8');
 const pwa=readFileSync(new URL('../pwa.js',import.meta.url),'utf8');
 const build=readFileSync(new URL('../scripts/build.mjs',import.meta.url),'utf8');
 
-test('V27R3 keeps bundled real fish first and only resolves missing species remotely',()=>{
+test('V27R4 keeps bundled real fish first and only resolves taxonomy-safe missing species remotely',()=>{
   assert.match(js,/FISH_TARGET_REAL_FISH\?\.species/);
   assert.match(js,/LOCAL\.has\(name\)/);
-  assert.match(js,/version:'V27R3'/);
+  assert.match(js,/version:'V27R4'/);
   assert.match(js,/provider:'Wikimedia'/);
-  assert.match(js,/licensed-photo-only-with-svg-offline-fallback/);
+  assert.match(js,/licensed-photo-only-with-taxonomy-fail-closed-svg-offline-fallback/);
 });
 
-test('V27R3 resolves jawiki imageinfo first then falls back to Commons with license validation',()=>{
+test('V27R4 resolves jawiki imageinfo first then falls back to Commons with license validation',()=>{
   assert.match(js,/ja\.wikipedia\.org\/w\/api\.php/);
   assert.match(js,/imageInfo\('https:\/\/ja\.wikipedia\.org\/w\/api\.php'/);
   assert.match(js,/imageInfo\('https:\/\/commons\.wikimedia\.org\/w\/api\.php'/);
@@ -26,7 +26,7 @@ test('V27R3 resolves jawiki imageinfo first then falls back to Commons with lice
   assert.doesNotMatch(js,/unsplash|pexels|pixabay|googleusercontent/i);
 });
 
-test('V27R3 fails closed to resolved canonical photo taxa and invalidates stale ambiguous cache',()=>{
+test('V27R4 fails closed to resolved canonical photo taxa and invalidates stale ambiguous cache',()=>{
   assert.match(js,/canonicalPhotoAlias=Object\.freeze\(\{'エソ':'マエソ','オニカサゴ':'イズカサゴ','マルイカ':'ケンサキイカ'\}\)/);
   assert.match(js,/canonicalPhotoAlias\[name\]\?\[canonicalPhotoAlias\[name\]\]/,'canonical targets must not fall back to the ambiguous product label');
   assert.match(js,/!canonical\|\|v\.article===canonical/,'canonical cached article must match the resolved taxon title');
@@ -34,10 +34,17 @@ test('V27R3 fails closed to resolved canonical photo taxa and invalidates stale 
   assert.match(js,/canonicalAliases:canonicalPhotoAlias/);
 });
 
-test('V27R3 adds explicit aliases for device-observed and taxonomy-resolved species',()=>{
-  assert.match(js,/'サバ':'マサバ'/);
-  assert.match(js,/'イワシ':'マイワシ'/);
-  assert.match(js,/'ハゼ':'マハゼ'/);
+test('V27R4 does not fake broad or compound product labels with one exact-species photo',()=>{
+  for(const name of ['ヤマメ・イワナ','カレイ','サバ','イワシ','ハゼ','ベラ','タナゴ'])assert.match(js,new RegExp(`REMOTE_IDENTITY_FAIL_CLOSED[^;]*${name}`));
+  assert.doesNotMatch(js,/'ヤマメ・イワナ':'ヤマメ'/);
+  assert.doesNotMatch(js,/'サバ':'マサバ'/);
+  assert.doesNotMatch(js,/'イワシ':'マイワシ'/);
+  assert.doesNotMatch(js,/'ハゼ':'マハゼ'/);
+  assert.match(js,/if\(REMOTE_IDENTITY_FAIL_CLOSED\.has\(name\)\)return false/);
+  assert.match(js,/remoteIdentityFailClosed:Object\.freeze/);
+});
+
+test('V27R4 preserves explicit aliases only where the product taxon has been deliberately resolved',()=>{
   assert.match(js,/'エソ':'マエソ'/);
   assert.match(js,/'オニカサゴ':'イズカサゴ'/);
   assert.match(js,/'マルイカ':'ケンサキイカ'/);
@@ -45,7 +52,7 @@ test('V27R3 adds explicit aliases for device-observed and taxonomy-resolved spec
   assert.doesNotMatch(js,/'カレイ':'マコガレイ'/);
   assert.doesNotMatch(js,/'タナゴ':'ヤリタナゴ'/);
   assert.doesNotMatch(js,/'ヒイカ':'ジンドウイカ'/);
-  assert.match(js,/ft-fish-photo-v27r3/);
+  assert.match(js,/ft-fish-photo-v27r3/,'cache namespace stays stable so existing valid receipts can be reused');
 });
 
 test('V27 remote provider is production HTTPS only unless explicitly enabled for dedicated QA',()=>{

@@ -8,15 +8,19 @@
   const pending=new Map();
   const cacheKey=name=>`ft-fish-photo-v27r3:${name}`;
   const canonicalPhotoAlias=Object.freeze({'エソ':'マエソ','オニカサゴ':'イズカサゴ','マルイカ':'ケンサキイカ'});
+  // Product labels that intentionally cover multiple taxa must not be resolved to one exact-species remote photo.
+  // They keep the project/offline fallback until a deliberate family/dual-subject asset is approved.
+  const REMOTE_IDENTITY_FAIL_CLOSED=new Set(['ヤマメ・イワナ','カレイ','サバ','イワシ','ハゼ','ベラ','タナゴ']);
   const titleAlias=Object.freeze({
-    'ブリ・ワラサ':'ブリ','ヤマメ・イワナ':'ヤマメ','グレ':'メジナ','シーバス':'スズキ','ブラックバス':'オオクチバス',
-    'サバ':'マサバ','イワシ':'マイワシ','ハゼ':'マハゼ',...canonicalPhotoAlias,'テナガエビ':'テナガエビ','ウミタナゴ':'ウミタナゴ','コノシロ':'コノシロ','ウグイ':'ウグイ','マブナ':'ギンブナ'
+    'ブリ・ワラサ':'ブリ','グレ':'メジナ','シーバス':'スズキ','ブラックバス':'オオクチバス',
+    ...canonicalPhotoAlias,'テナガエビ':'テナガエビ','ウミタナゴ':'ウミタナゴ','コノシロ':'コノシロ','ウグイ':'ウグイ','マブナ':'ギンブナ'
   });
   const allowed=/^(CC0|Public domain|CC BY(?:-[A-Z]+)?(?: \d(?:\.\d)?)?|CC BY-SA(?: \d(?:\.\d)?)?)$/i;
   const clean=s=>String(s||'').replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
-  const candidates=name=>canonicalPhotoAlias[name]?[canonicalPhotoAlias[name]]:[titleAlias[name],name,String(name).split(/[・／/]/)[0]].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  const candidates=name=>REMOTE_IDENTITY_FAIL_CLOSED.has(name)?[]:canonicalPhotoAlias[name]?[canonicalPhotoAlias[name]]:[titleAlias[name],name,String(name).split(/[・／/]/)[0]].filter((v,i,a)=>v&&a.indexOf(v)===i);
   const manifestRecord=name=>MANIFEST?.resolve?.(name)||null;
   const remoteEligible=name=>{
+    if(REMOTE_IDENTITY_FAIL_CLOSED.has(name))return false;
     if(!MANIFEST)return !LOCAL.has(name);
     const record=manifestRecord(name);
     return Boolean(record&&record.mode==='remote-fallback'&&!record.asset);
@@ -146,15 +150,16 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   globalThis.FISH_TARGET_PHOTO_V27=Object.freeze({
-    version:'V27R3',
+    version:'V27R4',
     provider:'Wikimedia',
-    policy:'licensed-photo-only-with-svg-offline-fallback',
+    policy:'licensed-photo-only-with-taxonomy-fail-closed-svg-offline-fallback',
     manifestVersion:MANIFEST?.version||null,
     enabled:REMOTE_ENABLED,
     eager:EAGER,
     qaAutoLoad:QA_AUTOLOAD,
     localSpecies:Object.freeze([...LOCAL]),
     aliases:titleAlias,
-    canonicalAliases:canonicalPhotoAlias
+    canonicalAliases:canonicalPhotoAlias,
+    remoteIdentityFailClosed:Object.freeze([...REMOTE_IDENTITY_FAIL_CLOSED])
   });
 })();

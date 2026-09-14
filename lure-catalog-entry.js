@@ -22,7 +22,7 @@
     panel.dataset.context=`${ctx.species}|${ctx.method}`;
     placeholder(host,'読み込み中…');
     try{const api=await load();if(!api)throw new Error('lure api missing');const latest=context();if(`${latest.species}|${latest.method}`!==panel.dataset.context)return;await api.render(host,ctx.species,ctx.method)}
-    catch{placeholder(host,navigator.onLine?'市販ルアー候補を読み込めませんでした。':'オフラインでは市販ルアー候補を追加読込できません。')}
+    catch{placeholder(host,navigator.onLine?'市販ルアー / 仕掛け候補を読み込めませんでした。':'オフラインでは市販候補を追加読込できません。')}
   }
   function ensure(){
     const result=document.getElementById('result'),body=result?.querySelector('.body'),first=result?.querySelector('.firstCast');if(!body||!first)return;
@@ -31,7 +31,7 @@
     if(!enabled){if(panel){panel.hidden=true;panel.open=false}return}
     if(!panel){
       panel=document.createElement('details');panel.id='lureCatalogPanel';panel.className='lureCatalogPanel card';
-      const summary=document.createElement('summary');summary.innerHTML='<span><b>市販ルアー候補</b><small>必要な時だけ読み込み</small></span><em>公式研究</em>';
+      const summary=document.createElement('summary');summary.innerHTML='<span><b>市販ルアー / 仕掛け候補</b><small>必要な時だけ読み込み</small></span><em>公式研究</em>';
       const host=document.createElement('div');host.className='lureCatalogBody';host.id='lureCatalogBody';placeholder(host,'開くと、この魚・釣り方に合う候補だけ読み込みます。');
       panel.append(summary,host);first.insertAdjacentElement('afterend',panel);
       panel.addEventListener('toggle',()=>{if(panel.open){const c=context(),key=`${c.species}|${c.method}`;if(panel.dataset.context!==key)renderOpen(panel,host,c)}});
@@ -43,5 +43,5 @@
   ensure();
   if(typeof renderResult==='function'){const prev=renderResult;renderResult=function(...args){const out=prev.apply(this,args);ensure();return out}}
   window.addEventListener('pageshow',ensure);
-  globalThis.FISH_TARGET_LURE_CATALOG_ENTRY=Object.freeze({version:'LURE-CATALOG-ENTRY-1',render:ensure});
+  globalThis.FISH_TARGET_LURE_CATALOG_ENTRY=Object.freeze({version:'LURE-CATALOG-ENTRY-2',render:ensure});
 })();

@@ -35,7 +35,7 @@ test('batch2 adds only Katsuo offshore jigging and keeps the species count fixed
   assert.equal(report.queue.total,0);
 });
 
-test('batch2 intentionally adds no rod/reel or lure catalog rows',async()=>{
+test('batch2 itself adds no new rod/reel batch or Katsuo lure batch while later product work may grow globally',async()=>{
   const catalog=await json('catalog-batch-manifest.json');
   assert.equal(catalog.batches.length,46);
   assert.equal(catalog.batches.reduce((n,x)=>n+Number(x.expected_rows||0),0),971);
@@ -46,7 +46,8 @@ test('batch2 intentionally adds no rod/reel or lure catalog rows',async()=>{
   for(const model of nasciModels)assert.match(shimano,new RegExp(`NASCI ${model.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}`),`existing SHIMANO POC retains NASCI ${model}`);
 
   const lure=await json('lure-catalog-manifest.json');
-  assert.equal(lure.batches.length,2);
-  assert.deepEqual(lure.batches.flatMap(x=>x.targets),['カマス','サワラ']);
+  const targets=new Set(lure.batches.flatMap(x=>x.targets||[]));
+  assert.ok(targets.has('カマス')&&targets.has('サワラ'),'Batch 1 lure targets remain intact');
   assert.equal(lure.batches.some(x=>x.targets?.includes('カツオ')),false,'Katsuo method depth must not grow lure data by default');
+  assert.ok(lure.batches.every(x=>x.stage==='research'),'later lure expansion must remain research-only here');
 });

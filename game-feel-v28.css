@@ -3,22 +3,22 @@
 .packStandaloneV30[hidden]{display:none!important}
 body.packOpenV30{overflow:hidden!important}
 .packStandaloneTopV30{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;max-width:720px;margin:0 auto 12px;padding:8px 4px 0}
-.packStandaloneTopV30 span{display:block;font-size:8px;font-weight:950;letter-spacing:.14em;color:#0a857b}
+.packStandaloneTopV30 span{display:block;font-size:11px;font-weight:950;letter-spacing:.14em;color:#0a857b}
 .packStandaloneTopV30 h2{margin:3px 0 3px;font-size:28px;line-height:1.05;color:#10272d}
-.packStandaloneTopV30 p{margin:0;font-size:10px;color:#71858a}
+.packStandaloneTopV30 p{margin:0;font-size:12px;color:#71858a}
 #packStandaloneCloseV30{width:44px;height:44px;flex:0 0 44px;border:0;border-radius:16px;background:#e1ecec;color:#173b42;font-size:27px;line-height:1}
 .quickPackV28{max-width:720px;margin:0 auto;padding:14px}
 .quickPackHeadV28{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.quickPackHeadV28 strong{display:block;font-size:14px}
-.quickPackHeadV28 small{display:block;margin-top:2px;font-size:9px;color:var(--muted)}
+.quickPackHeadV28 strong{display:block;font-size:15px}
+.quickPackHeadV28 small{display:block;margin-top:2px;font-size:11px;color:var(--muted)}
 .quickPackHeadActionsV28{display:flex;align-items:center;gap:6px}
-.quickPackHeadActionsV28>span{min-width:38px;text-align:center;font-size:10px;font-weight:950;color:#087f75;background:var(--mint);padding:6px 8px;border-radius:999px}
-.quickPackHeadActionsV28 button,.quickPackClearV28,.quickPackResetV28{border:1px solid var(--line);background:#fff;color:#51676c;border-radius:999px;min-height:36px;padding:7px 10px;font-size:9px;font-weight:900}
-.quickPackSaveStatusV30{margin:0 0 8px;padding:9px 10px;border:1px solid #e6c8c8;border-radius:11px;background:#fff4f4;color:#8a3d3d;font-size:10px;font-weight:850;line-height:1.45}
+.quickPackHeadActionsV28>span{min-width:38px;text-align:center;font-size:11px;font-weight:950;color:#087f75;background:var(--mint);padding:6px 8px;border-radius:999px}
+.quickPackHeadActionsV28 button,.quickPackClearV28,.quickPackResetV28{border:1px solid var(--line);background:#fff;color:#51676c;border-radius:999px;min-height:44px;padding:9px 11px;font-size:11px;font-weight:900}
+.quickPackSaveStatusV30{margin:0 0 8px;padding:9px 10px;border:1px solid #e6c8c8;border-radius:11px;background:#fff4f4;color:#8a3d3d;font-size:11px;font-weight:850;line-height:1.45}
 .quickPackSaveStatusV30[hidden]{display:none!important}
 .quickPackListV28{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .quickPackRowV28{position:relative;display:grid;grid-template-columns:1fr auto;gap:6px;align-items:stretch;border-radius:13px}
-.quickPackItemV28{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:center;min-height:48px;padding:9px 10px;background:#f6f9f9;border:1px solid #e3ebec;border-radius:13px;font-size:10px;font-weight:850;transition:transform .14s ease,background .18s ease,border-color .18s ease,opacity .18s ease}
+.quickPackItemV28{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:center;min-height:48px;padding:9px 10px;background:#f6f9f9;border:1px solid #e3ebec;border-radius:13px;font-size:12px;font-weight:850;transition:transform .14s ease,background .18s ease,border-color .18s ease,opacity .18s ease}
 .quickPackItemV28:active{transform:scale(.98)}
 .quickPackItemV28 input{position:absolute;opacity:0;pointer-events:none}
 .quickPackCheckV28{width:20px;height:20px;border:2px solid #b8c8ca;border-radius:7px;background:#fff;position:relative}
@@ -33,7 +33,7 @@ body.packOpenV30{overflow:hidden!important}
 #quickPackAddFormV28{display:grid;grid-template-columns:1fr auto;gap:6px}
 #quickPackAddFormV28 input{min-width:0;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 11px;font-size:16px;outline:0}
 #quickPackAddFormV28 input:focus{border-color:#78bdb7;box-shadow:0 0 0 3px rgba(19,169,158,.12)}
-#quickPackAddFormV28 button{border:0;background:var(--ink);color:#fff;border-radius:12px;min-width:54px;font-size:10px;font-weight:950}
+#quickPackAddFormV28 button{border:0;background:var(--ink);color:#fff;border-radius:12px;min-width:54px;min-height:44px;font-size:11px;font-weight:950}
 .quickPackV28.ready{background:linear-gradient(145deg,#f6fbfa,#eef9f6);border-color:#cfe9e4}
 .quickPackV28.ready .quickPackHeadActionsV28>span:after{content:' ✓'}
 .quickPackPulseV28{animation:quickPackPopV28 .34s ease}

@@ -46,19 +46,21 @@
     try{
       const list=await rowsFor(species,method);
       host.replaceChildren();
-      if(!list.length){add(host,'p','この釣り方の市販ルアー候補はまだ研究中。','lureCatalogStatus');return}
+      if(!list.length){add(host,'p','この釣り方の市販ルアー / 仕掛け候補はまだ研究中。','lureCatalogStatus');return}
       const ul=add(host,'ul','','lureCatalogList');
       for(const row of list){
         const li=add(ul,'li','','lureCatalogItem');
         add(li,'b',row.display_name||`${row.series} ${row.variant}`);
-        const specs=[row.length_mm?`${row.length_mm}mm`:'',row.weight_g?`${row.weight_g}g`:''].filter(Boolean).join(' / ');
+        const egiSize=row.size_go?`${Number(row.size_go).toFixed(1)}号`:'';
+        const kind=String(row.lure_type||'').includes('component')?'仕掛け部品':'ルアー完成品';
+        const specs=[kind,egiSize,row.length_mm?`${row.length_mm}mm`:'',row.weight_g?`${row.weight_g}g`:'',row.hook_size?`フック ${row.hook_size}`:''].filter(Boolean).join(' / ');
         if(specs)add(li,'span',specs,'lureCatalogSpecs');
         if(row.use_note)add(li,'small',row.use_note,'lureCatalogNote');
       }
-      add(host,'small','メーカー公式情報を基にした研究候補。色別SKU・在庫・価格は含めない。','lureCatalogDisclaimer');
+      add(host,'small','メーカー公式情報を基にした研究候補。ルアー完成品と仕掛け部品を含む。色別SKU・在庫・価格は含めない。','lureCatalogDisclaimer');
     }catch{
       host.replaceChildren();add(host,'p',navigator.onLine?'候補データを読み込めませんでした。':'オフラインでは市販候補を追加読込できません。','lureCatalogStatus');
     }
   }
-  globalThis.FISH_TARGET_LURE_CATALOG=Object.freeze({version:'LURE-CATALOG-1',ensureFor,rowsFor,render});
+  globalThis.FISH_TARGET_LURE_CATALOG=Object.freeze({version:'LURE-CATALOG-2',ensureFor,rowsFor,render});
 })();
