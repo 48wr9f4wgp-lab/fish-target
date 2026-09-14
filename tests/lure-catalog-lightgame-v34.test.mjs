@@ -23,7 +23,7 @@ test('Ajing and Mebaring jighead research is maker-neutral and inside the shared
   assert.deepEqual(new Set(all.map(row=>row.weight_g)),new Set([1,1.2,1.5,1.6]));
   assert.ok(all.every(row=>row.weight_g>=1&&row.weight_g<=2));
   assert.ok(all.every(row=>row.targets.includes('アジ')&&row.targets.includes('メバル')));
-  assert.ok(all.every(row=>row.methods.includes('アジング')&&row.methods.includes('メバリング（ワーム）')));
+  assert.ok(all.every(row=>row.methods.includes('アジング')&&row.methods.includes('メバリング')));
   assert.ok(all.every(row=>row.lure_type==='jighead-component'));
   assert.ok(all.every(row=>/ワームは別途必要/.test(row.use_note||'')),'component candidates must not imply a complete first cast');
   assert.ok(all.every(row=>row.publication_ready===false));
@@ -31,14 +31,19 @@ test('Ajing and Mebaring jighead research is maker-neutral and inside the shared
   assert.ok(all.every(row=>row.source?.verified_at==='2026-09-15'));
 });
 
-test('every light-game target resolves to a real runtime method label',()=>{
+test('every light-game target uses only canonical runtime method labels',()=>{
   const batches=manifest.batches.filter(batch=>['daiwa-lightgame-jighead-v34','shimano-lightgame-jighead-v34'].includes(batch.id));
   const all=batches.flatMap(batch=>rows(batch.file));
   for(const row of all){
     for(const target of row.targets){
-      assert.ok(row.methods.some(method=>planPairs.has(`${target}\u0000${method}`)),`${row.display_name} has no runtime method match for ${target}`);
+      const canonicalForTarget=row.methods.filter(method=>planPairs.has(`${target}\u0000${method}`));
+      assert.ok(canonicalForTarget.length>0,`${row.display_name} has no runtime method match for ${target}`);
     }
+    assert.ok(row.methods.every(method=>[...planPairs].some(pair=>pair.endsWith(`\u0000${method}`))),`${row.display_name} contains a noncanonical method label`);
   }
+  assert.ok(planPairs.has('アジ\u0000アジング'));
+  assert.ok(planPairs.has('メバル\u0000メバリング'));
+  assert.equal(planPairs.has('メバル\u0000メバリング（ワーム）'),false,'tests must not invent a display label that is absent from the 63/158 model');
 });
 
 test('official evidence is target-specific enough for both Aji and Mebaru',()=>{
