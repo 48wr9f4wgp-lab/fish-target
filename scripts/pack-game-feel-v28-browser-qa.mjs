@@ -45,6 +45,20 @@ for(const id of ['plan-rod','plan-reel','plan-line','plan-rig','plan-first-cast'
 assert.equal((await page.locator('.tripPackRowV34.priority-required').count()),required.length,'required UI matches rule output');
 assert.equal((await page.locator('#quickPackCountV28').textContent())?.trim(),`必須 0/${required.length}`);
 
+const ergonomics=await page.evaluate(()=>{
+  const px=value=>Number.parseFloat(value)||0;
+  const label=document.querySelector('.tripPackRowV34.priority-required .quickPackItemV28');
+  const edit=document.getElementById('quickPackEditV28');
+  const title=document.querySelector('.tripPackRowV34.priority-required .tripPackTextV34 b');
+  const reason=document.querySelector('.tripPackRowV34.priority-required .tripPackTextV34 small');
+  const measure=el=>el?{height:el.getBoundingClientRect().height,font:px(getComputedStyle(el).fontSize)}:null;
+  return {label:measure(label),edit:measure(edit),title:measure(title),reason:measure(reason)};
+});
+assert.ok(ergonomics.label?.height>=44,`required row tap target below 44px: ${JSON.stringify(ergonomics.label)}`);
+assert.ok(ergonomics.edit?.height>=44,`edit tap target below 44px: ${JSON.stringify(ergonomics.edit)}`);
+assert.ok(ergonomics.title?.font>=13,`required item title too small: ${JSON.stringify(ergonomics.title)}`);
+assert.ok(ergonomics.reason?.font>=11,`required item reason too small: ${JSON.stringify(ergonomics.reason)}`);
+
 await page.locator('.tripPackRowV34.priority-required .quickPackItemV28').first().click();
 assert.equal((await page.locator('#quickPackCountV28').textContent())?.trim(),`必須 1/${required.length}`);
 const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fish_target_v9_checklists')||'{}'));
@@ -63,7 +77,10 @@ assert.ok((await page.locator('.tripPackTextV34 b').allTextContents()).includes(
 await page.locator('#quickPackResetV28').click();
 assert.ok(await page.locator('.tripPackRowV34.priority-required').count()>=5,'reset does not remove generated trip requirements');
 await page.locator('#quickPackEditV28').click();
-for(const input of await page.locator('.tripPackRowV34.priority-required input').all())if(!(await input.isChecked()))await input.click();
+for(const row of await page.locator('.tripPackRowV34.priority-required').all()){
+  const input=row.locator('input');
+  if(!(await input.isChecked()))await row.locator('.quickPackItemV28').click();
+}
 assert.ok(await page.locator('#quickPackV28.ready').count(),'all required items checked produces TRIP READY state');
 const afterReady=await page.evaluate(()=>({items:globalThis.FISH_TARGET_QUICK_PACK.getConfig(),checked:[...globalThis.FISH_TARGET_QUICK_PACK.getChecked()]}));
 assert.ok(afterReady.items.filter(item=>item.priority==='required').every(item=>afterReady.checked.includes(item.id)),'READY means every required generated item is explicitly checked');
