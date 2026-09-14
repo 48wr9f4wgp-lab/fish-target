@@ -62,12 +62,13 @@ try{
     }
     await page.locator('#appPackTabV30').click();
     await page.locator('#packStandaloneV30').waitFor({state:'visible'});
-    assert.equal(await page.locator('.quickPackItemV28').count(),8);
+    const standaloneCount=await page.locator('.quickPackItemV28').count();
+    assert.ok(standaloneCount>=8,'standalone packing retains the legacy essentials and may add V34 preparation items');
     assert.equal(await page.evaluate(()=>localStorage.getItem('fish_target_v9_checklists')),raw,'opening does not auto-migrate storage');
     await page.locator('.quickPackItemV28').first().click();
     await page.locator('#packStandaloneCloseV30').click();
     await page.locator('#appPackTabV30').click();
-    assert.equal((await page.locator('#quickPackCountV28').textContent()).trim(),'1/8');
+    assert.equal((await page.locator('#quickPackCountV28').textContent()).trim(),`1/${standaloneCount}`);
     await page.locator('#packStandaloneCloseV30').click();
     await page.locator('#home.on').waitFor({state:'visible'});
     await page.locator('button.fish[data-fish="ブリ・ワラサ"]').click();
