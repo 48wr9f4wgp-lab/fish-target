@@ -5,34 +5,58 @@ const root=new URL('../',import.meta.url);
 const read=file=>readFileSync(new URL(file,root),'utf8');
 const readJson=file=>JSON.parse(read(file));
 const context=vm.createContext({console});
-const run=file=>vm.runInContext(read(file),context,{filename:file});
+context.globalThis=context;
+const run=(file,append='')=>vm.runInContext(`${read(file)}${append}`,context,{filename:file});
+const text=value=>String(value??'').trim();
 
-run('data.js');
+run('data.js','\n;globalThis.__PRODUCT_BASE_F=F;');
 for(const version of [1,2,3,4]){
   for(let part=1;part<=5;part++)run(`target-method-data-v${version}-part${part}.js`);
   run(`target-method-data-v${version}.js`);
 }
 run('species-method-authoring-generated.js');
 run('species-method-authoring-runtime.js');
-run('target-methods-v1.js');
-run('species-registry.js');
-run('method-registry.js');
 
-const species=context.FISH_TARGET_SPECIES_REGISTRY?.records||[];
-const plans=context.FISH_TARGET_METHOD_REGISTRY?.records||[];
+const base=Array.isArray(context.__PRODUCT_BASE_F)?context.__PRODUCT_BASE_F:[];
+const expansion=context.FISH_TARGET_METHOD_EXPANSION_V1||{targets:[],existing:{}};
+const existing=expansion.existing&&typeof expansion.existing==='object'?expansion.existing:{};
+const targets=Array.isArray(expansion.targets)?expansion.targets:[];
+const species=[];
+const plans=[];
+const names=new Set();
+
+function pushSpecies(name,water,methods){
+  name=text(name);
+  if(!name||names.has(name))throw new Error(`Invalid/duplicate species in product audit: ${name||'(blank)'}`);
+  names.add(name);species.push({name,water:text(water)});
+  methods.forEach((method,index)=>plans.push({
+    plan_id:`${name}:${text(method?.id)||(index===0?'default':`method-${index}`)}`,
+    species_name:name,
+    method:text(method?.method),
+    rod:text(method?.rod),reel:text(method?.reel),line:text(method?.line),leader:text(method?.leader),rig:text(method?.rig),
+    bait:text(method?.bait),size:text(method?.size)
+  }));
+}
+
+for(const fish of base){
+  pushSpecies(fish.name,fish.water,[fish,...(Array.isArray(existing[fish.name])?existing[fish.name]:[])]);
+}
+for(const target of targets){
+  pushSpecies(target.name,target.water,Array.isArray(target.methods)?target.methods:[]);
+}
+
 const catalog=readJson('catalog-batch-manifest.json');
 const lureCatalog=readJson('lure-catalog-manifest.json');
 const fishAssets=readJson('authoring/fish-assets.v1.json');
 const policy=readJson('authoring/product-completion-policy.v1.json');
 
-const text=value=>String(value??'').trim();
 const criticalMissing=plans.map(plan=>{
   const missing=[];
-  if(!text(plan.requirements?.rod))missing.push('rod');
-  if(!text(plan.requirements?.reel))missing.push('reel');
-  if(!text(plan.requirements?.line))missing.push('main_line');
-  if(!text(plan.requirements?.rig))missing.push('terminal');
-  if(!text(plan.first_cast?.bait))missing.push('first_cast');
+  if(!plan.rod)missing.push('rod');
+  if(!plan.reel)missing.push('reel');
+  if(!plan.line)missing.push('main_line');
+  if(!plan.rig)missing.push('terminal');
+  if(!plan.bait)missing.push('first_cast');
   return missing.length?{plan_id:plan.plan_id,species:plan.species_name,method:plan.method,missing}:null;
 }).filter(Boolean);
 
