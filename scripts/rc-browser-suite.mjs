@@ -10,6 +10,7 @@ export const suite=Object.freeze([
   'app-shell-v26-browser-qa',
   'pack-game-feel-v28-browser-qa',
   'tackle-auto-build-v29-browser-qa',
+  'human-factors-v33-browser-qa',
   'rc-storage-resilience-browser-qa',
   'publication-browser-qa'
 ]);
