@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+
+const source=readFileSync(new URL('../trip-pack-rules-v34.js',import.meta.url),'utf8');
+
+function runtime(water='salt'){
+  const context=vm.createContext({console,FISH_TARGET_SPECIES_REGISTRY:{resolve:name=>name?{name,water}:null}});
+  vm.runInContext(source,context,{filename:'trip-pack-rules-v34.js'});
+  return context.FISH_TARGET_TRIP_PACK;
+}
+
+test('trip pack derives the complete technical carry set from a plan',()=>{
+  const rules=runtime();
+  const plan={
+    plan_id:'species-test:boat',species_name:'テスト魚',method:'船ジギング',
+    requirements:{rod:'6ft MH',reel:'5000番',line:'PE2号',leader:'40lb',rig:'メタルジグ'},
+    first_cast:{bait:'メタルジグ',size:'80g',time:'夜'},places:['船']
+  };
+  const items=rules.derive(plan,{ownedSet:{rod:{name:'OWNED ROD'},reel:{name:'OWNED REEL'}}});
+  const byId=id=>items.find(item=>item.id===id);
+  assert.match(byId('plan-rod').name,/OWNED ROD/);
+  assert.match(byId('plan-reel').name,/OWNED REEL/);
+  assert.equal(byId('plan-line').priority,'required');
+  assert.equal(byId('plan-leader').priority,'required');
+  assert.equal(byId('plan-rig').priority,'required');
+  assert.match(byId('plan-first-cast').name,/メタルジグ/);
+  assert.equal(byId('safety-lifejacket').priority,'required');
+  assert.equal(byId('condition-light').priority,'required');
+  assert.equal(byId('condition-light').safetyCritical,true);
+  assert.equal(rules.planKey(plan),'pack:species-test:boat');
+});
+
+test('standalone packing stays usable without a selected plan',()=>{
+  const rules=runtime('fresh');
+  const items=rules.derive(null,{ownedSet:null});
+  assert.ok(items.some(item=>item.id==='prep-drink'));
+  assert.ok(items.some(item=>item.id==='prep-firstaid'));
+  assert.equal(items.some(item=>item.priority==='required'),false);
+  assert.equal(rules.planKey(null),'pack:standalone');
+});
+
+test('owned tackle selection changes labels but never marks anything packed',()=>{
+  const rules=runtime();
+  const plan={plan_id:'p:1',species_name:'魚',method:'ルアー',requirements:{rod:'M',reel:'3000'},first_cast:{bait:'ミノー',size:'100mm'}};
+  const items=rules.derive(plan,{ownedSet:{rod:{name:'MY ROD'},reel:{name:'MY REEL'}}});
+  assert.match(items.find(item=>item.id==='plan-rod').name,/MY ROD/);
+  assert.equal(items.some(item=>'checked' in item),false,'rules must describe requirements, not auto-check physical packing state');
+});
