@@ -51,7 +51,8 @@
       for(const row of list){
         const li=add(ul,'li','','lureCatalogItem');
         add(li,'b',row.display_name||`${row.series} ${row.variant}`);
-        const specs=[row.length_mm?`${row.length_mm}mm`:'',row.weight_g?`${row.weight_g}g`:'',row.hook_size?`フック ${row.hook_size}`:''].filter(Boolean).join(' / ');
+        const egiSize=row.size_go?`${Number(row.size_go).toFixed(1)}号`:'';
+        const specs=[egiSize,row.length_mm?`${row.length_mm}mm`:'',row.weight_g?`${row.weight_g}g`:'',row.hook_size?`フック ${row.hook_size}`:''].filter(Boolean).join(' / ');
         if(specs)add(li,'span',specs,'lureCatalogSpecs');
         if(row.use_note)add(li,'small',row.use_note,'lureCatalogNote');
       }
