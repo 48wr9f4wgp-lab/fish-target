@@ -45,6 +45,20 @@ function catalog(){
   };
 }
 
+test('owned tackle evaluation ignores malformed array members without mutating valid candidates',()=>{
+  const {resolver}=harness();
+  const owned={
+    rods:[null,42,[],{id:'rod-valid',fitLevel:0}],
+    reels:[null,false,[],{id:'reel-valid',fitLevel:1}]
+  };
+  const result=resolver.evaluateOwnedTackle('テスト魚','default',owned);
+  assert.equal(result.ready,true);
+  assert.equal(result.rod?.item?.id,'rod-valid');
+  assert.equal(result.reel?.item?.id,'reel-valid');
+  assert.deepEqual(owned.rods,[null,42,[],{id:'rod-valid',fitLevel:0}]);
+  assert.deepEqual(owned.reels,[null,false,[],{id:'reel-valid',fitLevel:1}]);
+});
+
 test('catalog matching is publication fail-closed by default',()=>{
   const {resolver}=harness();
   const matches=resolver.matchCatalog('テスト魚','default',{catalog:catalog()});
