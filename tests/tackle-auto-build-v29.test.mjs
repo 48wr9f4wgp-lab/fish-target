@@ -42,10 +42,14 @@ test('local set decision is automatic while Catalog remains user-triggered',()=>
   assert.doesNotMatch(auto,/if\(!catalogEnabled\(\)\).*return/,'Catalog OFF must not block local MY SET resolution');
 });
 
-test('MY TACKLE edits immediately reschedule the local decision',()=>{
+test('MY TACKLE edits refresh the decision without cancelling in-flight Catalog work',()=>{
+  assert.match(auto,/function refreshOwnedDecision\(\)/);
+  assert.match(auto,/state=\{\.\.\.state,plan,setResult\};\s*renderBuild\(\)/);
   assert.match(auto,/const ownedSummary=\$\('#tackleSummary'\)/);
-  assert.match(auto,/new MutationObserver\(\(\)=>scheduleLocalResolve\(\)\)\.observe\(ownedSummary/);
+  assert.match(auto,/new MutationObserver\(refreshOwnedDecision\)\.observe\(ownedSummary/);
   assert.doesNotMatch(auto,/new MutationObserver\(resetForPlanChange\)\.observe\(ownedSummary/,'tackle edits must not reset the selected fish/method');
+  const refreshBody=auto.match(/function refreshOwnedDecision\(\)\{([\s\S]*?)\n  \}/)?.[1]||'';
+  assert.doesNotMatch(refreshBody,/\+\+runEpoch|runEpoch\+=1|rods:\[\]|reels:\[\]/,'owned refresh must preserve explicit Catalog work and candidates');
 });
 
 test('v33 keeps immediate post-FIRST-CAST hierarchy and ergonomic targets',()=>{
