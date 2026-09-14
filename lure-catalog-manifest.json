@@ -1,9 +1,11 @@
 {
-  "version": "LURE-CATALOG-2",
+  "version": "LURE-CATALOG-3",
   "batches": [
     {"id":"daiwa-kamasu-light-2026","maker":"DAIWA","file":"lure-catalog-daiwa-kamasu-light-2026.js","expected_rows":3,"stage":"research","targets":["カマス"]},
     {"id":"daiwa-sawara-blade-2026","maker":"DAIWA","file":"lure-catalog-daiwa-sawara-blade-2026.js","expected_rows":2,"stage":"research","targets":["サワラ"]},
     {"id":"daiwa-bluefish-shore-jig-v34","maker":"DAIWA","file":"lure-catalog-daiwa-bluefish-shore-jig-v34.js","expected_rows":2,"stage":"research","targets":["ブリ・ワラサ"]},
-    {"id":"shimano-bluefish-shore-jig-v34","maker":"SHIMANO","file":"lure-catalog-shimano-bluefish-shore-jig-v34.js","expected_rows":2,"stage":"research","targets":["ブリ・ワラサ"]}
+    {"id":"shimano-bluefish-shore-jig-v34","maker":"SHIMANO","file":"lure-catalog-shimano-bluefish-shore-jig-v34.js","expected_rows":2,"stage":"research","targets":["ブリ・ワラサ"]},
+    {"id":"daiwa-lightgame-jighead-v34","maker":"DAIWA","file":"lure-catalog-daiwa-lightgame-jighead-v34.js","expected_rows":2,"stage":"research","targets":["アジ","メバル"]},
+    {"id":"shimano-lightgame-jighead-v34","maker":"SHIMANO","file":"lure-catalog-shimano-lightgame-jighead-v34.js","expected_rows":2,"stage":"research","targets":["アジ","メバル"]}
   ]
 }
