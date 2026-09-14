@@ -36,7 +36,7 @@ test('trip pack derives the complete technical carry set from a plan',()=>{
   assert.equal(rules.planKey(plan),'pack:species-test:boat');
 });
 
-test('bluefish shore jigging carries handling tools without falsely making location-dependent landing gear mandatory',()=>{
+test('bluefish shore jigging includes handling tools without treating every possible place as confirmed context',()=>{
   const rules=runtime({water:'salt',styles:['lure'],tags:['青物','回遊魚']});
   const plan={
     plan_id:'species-bluefish:default',species_name:'ブリ・ワラサ',method:'ショアジギング',
@@ -49,7 +49,8 @@ test('bluefish shore jigging carries handling tools without falsely making locat
   assert.equal(byId('handling-line-cutter').priority,'recommended');
   assert.equal(byId('handling-pliers').priority,'recommended');
   assert.equal(byId('handling-landing').priority,'recommended','landing method depends on the actual shore position');
-  assert.equal(byId('safety-lifejacket').priority,'required','explicit 磯 in the plan requires flotation safety');
+  assert.equal(byId('safety-lifejacket').priority,'recommended','磯 is only one possible place, not confirmed current context');
+  assert.equal(byId('safety-footwear').priority,'recommended');
   assert.equal(byId('condition-light').priority,'recommended','dawn/dusk plan suggests but does not force a light');
 });
 
