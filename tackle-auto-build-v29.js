@@ -151,6 +151,9 @@
 
   ensureUi();
   const watch=selector=>{const el=$(selector);if(el)new MutationObserver(resetForPlanChange).observe(el,{childList:true,subtree:true,characterData:true})};
-  watch('#rname');watch('#pmethod');scheduleLocalResolve();
+  watch('#rname');watch('#pmethod');
+  const ownedSummary=$('#tackleSummary');
+  if(ownedSummary)new MutationObserver(()=>scheduleLocalResolve()).observe(ownedSummary,{childList:true,subtree:true,characterData:true});
+  scheduleLocalResolve();
   globalThis.FISH_TARGET_TACKLE_AUTO_BUILD=Object.freeze({version:VERSION,currentPlan,run,cycle,readOwned,getState:()=>({...state,rods:state.rods.slice(),reels:state.reels.slice()})});
 })();
