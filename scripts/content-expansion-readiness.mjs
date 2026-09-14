@@ -21,7 +21,7 @@ async function runIfPresent(rel,sandbox,append=''){
   return true;
 }
 
-async function loadContentModel(){
+export async function loadContentModel(){
   const sandbox={console:{log(){},warn(){},error(){}}};
   sandbox.globalThis=sandbox;
   await runIfPresent('data.js',sandbox,'\n;globalThis.__CONTENT_BASE_F=F;');
@@ -46,13 +46,20 @@ async function loadContentModel(){
     const normalized=(methods||[]).map((method,index)=>({
       id:text(method?.id)||(index===0?'default':`method-${index}`),
       method:text(method?.method),
-      style:text(method?.style)
+      style:text(method?.style),
+      rod:text(method?.rod),
+      reel:text(method?.reel),
+      line:text(method?.line),
+      leader:text(method?.leader),
+      rig:text(method?.rig),
+      bait:text(method?.bait),
+      size:text(method?.size)
     }));
     records.push({name,water:text(water),origin,methods:normalized,plan_count:normalized.length});
   };
 
   for(const fish of base){
-    const methods=[{id:'default',method:fish.method,style:fish.style},...(Array.isArray(existing[fish.name])?existing[fish.name]:[])];
+    const methods=[{id:'default',method:fish.method,style:fish.style,rod:fish.rod,reel:fish.reel,line:fish.line,leader:fish.leader,rig:fish.rig,bait:fish.bait,size:fish.size},...(Array.isArray(existing[fish.name])?existing[fish.name]:[])];
     push(fish.name,fish.water,methods,'base');
   }
   for(const target of targetList){
