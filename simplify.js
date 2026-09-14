@@ -5,6 +5,17 @@
     if(hero)hero.textContent='魚を選ぶだけで、釣法・FIRST CAST・手持ちタックル判定まで。';
   }
 
+  function updateHeroMetrics(){
+    const stats=[...document.querySelectorAll('#home .heroStats > span')];
+    if(!stats.length)return;
+    const speciesCount=globalThis.FISH_TARGET_SPECIES_REGISTRY?.records?.length||null;
+    const planCount=globalThis.FISH_TARGET_METHOD_REGISTRY?.count||null;
+    const species=stats.find(el=>/魚種/.test(el.textContent||''))||stats[0];
+    const plans=stats.find(el=>/釣法|ゲームプラン|プラン/.test(el.textContent||''));
+    if(species&&speciesCount)species.textContent=`${speciesCount}魚種`;
+    if(plans&&planCount)plans.textContent=`${planCount}ゲームプラン`;
+  }
+
   function compactHome(){
     const body=document.querySelector('#home .body');
     const grid=document.getElementById('grid');
@@ -103,7 +114,7 @@
     collapseFitDetails();
   }
 
-  function apply(){updateHeroCopy();compactHome();compactResult()}
+  function apply(){updateHeroCopy();updateHeroMetrics();compactHome();compactResult()}
   apply();
   if(typeof renderResult==='function'){
     const prev=renderResult;
