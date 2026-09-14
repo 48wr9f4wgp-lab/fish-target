@@ -45,13 +45,22 @@ const bundledNames=new Set(fishAssets.assets.map(asset=>text(asset.species_name)
 const uncoveredFish=species.map(entry=>entry.name).filter(name=>!bundledNames.has(name));
 const lureTargets=[...new Set(lureCatalog.batches.flatMap(batch=>Array.isArray(batch.targets)?batch.targets:[]).map(text).filter(Boolean))];
 const lurePlans=plans.filter(plan=>plan.style==='lure');
+const isComponent=row=>String(row?.lure_type||'').includes('component');
 const lurePlanCoverage=lurePlans.map(plan=>{
   const candidates=lureRows.filter(row=>Array.isArray(row?.targets)&&row.targets.includes(plan.species_name)&&(!Array.isArray(row.methods)||!row.methods.length||row.methods.includes(plan.method)));
-  return {plan_id:plan.plan_id,species:plan.species_name,method:plan.method,candidates:candidates.length,makers:[...new Set(candidates.map(row=>text(row.maker)).filter(Boolean))]};
+  const complete=candidates.filter(row=>!isComponent(row));
+  const components=candidates.filter(isComponent);
+  const makers=[...new Set(candidates.map(row=>text(row.maker)).filter(Boolean))];
+  const completeMakers=[...new Set(complete.map(row=>text(row.maker)).filter(Boolean))];
+  const state=complete.length?'complete-candidate':components.length?'component-only':'uncovered';
+  return {plan_id:plan.plan_id,species:plan.species_name,method:plan.method,state,candidates:candidates.length,complete_candidates:complete.length,component_candidates:components.length,makers,complete_makers:completeMakers};
 });
-const lureCovered=lurePlanCoverage.filter(row=>row.candidates>0);
-const lureUncovered=lurePlanCoverage.filter(row=>row.candidates===0);
-const makerNeutralCovered=lureCovered.filter(row=>row.makers.length>=2);
+const withAnyCandidate=lurePlanCoverage.filter(row=>row.candidates>0);
+const completeCandidatePlans=lurePlanCoverage.filter(row=>row.state==='complete-candidate');
+const componentOnlyPlans=lurePlanCoverage.filter(row=>row.state==='component-only');
+const uncoveredLurePlans=lurePlanCoverage.filter(row=>row.state==='uncovered');
+const makerNeutralAny=withAnyCandidate.filter(row=>row.makers.length>=2);
+const makerNeutralComplete=completeCandidatePlans.filter(row=>row.complete_makers.length>=2);
 const pct=(value,total)=>total?Math.round(value/total*1000)/10:0;
 
 const report={
@@ -65,14 +74,20 @@ const report={
     rows:lureRows.length,
     targets:lureTargets.length,
     lure_plans:lurePlans.length,
-    covered_plans:lureCovered.length,
-    coverage_pct:pct(lureCovered.length,lurePlans.length),
-    maker_neutral_plans:makerNeutralCovered.length,
-    maker_neutral_pct:pct(makerNeutralCovered.length,lurePlans.length)
+    candidate_plans:withAnyCandidate.length,
+    candidate_pct:pct(withAnyCandidate.length,lurePlans.length),
+    complete_candidate_plans:completeCandidatePlans.length,
+    complete_candidate_pct:pct(completeCandidatePlans.length,lurePlans.length),
+    component_only_plans:componentOnlyPlans.length,
+    component_only_pct:pct(componentOnlyPlans.length,lurePlans.length),
+    maker_neutral_candidate_plans:makerNeutralAny.length,
+    maker_neutral_complete_plans:makerNeutralComplete.length,
+    maker_neutral_complete_pct:pct(makerNeutralComplete.length,lurePlans.length)
   },
   fish_rights:fishRights,
   critical_missing_plans:criticalMissing,
-  uncovered_lure_plans:lureUncovered,
+  component_only_lure_plans:componentOnlyPlans,
+  uncovered_lure_plans:uncoveredLurePlans,
   uncovered_fish:uncoveredFish
 };
 
