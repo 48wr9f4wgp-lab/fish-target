@@ -9,20 +9,23 @@ const build=await readFile(new URL('../scripts/build.mjs',import.meta.url),'utf8
 
 const count=(source,token)=>source.split(token).length-1;
 
-test('auto build resolves ideal set MY SET and gaps before optional product picks',()=>{
+test('v33 exposes one consumer MY SET decision before optional evidence',()=>{
   assert.match(auto,/FISH_TARGET_TACKLE_SET_RESOLVER/);
   assert.match(auto,/setResolver\.resolvePlan\(plan,readOwned\(\)\)/);
-  for(const token of ['IDEAL SET','MY SET','MISSING'])assert.ok(auto.includes(token),`missing ${token}`);
-  assert.ok(auto.indexOf('IDEAL SET')<auto.indexOf('商品候補・詳細'),'set decision hierarchy must precede product detail');
+  for(const token of ['今回の判定','このセットで行ける','確認が必要','足りない'])assert.ok(auto.includes(token),`missing ${token}`);
+  assert.doesNotMatch(auto,/>IDEAL SET</,'engineering IDEAL label must not be required in primary UI');
+  assert.doesNotMatch(auto,/>MY SET</,'engineering MY SET label must not be required in primary UI');
+  assert.doesNotMatch(auto,/>MISSING</,'engineering MISSING label must not be required in primary UI');
+  assert.ok(auto.indexOf('今回の判定')<auto.indexOf('基準・確認ポイントを見る'),'answer must precede evidence disclosure');
   assert.doesNotMatch(auto,/DAIWA|SHIMANO/,'AUTO BUILD must stay maker-neutral');
 });
 
-test('MY TACKLE is read-only during auto build and next action is explicit',()=>{
+test('MY TACKLE stays read-only and forward action uses canonical decision wording',()=>{
   assert.match(auto,/fish_target_v17_tackle/);
   assert.match(auto,/localStorage\.getItem\(OWNED_KEY\)/);
   assert.doesNotMatch(auto,/localStorage\.(?:setItem|removeItem|clear)/);
-  assert.match(auto,/手持ちは変更しません/);
-  assert.match(auto,/STEP 4 · 現場へ/);
+  assert.match(auto,/このセットで現場へ/);
+  assert.match(auto,/確認して現場へ/);
   assert.match(auto,/MY TACKLEを編集/);
   assert.match(auto,/MY TACKLEを追加/);
   assert.match(auto,/compatibleForField/);
@@ -30,26 +33,40 @@ test('MY TACKLE is read-only during auto build and next action is explicit',()=>
   assert.match(auto,/tackleManage/);
 });
 
-test('catalog is optional and remains user-triggered',()=>{
-  assert.equal(count(auto,'loader.ensureLoaded()'),1,'Catalog hydration has one explicit AUTO BUILD trigger');
+test('local set decision is automatic while Catalog remains user-triggered',()=>{
+  assert.match(auto,/scheduleLocalResolve/);
+  assert.match(auto,/run\(\{loadCatalog:false,automatic:true\}\)/);
+  assert.match(auto,/addEventListener\('click',\(\)=>run\(\{loadCatalog:true\}\)\)/);
+  assert.equal(count(auto,'loader.ensureLoaded()'),1,'Catalog hydration has one explicit user-triggered path');
   assert.match(auto,/if\(catalogEnabled\(\)&&loader\?\.ensureLoaded&&resolver\?\.matchCatalog\)/);
-  assert.doesNotMatch(auto,/if\(!catalogEnabled\(\)\).*return/,'Catalog OFF must not block spec/MY SET resolution');
+  assert.doesNotMatch(auto,/if\(!catalogEnabled\(\)\).*return/,'Catalog OFF must not block local MY SET resolution');
 });
 
-test('RC32 makes auto build the immediate post-FIRST-CAST action',()=>{
+test('MY TACKLE edits refresh the decision without cancelling in-flight Catalog work',()=>{
+  assert.match(auto,/function refreshOwnedDecision\(\)/);
+  assert.match(auto,/state=\{\.\.\.state,plan,setResult\};\s*renderBuild\(\)/);
+  assert.match(auto,/const ownedSummary=\$\('#tackleSummary'\)/);
+  assert.match(auto,/new MutationObserver\(refreshOwnedDecision\)\.observe\(ownedSummary/);
+  assert.doesNotMatch(auto,/new MutationObserver\(resetForPlanChange\)\.observe\(ownedSummary/,'tackle edits must not reset the selected fish/method');
+  const refreshBody=auto.match(/function refreshOwnedDecision\(\)\{([\s\S]*?)\n  \}/)?.[1]||'';
+  assert.doesNotMatch(refreshBody,/\+\+runEpoch|runEpoch\+=1|rods:\[\]|reels:\[\]/,'owned refresh must preserve explicit Catalog work and candidates');
+});
+
+test('v33 keeps immediate post-FIRST-CAST hierarchy and ergonomic targets',()=>{
   assert.match(auto,/const anchor=\$\('#result \.firstCast'\)/);
-  assert.match(auto,/STEP 3 · セットを組む/);
-  assert.match(auto,/理想＋MY TACKLE＋不足を一発判定/);
-  assert.match(auto,/autoBuildStatusV29" id="autoBuildStatusV29" hidden/);
-  assert.match(css,/min-height:48px/,'primary AUTO BUILD tap target must be at least 48px');
-  assert.match(css,/autoBuildReadyV29 button\{[^}]*min-height:48px/,'animated next-action tap target must keep a 48px source floor');
-  assert.match(css,/@keyframes autoBuildReadyInV29\{0%\{transform:scale\(\.985\)/,'READY entrance animation contract stays covered by the 48px source floor');
+  assert.match(auto,/STEP 3 · 今回のセット/);
+  assert.match(auto,/手持ちから今回の1セットを決める/);
+  assert.match(css,/autoBuildHeadV29>button\{[^}]*min-height:44px/,'secondary product action keeps a 44px target');
+  assert.match(css,/autoBuildReadyV29 button\{[^}]*min-height:48px/,'primary next action keeps a 48px target');
+  assert.match(css,/autoBuildSetSummaryV31 article>b\{[^}]*font-size:17px/,'primary decision text stays legible');
+  assert.match(css,/autoBuildStageV29>small\{[^}]*font-size:12px/,'detail text no longer uses tiny critical type');
 });
 
-test('optional product detail retains rod reel line rig and accessible alternatives',()=>{
-  for(const token of ['01 · ROD','02 · REEL','03 · LINE','04 · RIG','商品候補・詳細','別候補'])assert.ok(auto.includes(token),`missing ${token}`);
+test('optional detail retains baseline gaps rod reel line rig and accessible alternatives',()=>{
+  for(const token of ['推奨基準','確認ポイント','01 · ROD','02 · REEL','03 · LINE','04 · RIG','別候補'])assert.ok(auto.includes(token),`missing ${token}`);
+  assert.match(auto,/autoBuildProductDetailV33/);
   assert.match(auto,/MAX_ALTERNATES=3/);
-  assert.match(css,/autoBuildSetSummaryV31/);
+  assert.match(css,/autoBuildReferenceV33/);
   assert.match(css,/autoBuildStageInV29/);
   assert.match(css,/prefers-reduced-motion:reduce/);
 });
@@ -61,4 +78,13 @@ test('build and PWA shell include resolver before AUTO BUILD runtime',()=>{
   const autoIndex=pwa.indexOf("loadScript('./tackle-auto-build-v29.js'");
   assert.ok(rulesIndex>=0&&resolverIndex>rulesIndex&&autoIndex>resolverIndex,'PWA must load rules → resolver → AUTO BUILD');
   assert.match(pwa,/tackle-auto-build-v29-css/);
+});
+
+test('in-flight Catalog results are invalidated and the new plan auto-resolves locally',()=>{
+  assert.match(auto,/let runEpoch=0,autoResolveQueued=false/);
+  assert.match(auto,/runStillCurrent/);
+  assert.match(auto,/const epoch=\+\+runEpoch/);
+  assert.match(auto,/if\(!runStillCurrent\(epoch,plan\)\)return/);
+  assert.match(auto,/function resetForPlanChange\(\)\{runEpoch\+=1/);
+  assert.match(auto,/resetForPlanChange\(\)[\s\S]*scheduleLocalResolve/);
 });

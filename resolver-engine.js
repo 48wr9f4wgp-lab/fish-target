@@ -4,6 +4,8 @@
   if(!speciesRegistry||!methodRegistry)return;
   const text=value=>String(value??'').trim();
   const freeze=value=>value&&typeof value==='object'?Object.freeze(Array.isArray(value)?value.slice():{...value}):value;
+  const isRecord=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  const recordItems=value=>Array.isArray(value)?value.filter(isRecord):[];
   const resolveSpecies=value=>speciesRegistry.resolve(value);
   const resolveMethods=value=>methodRegistry.plansForSpecies(value);
   const resolvePlan=(speciesValue,methodId='default')=>methodRegistry.resolve(speciesValue,methodId);
@@ -20,7 +22,7 @@
     const plan=asPlan(speciesValue)||resolvePlan(speciesValue,methodId);
     return plan?plan.requirements:null;
   };
-  const best=(items,fitFn)=>items.map(item=>Object.freeze({item,fit:freeze(fitFn(item))})).sort((a,b)=>(a.fit?.level??99)-(b.fit?.level??99))[0]||null;
+  const best=(items,fitFn)=>recordItems(items).map(item=>Object.freeze({item,fit:freeze(fitFn(item))})).sort((a,b)=>(a.fit?.level??99)-(b.fit?.level??99))[0]||null;
   const fitContext=(plan,context={})=>{
     const runtimeFish=speciesRegistry.runtimeFish(plan.species_id);
     const fitPlan={
@@ -40,8 +42,8 @@
     const logic=globalThis.FISH_TARGET_TACKLE_LOGIC;
     if(!logic?.rodFit||!logic?.reelFit)return Object.freeze({plan_id:plan.plan_id,ready:false,reason:'tackle-logic-unavailable',rod:null,reel:null});
     const {fitPlan,rotation}=fitContext(plan,context);
-    const rods=Array.isArray(ownedTackle?.rods)?ownedTackle.rods:[];
-    const reels=Array.isArray(ownedTackle?.reels)?ownedTackle.reels:[];
+    const rods=recordItems(ownedTackle?.rods);
+    const reels=recordItems(ownedTackle?.reels);
     const rod=best(rods,item=>logic.rodFit(item,fitPlan,rotation));
     const reel=best(reels,item=>logic.reelFit(item,fitPlan));
     return Object.freeze({plan_id:plan.plan_id,ready:true,rod,reel});
@@ -67,7 +69,7 @@
       const productionEligible=Boolean(catalog.productionEligible?.(product));
       if(!productionEligible&&!includeResearch)continue;
       const owned=catalog.ownedSnapshot(product,{});
-      if(!owned)continue;
+      if(!isRecord(owned))continue;
       const fit=product.category==='rod'?logic.rodFit(owned,fitPlan,rotation):logic.reelFit(owned,fitPlan);
       const level=Number.isFinite(Number(fit?.level))?Number(fit.level):99;
       matches.push(Object.freeze({
@@ -88,7 +90,7 @@
     return Object.freeze([...(Array.isArray(matches)?matches:[])].map((item,index)=>({item,index,score:Number(score(item))||0})).sort((a,b)=>(b.score-a.score)||(a.index-b.index)).map(x=>x.item));
   };
   globalThis.FISH_TARGET_RESOLVER=Object.freeze({
-    version:'RESOLVER-ENGINE-1',
+    version:'RESOLVER-ENGINE-2',
     resolveSpecies,resolveMethods,resolvePlan,resolveFirstCast,resolveRequirements,
     evaluateOwnedTackle,matchCatalog,rankCatalogMatches
   });

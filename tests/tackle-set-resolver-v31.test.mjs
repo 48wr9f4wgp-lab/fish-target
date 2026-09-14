@@ -118,6 +118,16 @@ test('resolver does not mutate owned tackle input objects',()=>{
   assert.equal(JSON.stringify(owned),before);
 });
 
+test('malformed inventory entries are ignored without changing the stored input',()=>{
+  const {resolver,plan}=runtime();
+  const owned={rods:[null,42,'invalid',[],{id:'valid-rod',power:'M'}],reels:[null,false,[],{id:'valid-reel',size:4000}]};
+  const before=JSON.stringify(owned);
+  const result=resolver.resolvePlan(plan,owned);
+  assert.equal(result.myBestSet.rod.id,'valid-rod');
+  assert.equal(result.myBestSet.reel.id,'valid-reel');
+  assert.equal(JSON.stringify(owned),before);
+});
+
 test('unit parsers refuse ambiguous conversions and unrelated Japanese size notation',()=>{
   const {rules}=runtime();
   assert.equal(rules.gRange('エギ3.5号'),null);

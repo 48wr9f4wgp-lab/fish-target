@@ -26,8 +26,9 @@ test('FIELD LIVE is feature-flagged off from first HTML paint',()=>{
   assert.match(style,/data-field-live="off"[^\n]+data-feature="field-live"[^\n]+display:none/);
   assert.match(app,/if\(!FEATURES\.fieldLive\)/);
   assert.match(app,/fetchWeather=async\(\)=>\{\}/);
-  assert.match(fieldMode,/FEATURES\.fieldLive\?['"]FIELD LIVE未取得/);
-  assert.match(fieldMode,/if\(FEATURES\.fieldLive&&w\)/);
+  assert.match(fieldMode,/FEATURES\.fieldLive\?[^:]+:/,'FIELD MODE baseline copy must branch on FIELD LIVE availability');
+  assert.match(fieldMode,/if\(FEATURES\.fieldLive&&w\)/,'live weather rendering stays behind the FIELD LIVE gate');
+  assert.doesNotMatch(fieldMode,/if\(w\)\{const f=fieldStatus/,'weather data must never bypass the FIELD LIVE gate');
 });
 
 test('manual/AUTO remains in the core FIRST CAST UI when live features are off',()=>{

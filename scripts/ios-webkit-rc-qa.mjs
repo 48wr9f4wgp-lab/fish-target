@@ -48,7 +48,7 @@ await page.locator('#result.on').waitFor({state:'visible'});
 await page.locator('#tackleAutoBuildV29').waitFor({state:'visible'});
 assert.equal((await page.locator('#result .planCard .recommend').textContent())?.trim(),'STEP 1 · 釣り方');
 assert.match((await page.locator('#result .ux23AnswerTitle').innerText())||'',/STEP 2 · 最初の1投/);
-assert.match((await page.locator('.autoBuildHeadV29 strong').textContent())||'',/STEP 3 · セットを組む/);
+assert.match((await page.locator('.autoBuildHeadV29 strong').textContent())||'',/STEP 3 · 今回のセット/);
 assert.equal((await page.locator('#fieldModeBtn').textContent())?.trim(),'STEP 4 · 現場へ');
 
 const boxes=await page.evaluate(()=>{
@@ -85,7 +85,7 @@ assert.equal(state?.setResult?.myBestSet?.rod?.name,'WEBKIT OWNED ROD');
 assert.equal(state?.setResult?.myBestSet?.reel?.name,'WEBKIT OWNED REEL');
 assert.ok(['ideal','good','usable'].includes(state?.setResult?.compatibility),`compatible MY SET expected: ${state?.setResult?.compatibility}`);
 await page.locator('#autoBuildResultV29').waitFor({state:'visible'});
-assert.equal((await page.locator('#autoBuildNextV32').textContent())?.trim(),'STEP 4 · 現場へ');
+assert.ok(['このセットで現場へ','確認して現場へ'].includes((await page.locator('#autoBuildNextV32').textContent())?.trim()),'compatible MY SET gets a direct field action');
 assert.equal(await page.evaluate(()=>localStorage.getItem('fish_target_v17_tackle')),ownedBefore,'AUTO BUILD does not mutate MY TACKLE in WebKit');
 
 const touchTargets=await page.locator('#ux23MethodChange,#favoriteBtn,#autoBuildRunV29,#autoBuildNextV32,#resultDockV20 button:visible').evaluateAll(els=>els.map(el=>({text:el.textContent?.trim(),w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})));
