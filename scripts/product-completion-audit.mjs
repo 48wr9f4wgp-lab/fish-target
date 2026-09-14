@@ -1,49 +1,19 @@
 import {readFileSync} from 'node:fs';
-import vm from 'node:vm';
+import {loadContentModel} from './content-expansion-readiness.mjs';
 
 const root=new URL('../',import.meta.url);
 const read=file=>readFileSync(new URL(file,root),'utf8');
 const readJson=file=>JSON.parse(read(file));
-const context=vm.createContext({console});
-context.globalThis=context;
-const run=(file,append='')=>vm.runInContext(`${read(file)}${append}`,context,{filename:file});
 const text=value=>String(value??'').trim();
 
-run('data.js','\n;globalThis.__PRODUCT_BASE_F=F;');
-for(const version of [1,2,3,4]){
-  for(let part=1;part<=5;part++)run(`target-method-data-v${version}-part${part}.js`);
-  run(`target-method-data-v${version}.js`);
-}
-run('species-method-authoring-generated.js');
-run('species-method-authoring-runtime.js');
-
-const base=Array.isArray(context.__PRODUCT_BASE_F)?context.__PRODUCT_BASE_F:[];
-const expansion=context.FISH_TARGET_METHOD_EXPANSION_V1||{targets:[],existing:{}};
-const existing=expansion.existing&&typeof expansion.existing==='object'?expansion.existing:{};
-const targets=Array.isArray(expansion.targets)?expansion.targets:[];
-const species=[];
-const plans=[];
-const names=new Set();
-
-function pushSpecies(name,water,methods){
-  name=text(name);
-  if(!name||names.has(name))throw new Error(`Invalid/duplicate species in product audit: ${name||'(blank)'}`);
-  names.add(name);species.push({name,water:text(water)});
-  methods.forEach((method,index)=>plans.push({
-    plan_id:`${name}:${text(method?.id)||(index===0?'default':`method-${index}`)}`,
-    species_name:name,
-    method:text(method?.method),
-    rod:text(method?.rod),reel:text(method?.reel),line:text(method?.line),leader:text(method?.leader),rig:text(method?.rig),
-    bait:text(method?.bait),size:text(method?.size)
-  }));
-}
-
-for(const fish of base){
-  pushSpecies(fish.name,fish.water,[fish,...(Array.isArray(existing[fish.name])?existing[fish.name]:[])]);
-}
-for(const target of targets){
-  pushSpecies(target.name,target.water,Array.isArray(target.methods)?target.methods:[]);
-}
+const model=await loadContentModel();
+const species=model.records.map(row=>({name:row.name,water:row.water}));
+const plans=model.records.flatMap(row=>row.methods.map(method=>({
+  plan_id:`${row.name}:${method.id}`,
+  species_name:row.name,
+  method:method.method,
+  rod:method.rod,reel:method.reel,line:method.line,leader:method.leader,rig:method.rig,bait:method.bait,size:method.size
+})));
 
 const catalog=readJson('catalog-batch-manifest.json');
 const lureCatalog=readJson('lure-catalog-manifest.json');
