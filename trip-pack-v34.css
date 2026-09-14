@@ -1,0 +1,12 @@
+.tripReadyV34 .packStandaloneTopV30>div>span{letter-spacing:.12em}
+.tripPackRowV34 .quickPackItemV28{align-items:center;gap:10px}
+.tripPackTextV34{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.tripPackTextV34 b{font-size:14px;line-height:1.25;font-weight:850;color:inherit}
+.tripPackTextV34 small{font-size:11px;line-height:1.35;opacity:.68;white-space:normal}
+.tripPackPriorityV34{flex:0 0 auto;min-width:36px;padding:5px 7px;border-radius:999px;font-style:normal;font-size:10px;font-weight:900;text-align:center;background:rgba(15,74,80,.08)}
+.tripPackRowV34.priority-required .tripPackPriorityV34{background:rgba(180,64,45,.12);color:#8a382b}
+.tripPackRowV34.priority-recommended .tripPackPriorityV34{background:rgba(24,119,114,.12);color:#176a66}
+.tripPackRowV34.priority-optional .tripPackPriorityV34{opacity:.72}
+.tripPackRowV34.safetyCriticalV34{box-shadow:inset 3px 0 0 rgba(196,109,49,.38)}
+.quickPackV28.tripRequiredPendingV34 #quickPackCountV28{font-weight:950}
+@media(max-width:390px){.tripPackTextV34 b{font-size:13px}.tripPackTextV34 small{font-size:10.5px}.tripPackPriorityV34{min-width:34px;padding-inline:6px}}
