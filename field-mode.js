@@ -43,7 +43,8 @@
     document.getElementById('fmSteps').innerHTML=(p.steps||[]).slice(0,3).map((x,i)=>`<div class="fmStep"><i>${i+1}</i><span>${x}</span></div>`).join('');
 
     const nextLabel=document.querySelector('.fmNext span');if(nextLabel)nextLabel.textContent='反応がなければ';
-    const titles=document.querySelectorAll('.fmTitle');if(titles[0])titles[0].textContent=my?'今回のセット':'必要なセット';if(titles[1])titles[1].textContent='現場の3手';
+    const tackleTitle=document.getElementById('fmTackleTitle');if(tackleTitle)tackleTitle.textContent=my?'今回のセット':'必要なセット';
+    const stepsTitle=document.getElementById('fmStepsTitle');if(stepsTitle)stepsTitle.textContent='現場の3手';
     const modeSmall=document.querySelector('.fieldModeHead small');if(modeSmall)modeSmall.textContent='次の一手だけ確認';
 
     const w=LIVE.weather,m=cur.water==='salt'?LIVE.marine:null;
