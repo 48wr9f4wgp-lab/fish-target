@@ -42,6 +42,12 @@ test('local set decision is automatic while Catalog remains user-triggered',()=>
   assert.doesNotMatch(auto,/if\(!catalogEnabled\(\)\).*return/,'Catalog OFF must not block local MY SET resolution');
 });
 
+test('MY TACKLE edits immediately reschedule the local decision',()=>{
+  assert.match(auto,/const ownedSummary=\$\('#tackleSummary'\)/);
+  assert.match(auto,/new MutationObserver\(\(\)=>scheduleLocalResolve\(\)\)\.observe\(ownedSummary/);
+  assert.doesNotMatch(auto,/new MutationObserver\(resetForPlanChange\)\.observe\(ownedSummary/,'tackle edits must not reset the selected fish/method');
+});
+
 test('v33 keeps immediate post-FIRST-CAST hierarchy and ergonomic targets',()=>{
   assert.match(auto,/const anchor=\$\('#result \.firstCast'\)/);
   assert.match(auto,/STEP 3 · 今回のセット/);
