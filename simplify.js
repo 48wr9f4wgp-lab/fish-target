@@ -13,7 +13,7 @@
     const species=stats.find(el=>/魚種/.test(el.textContent||''))||stats[0];
     const plans=stats.find(el=>/釣法|ゲームプラン|プラン/.test(el.textContent||''));
     if(species&&speciesCount)species.textContent=`${speciesCount}魚種`;
-    if(plans&&planCount)plans.textContent=`${planCount}ゲームプラン`;
+    if(plans&&planCount)plans.textContent=`${planCount}釣法プラン`;
   }
 
   function compactHome(){
