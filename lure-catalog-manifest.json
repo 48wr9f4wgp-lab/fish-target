@@ -1,5 +1,5 @@
 {
-  "version": "LURE-CATALOG-4",
+  "version": "LURE-CATALOG-5",
   "batches": [
     {"id":"daiwa-kamasu-light-2026","maker":"DAIWA","file":"lure-catalog-daiwa-kamasu-light-2026.js","expected_rows":3,"stage":"research","targets":["カマス"]},
     {"id":"daiwa-sawara-blade-2026","maker":"DAIWA","file":"lure-catalog-daiwa-sawara-blade-2026.js","expected_rows":2,"stage":"research","targets":["サワラ"]},
@@ -8,6 +8,8 @@
     {"id":"daiwa-lightgame-jighead-v34","maker":"DAIWA","file":"lure-catalog-daiwa-lightgame-jighead-v34.js","expected_rows":2,"stage":"research","targets":["アジ","メバル"]},
     {"id":"shimano-lightgame-jighead-v34","maker":"SHIMANO","file":"lure-catalog-shimano-lightgame-jighead-v34.js","expected_rows":2,"stage":"research","targets":["アジ","メバル"]},
     {"id":"daiwa-aori-eging-v34","maker":"DAIWA","file":"lure-catalog-daiwa-aori-eging-v34.js","expected_rows":2,"stage":"research","targets":["アオリイカ"]},
-    {"id":"shimano-aori-eging-v34","maker":"SHIMANO","file":"lure-catalog-shimano-aori-eging-v34.js","expected_rows":2,"stage":"research","targets":["アオリイカ"]}
+    {"id":"shimano-aori-eging-v34","maker":"SHIMANO","file":"lure-catalog-shimano-aori-eging-v34.js","expected_rows":2,"stage":"research","targets":["アオリイカ"]},
+    {"id":"daiwa-black-bass-core-v34","maker":"DAIWA","file":"lure-catalog-daiwa-black-bass-core-v34.js","expected_rows":5,"stage":"research","targets":["ブラックバス"]},
+    {"id":"jackall-black-bass-core-v34","maker":"JACKALL","file":"lure-catalog-jackall-black-bass-core-v34.js","expected_rows":5,"stage":"research","targets":["ブラックバス"]}
   ]
 }
