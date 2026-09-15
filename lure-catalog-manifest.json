@@ -1,13 +1,23 @@
 {
-  "version": "LURE-CATALOG-4",
+  "version": "LURE-CATALOG-8",
   "batches": [
     {"id":"daiwa-kamasu-light-2026","maker":"DAIWA","file":"lure-catalog-daiwa-kamasu-light-2026.js","expected_rows":3,"stage":"research","targets":["カマス"]},
     {"id":"daiwa-sawara-blade-2026","maker":"DAIWA","file":"lure-catalog-daiwa-sawara-blade-2026.js","expected_rows":2,"stage":"research","targets":["サワラ"]},
     {"id":"daiwa-bluefish-shore-jig-v34","maker":"DAIWA","file":"lure-catalog-daiwa-bluefish-shore-jig-v34.js","expected_rows":2,"stage":"research","targets":["ブリ・ワラサ"]},
     {"id":"shimano-bluefish-shore-jig-v34","maker":"SHIMANO","file":"lure-catalog-shimano-bluefish-shore-jig-v34.js","expected_rows":2,"stage":"research","targets":["ブリ・ワラサ"]},
-    {"id":"daiwa-lightgame-jighead-v34","maker":"DAIWA","file":"lure-catalog-daiwa-lightgame-jighead-v34.js","expected_rows":2,"stage":"research","targets":["アジ","メバル"]},
-    {"id":"shimano-lightgame-jighead-v34","maker":"SHIMANO","file":"lure-catalog-shimano-lightgame-jighead-v34.js","expected_rows":2,"stage":"research","targets":["アジ","メバル"]},
+    {"id":"daiwa-lightgame-jighead-v34","maker":"DAIWA","file":"lure-catalog-daiwa-lightgame-jighead-v34.js","expected_rows":3,"stage":"research","targets":["アジ","メバル"]},
+    {"id":"shimano-lightgame-jighead-v34","maker":"SHIMANO","file":"lure-catalog-shimano-lightgame-jighead-v34.js","expected_rows":3,"stage":"research","targets":["アジ","メバル"]},
     {"id":"daiwa-aori-eging-v34","maker":"DAIWA","file":"lure-catalog-daiwa-aori-eging-v34.js","expected_rows":2,"stage":"research","targets":["アオリイカ"]},
-    {"id":"shimano-aori-eging-v34","maker":"SHIMANO","file":"lure-catalog-shimano-aori-eging-v34.js","expected_rows":2,"stage":"research","targets":["アオリイカ"]}
+    {"id":"shimano-aori-eging-v34","maker":"SHIMANO","file":"lure-catalog-shimano-aori-eging-v34.js","expected_rows":2,"stage":"research","targets":["アオリイカ"]},
+    {"id":"daiwa-surf-flatfish-v34","maker":"DAIWA","file":"lure-catalog-daiwa-surf-flatfish-v34.js","expected_rows":2,"stage":"research","targets":["ヒラメ","マゴチ"]},
+    {"id":"majorcraft-surf-flatfish-v34","maker":"Major Craft","file":"lure-catalog-majorcraft-surf-flatfish-v34.js","expected_rows":2,"stage":"research","targets":["ヒラメ","マゴチ"]},
+    {"id":"daiwa-seabass-v34","maker":"DAIWA","file":"lure-catalog-daiwa-seabass-v34.js","expected_rows":1,"stage":"research","targets":["シーバス"]},
+    {"id":"shimano-seabass-v34","maker":"SHIMANO","file":"lure-catalog-shimano-seabass-v34.js","expected_rows":1,"stage":"research","targets":["シーバス"]},
+    {"id":"daiwa-tairaba-v34","maker":"DAIWA","file":"lure-catalog-daiwa-tairaba-v34.js","expected_rows":2,"stage":"research","targets":["マダイ"]},
+    {"id":"shimano-tairaba-v34","maker":"SHIMANO","file":"lure-catalog-shimano-tairaba-v34.js","expected_rows":2,"stage":"research","targets":["マダイ"]},
+    {"id":"daiwa-area-trout-spoon-v34","maker":"DAIWA","file":"lure-catalog-daiwa-area-trout-spoon-v34.js","expected_rows":2,"stage":"research","targets":["ニジマス"]},
+    {"id":"shimano-area-trout-spoon-v34","maker":"SHIMANO","file":"lure-catalog-shimano-area-trout-spoon-v34.js","expected_rows":2,"stage":"research","targets":["ニジマス"]},
+    {"id":"daiwa-native-trout-minnow-v34","maker":"DAIWA","file":"lure-catalog-daiwa-native-trout-minnow-v34.js","expected_rows":2,"stage":"research","targets":["ヤマメ・イワナ"]},
+    {"id":"shimano-native-trout-minnow-v34","maker":"SHIMANO","file":"lure-catalog-shimano-native-trout-minnow-v34.js","expected_rows":2,"stage":"research","targets":["ヤマメ・イワナ"]}
   ]
 }

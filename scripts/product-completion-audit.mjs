@@ -1,6 +1,7 @@
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {loadContentModel} from './content-expansion-readiness.mjs';
+import {collectVisualReadiness} from './fish-visual-readiness-v34.mjs';
 
 const root=new URL('../',import.meta.url);
 const read=file=>readFileSync(new URL(file,root),'utf8');
@@ -21,6 +22,7 @@ const catalog=readJson('catalog-batch-manifest.json');
 const lureCatalog=readJson('lure-catalog-manifest.json');
 const fishAssets=readJson('authoring/fish-assets.v1.json');
 const policy=readJson('authoring/product-completion-policy.v1.json');
+const visual=await collectVisualReadiness();
 
 const lureSandbox={};lureSandbox.globalThis=lureSandbox;
 for(const batch of lureCatalog.batches)vm.runInNewContext(read(batch.file),lureSandbox,{filename:batch.file});
@@ -67,6 +69,7 @@ const report={
   version:'PRODUCT-COMPLETION-AUDIT-V34',
   policy:policy.version,
   species:{total:species.length,bundled:bundledNames.size,uncovered:uncoveredFish.length},
+  visual,
   plans:{total:plans.length,critical_complete:plans.length-criticalMissing.length,critical_missing:criticalMissing.length},
   catalog:{batches:catalog.batches.length,expected_rows:expectedRows,stages:stageCounts},
   lure_catalog:{
@@ -95,6 +98,7 @@ console.log(JSON.stringify(report,null,2));
 
 if(species.length!==63)throw new Error(`Expected 63 species, got ${species.length}`);
 if(plans.length!==158)throw new Error(`Expected 158 plans, got ${plans.length}`);
+if(visual.targets!==species.length)throw new Error(`Visual readiness target count drift: ${visual.targets} != ${species.length}`);
 if(criticalMissing.length)throw new Error(`Technical plan coverage has ${criticalMissing.length} critical gaps`);
 if(!catalog.batches.length)throw new Error('Catalog manifest is empty');
 if(!fishAssets.assets.length)throw new Error('Fish asset authoring is empty');
