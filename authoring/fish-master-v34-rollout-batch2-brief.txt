@@ -1,6 +1,6 @@
 FISH TARGET V34 VISUAL ROLLOUT BATCH 2
 created_at: 2026-09-15
-status: CONTRACT_LOCKED / FINAL_ASSETS_PENDING
+status: DEV_ASSET_INTAKEN / PUBLICATION_IDENTITY_REVIEW_PENDING
 
 TARGETS
 1. シーバス
@@ -19,9 +19,15 @@ COMMON OUTPUT CONTRACT
 - >=8% horizontal safe margin
 - 390px mobile review
 - no text, logo, watermark, hook, human hand, duplicate subject
-- project-generated-original provenance
-- prompt SHA-256 and output SHA-256 required
-- human identity review required before publication-ready promotion
+- project-authored without external image material
+- output SHA-256 locked in the development overlay
+- human identity review remains mandatory before canonical/publication promotion
+
+RUNTIME POLICY
+- research/development build: the eight records are overlaid as direct local AVIF files
+- publication build: the development overlay is disabled completely
+- canonical authoring remains unchanged until human identity review passes
+- therefore the eight assets remain publication_ready=false and fail closed to the existing safe fallback
 
 IDENTITY CONTRACTS
 シーバス: elongated silver body / large terminal mouth near eye / two-part dorsal silhouette; reject black-bass-like deep body and salmonid adipose fin.
@@ -33,10 +39,16 @@ IDENTITY CONTRACTS
 ブラックバス: largemouth profile / jaw reaches eye or behind / dark broken lateral stripe; reject smallmouth jaw and trout adipose fin.
 サワラ: elongated mackerel-like body / dark spots or mottling / pointed head and forked tail; reject barracuda jaw and plain unspotted silver body.
 
-GENERATION ATTEMPT 1
-image_gen generation_id: 7729cc1a-2eda-4c59-a1dd-659d4b3ff109
-result: REJECTED AS FINAL ASSET SOURCE
-reason: generated an infographic/dashboard containing labels, UI framing, status copy, and multiple non-target species. It is not eligible for runtime/publication asset intake. No derived batch-2 asset is promoted from this attempt.
+REJECTED IMAGE-GENERATION ATTEMPTS
+- image_gen generation_id 7729cc1a-2eda-4c59-a1dd-659d4b3ff109: rejected because it produced infographic/dashboard UI and non-target content.
+- later UI/gallery generations in the same work session were also rejected and are not used as runtime asset sources.
+
+ACCEPTED DEVELOPMENT SOURCE
+- deterministic project-authored SVG vector geometry
+- no external image material
+- vector-authoring basis SHA-256: 68a9704e1d6501a44e077b1bc847af9ec47af84b8a39b8028120100793970a7f
+- final AVIF bytes are individually hash-locked by regression test
+- this intake is a development asset step, not a claim of biological/publication approval
 
 PROMOTION RULE
-A batch-2 species moves from pending to publication-ready only when its final direct AVIF independently satisfies the visual contract, output hash verification, project-original provenance, and human identity review. Legacy sprites or rejected generation sheets cannot satisfy the master-art gate.
+A batch-2 species moves into canonical authoring and publication-ready state only after its direct AVIF independently satisfies the visual contract, byte-hash verification, project-original provenance, and explicit human species-identity review.
