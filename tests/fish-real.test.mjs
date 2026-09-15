@@ -14,7 +14,7 @@ const species=[
   'クロダイ','マダイ','シロギス','カワハギ','ブラックバス','ニジマス','アユ','コイ','ヤマメ・イワナ'
 ];
 
-test('REAL9 maps current 19 sprite targets through generated fish asset authoring',()=>{
+test('REAL9 maps current 19 bundled targets through generated fish asset authoring',()=>{
   assert.match(js,/version:'V23-REAL9'/);
   assert.match(js,/renderer:'manifest-bundled-sprite-or-file-with-svg-fallback'/);
   assert.match(js,/FISH_TARGET_FISH_ASSET_MANIFEST/);
@@ -23,7 +23,9 @@ test('REAL9 maps current 19 sprite targets through generated fish asset authorin
   assert.equal(authoring.bundled_sheet,assetName);
   assert.equal(authoring.assets.length,19);
   assert.deepEqual(authoring.assets.map(record=>record.species_name),species);
-  assert.ok(authoring.assets.every(record=>record.asset.type==='sprite-sheet'));
+  assert.ok(authoring.assets.every(record=>['sprite-sheet','file'].includes(record.asset.type)));
+  assert.equal(authoring.assets.filter(record=>record.asset.type==='file').length,4);
+  assert.equal(authoring.assets.filter(record=>record.asset.type==='sprite-sheet').length,15);
   assert.match(js,/image\.naturalWidth<1000\|\|image\.naturalHeight<700/);
   assert.match(js,/image\.naturalHeight\/position\.rows/);
   assert.match(js,/image\.naturalWidth\/position\.columns/);
