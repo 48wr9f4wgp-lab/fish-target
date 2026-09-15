@@ -9,39 +9,38 @@ FISH TARGET V34 master asset pilot review sheet: four species ブリ・ワラサ
 
 prompt_basis_sha256: 7ffee6ddbcc0c746a38ebf45beb614238ce050602640a6327d49141dd08bfc50
 
-SOURCE REVIEW SHEET
-source_file: a_clean_infographic_style_composite_image_graphic.png
-source_sha256: 205b287a0c7d03ae68ced0c3e5219c658f91d1e780420fe8c0b8d38ff76d2552
+SOURCE REVIEW COMPOSITE
+source_file: fish-masters-review.png
+source_sha256: 2a18f67fd6b466e2457b4b54b44339bac67d06450dda3716e57c74eaf3558543
+source_character: project-generated, text-free four-species review composite
 
 NOTE ON PROMPT PROVENANCE
 The image generation tool does not expose its exact internal prompt string. The prompt hash above is the SHA-256 of the canonical project-side prompt basis recorded here, not a claim about hidden tool internals.
 
 TRANSFORMATION RECIPE
-1. isolate-largest-connected-subject-from-generated-review-sheet
-2. recompose-on-white-1200x768-safe-frame-8pct
-3. encode-avif-quality-82
+1. crop-species-quadrant-from-text-free-project-generated-review-composite
+2. resize-to-1200x768-white-safe-frame
+3. encode-avif-ffmpeg-libaom-crf56-yuv420p
 
-No semantic repainting was applied after generation. Labels, branding, metadata text, and panel UI were excluded from runtime assets by subject isolation.
+No semantic repainting was applied after generation. Final runtime assets contain no fish-name label, branding, metadata text, logo, watermark, hook, or human hand.
 
 ASSET OUTPUTS
 - ブリ・ワラサ: fish-master-v34-buri-warasa.avif
-  sha256: 9583e0fa375d68ff06db13e5ba777109916e93510beb8e674a27ad2fde434d84
+  sha256: 84322238fb3e81fd6bb2857dfa3a932a25df72363fd80808623570307df0a859
 - ニジマス: fish-master-v34-nijimasu.avif
-  sha256: 8fcbaee536c12d923a0cd839921c2c090411266961d0879ea04d14d7f359e4fa
+  sha256: 4525bfdf3fabe539a63a24b3bd16427cfb32f717d30fdbfd6a3bd121c2d9d75f
 - ヒラメ: fish-master-v34-hirame.avif
-  sha256: ce1f852b9be678654d7a9de9288765b8b5c5bcd53a20bd155668c562384b759e
+  sha256: 0af9dc2be430f3ff0b7558a47b9a71ab8f0e458fd02ffa032e17958e6eb2ca1d
 - アオリイカ: fish-master-v34-aoriika.avif
-  sha256: 63201af4988d4e6bad2adcb553da180901902bc8567efd97309496490c8c6aa0
+  sha256: 0e1a9212ce1b6a10d37e7ad7049f59d08943f5fb728173931e7a66b815d71f66
 
-FRAME VERIFICATION
-All four outputs are 1200x768 AVIF.
-Measured non-white subject margins:
-- ブリ・ワラサ: left 8.3%, top 25.8%, right 8.2%, bottom 25.9%
-- ニジマス: left 8.3%, top 26.7%, right 8.4%, bottom 26.6%
-- ヒラメ: left 8.3%, top 19.0%, right 8.2%, bottom 19.5%
-- アオリイカ: left 8.0%, top 16.9%, right 8.3%, bottom 16.9%
+FRAME / MOBILE VERIFICATION
+- All four outputs are 1200x768 AVIF, yuv420p.
+- Each subject remains fully inside the intended safe frame.
+- 390px human review was performed on the clean CRF56 exports.
+- Diagnostic cues remain readable at mobile review size: yellow stripe/forked tail (ブリ・ワラサ), pink lateral band/spots (ニジマス), asymmetric flat body/left-eye anatomy (ヒラメ), broad mantle/lateral fins/tentacles (アオリイカ).
 
 REVIEW STATUS
 - User explicitly approved implementation of the generated master set on 2026-09-15.
-- Visual art-direction review passed for implementation.
+- Visual art-direction / 390px implementation review passed for these four pilot assets.
 - This is not an ichthyologist or scientific certification. Species-identity QA remains governed by the V34 human identity review contract.
