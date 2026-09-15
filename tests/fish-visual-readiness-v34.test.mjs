@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {collectVisualReadiness,MASTER_VISUAL_PILOT} from '../scripts/fish-visual-readiness-v34.mjs';
+import {collectVisualReadiness,MASTER_VISUAL_PILOT,VISUAL_ROLLOUT_BATCH_2} from '../scripts/fish-visual-readiness-v34.mjs';
 import {publicationReady} from '../scripts/fish-asset-authoring.mjs';
 
 const authoring=JSON.parse(readFileSync(new URL('../authoring/fish-assets.v1.json',import.meta.url),'utf8'));
@@ -17,7 +17,7 @@ test('visual readiness measures publication safety separately from bundled prese
   assert.ok(report.taxonomy_review>0,'taxonomy-review targets must remain visible instead of being guessed');
 });
 
-test('four-shape master pilot stays explicit before 63-target visual expansion',async()=>{
+test('four-shape master pilot stays explicit before broad visual expansion',async()=>{
   assert.deepEqual(MASTER_VISUAL_PILOT.map(row=>row.species),['ブリ・ワラサ','ニジマス','ヒラメ','アオリイカ']);
   const report=await collectVisualReadiness();
   assert.deepEqual(report.master_pilot.map(row=>row.archetype),['saltwater-fish','freshwater-fish','flatfish','cephalopod']);
@@ -26,6 +26,18 @@ test('four-shape master pilot stays explicit before 63-target visual expansion',
   assert.equal(report.master_assets_ready,4,'all four approved master assets must be publication-ready direct files');
   assert.equal(report.master_assets_pending,0,'approved master set must not regress to pending');
   assert.ok(report.master_pilot.every(row=>row.publication_ready&&row.expected_master_present),'master records must resolve to their canonical direct AVIF');
+});
+
+test('rollout batch 2 targets eight high-value species with the same acceptance contract',async()=>{
+  assert.deepEqual(VISUAL_ROLLOUT_BATCH_2.map(row=>row.species),['シーバス','アジ','メバル','マゴチ','タチウオ','マダイ','ブラックバス','サワラ']);
+  const report=await collectVisualReadiness();
+  assert.equal(report.rollout_batch2.length,8);
+  assert.equal(report.rollout_batch2_ready+report.rollout_batch2_pending,8);
+  assert.ok(report.rollout_batch2.every(row=>row.phase==='rollout-batch-2'));
+  assert.ok(report.rollout_batch2.every(row=>row.human_identity_review_required===true));
+  assert.ok(report.rollout_batch2.every(row=>row.frame.width===1200&&row.frame.height===768&&row.frame.safe_margin_pct===8&&row.frame.mobile_review_width===390));
+  assert.ok(report.rollout_batch2.every(row=>row.identity_cues.length>=3));
+  assert.ok(report.rollout_batch2.every(row=>row.must_avoid.includes('text')&&row.must_avoid.includes('watermark')));
 });
 
 test('project-generated master records keep verified provenance and publication readiness',()=>{
@@ -43,8 +55,8 @@ test('project-generated master records keep verified provenance and publication 
   }
 });
 
-test('master pilot contract locks mobile frame, provenance, and human identity review',()=>{
-  for(const row of MASTER_VISUAL_PILOT){
+test('visual contracts lock mobile frame, provenance, and human identity review',()=>{
+  for(const row of [...MASTER_VISUAL_PILOT,...VISUAL_ROLLOUT_BATCH_2]){
     assert.match(row.asset_path,/^fish-master-v34-[a-z0-9-]+\.avif$/);
     assert.deepEqual(row.frame,{width:1200,height:768,safe_margin_pct:8,mobile_review_width:390});
     assert.equal(row.provenance_required,'project-generated-original');
