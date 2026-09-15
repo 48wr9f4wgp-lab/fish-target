@@ -82,7 +82,7 @@ try{
   await page.locator('#tackleClose').click();
   await page.locator('#tackleSheet').waitFor({state:'hidden'});
 
-  await openTarget(page,'ヒラメ');
+  await openTarget(page,'イワシ');
   await page.waitForTimeout(150);
   assert.deepEqual(noLureRequests(requests),[],'unsupported target performs zero lure catalog requests');
   assert.equal(await page.locator('#lureCatalogPanel').count(),0,'unsupported target does not mount lure UI');
@@ -150,6 +150,17 @@ try{
   assert.equal(await page.locator('#lureCatalogBody .lureCatalogItem').count(),3,'Kamasu renders three functional-size candidates');
   assert.deepEqual(await page.locator('#lureCatalogBody .lureCatalogItem b').allTextContents(),['月下美人 小鉄 3g','月下美人 小鉄 5g','月下美人 小鉄 7g']);
   assert.match(await text(page,'#lureCatalogBody .lureCatalogDisclaimer'),/色別SKU・在庫・価格は含めない/,'UI discloses lightweight catalog scope');
+  await backHome(page);
+
+  await openTarget(page,'ヒラメ');
+  await page.locator('#lureCatalogPanel').waitFor({state:'visible',timeout:10000});
+  assert.equal(await text(page,'#pmethod'),'サーフルアー','Hirame canonical surf method');
+  assert.equal(await text(page,'#firstBait'),'ジグヘッド+ワーム','Hirame FIRST CAST stays aligned with complete surf candidates');
+  if(!(await page.locator('#lureCatalogPanel').evaluate(el=>el.open)))await page.locator('#lureCatalogPanel > summary').click();
+  await page.waitForFunction(()=>document.querySelectorAll('#lureCatalogBody .lureCatalogItem').length===4,{timeout:10000});
+  assert.ok(has(requests,'lure-catalog-daiwa-surf-flatfish-v34.js'),'Hirame loads DAIWA surf shard');
+  assert.ok(has(requests,'lure-catalog-majorcraft-surf-flatfish-v34.js'),'Hirame loads Major Craft surf shard');
+  assert.deepEqual(await page.locator('#lureCatalogBody .lureCatalogItem b').allTextContents(),['フラットジャンキー ロデムR4ブレード 21g','フラットジャンキー ロデムR4ブレード 28g','浜王 21g','浜王 28g']);
 
   const layout=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
   assert.ok(layout.doc<=391&&layout.body<=391&&layout.viewport===390,'390px result remains overflow-free');
@@ -157,7 +168,7 @@ try{
   assert.deepEqual(consoleErrors,[],'content expansion browser path has no console errors');
 
   await context.close();
-  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:63,plans:158,catalogProducts:985,catalogBatches:46,lureRequests:requests,renderedKamasu:3,katsuoMethod:'offshore-jigging',akahataMethods:2}));
+  console.log('CONTENT_EXPANSION_BROWSER_QA_PASS',JSON.stringify({species:63,plans:158,catalogProducts:985,catalogBatches:46,lureRequests:requests,renderedKamasu:3,renderedHirame:4,katsuoMethod:'offshore-jigging',akahataMethods:2}));
 }finally{
   await browser.close();
 }
