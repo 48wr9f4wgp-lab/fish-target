@@ -155,7 +155,7 @@ try{
   await openTarget(page,'ヒラメ');
   await page.locator('#lureCatalogPanel').waitFor({state:'visible',timeout:10000});
   assert.equal(await text(page,'#pmethod'),'サーフルアー','Hirame canonical surf method');
-  assert.equal(await text(page,'#firstBait'),'ジグヘッド+ワーム','Hirame FIRST CAST stays aligned with complete surf candidates');
+  assert.equal(await text(page,'#firstBait'),'ジグヘッド＋ワーム','Hirame FIRST CAST stays aligned with complete surf candidates');
   if(!(await page.locator('#lureCatalogPanel').evaluate(el=>el.open)))await page.locator('#lureCatalogPanel > summary').click();
   await page.waitForFunction(()=>document.querySelectorAll('#lureCatalogBody .lureCatalogItem').length===4,{timeout:10000});
   assert.ok(has(requests,'lure-catalog-daiwa-surf-flatfish-v34.js'),'Hirame loads DAIWA surf shard');
