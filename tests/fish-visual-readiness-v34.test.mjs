@@ -23,7 +23,24 @@ test('four-shape master pilot stays explicit before 63-target visual expansion',
   assert.deepEqual(report.master_pilot.map(row=>row.archetype),['saltwater-fish','freshwater-fish','flatfish','cephalopod']);
   assert.ok(report.master_pilot.every(row=>row.bundled),'pilot targets must have an offline baseline while master art is reviewed');
   assert.ok(report.master_pilot.every(row=>['publication-ready','verified-candidate','taxonomy-review','legacy-unverified','no-candidate'].includes(row.state)));
-  assert.equal(report.master_assets_ready+report.master_assets_pending,4,'master readiness must account for all four pilot assets');
+  assert.equal(report.master_assets_ready,4,'all four approved master assets must be publication-ready direct files');
+  assert.equal(report.master_assets_pending,0,'approved master set must not regress to pending');
+  assert.ok(report.master_pilot.every(row=>row.publication_ready&&row.expected_master_present),'master records must resolve to their canonical direct AVIF');
+});
+
+test('project-generated master records keep verified provenance and publication readiness',()=>{
+  for(const row of MASTER_VISUAL_PILOT){
+    const record=authoring.assets.find(asset=>asset.species_name===row.species);
+    assert.ok(record,`${row.species} authoring record exists`);
+    assert.deepEqual(record.asset,{type:'file',file:row.asset_path});
+    assert.equal(record.source,'project-generated-original');
+    assert.equal(record.license,'Project original');
+    assert.equal(record.rights_status,'verified');
+    assert.equal(record.verified_at,'2026-09-15');
+    assert.match(record.provenance?.prompt_sha256||'',/^[a-f0-9]{64}$/);
+    assert.match(record.provenance?.output_sha256||'',/^[a-f0-9]{64}$/);
+    assert.equal(publicationReady(record),true);
+  }
 });
 
 test('master pilot contract locks mobile frame, provenance, and human identity review',()=>{
