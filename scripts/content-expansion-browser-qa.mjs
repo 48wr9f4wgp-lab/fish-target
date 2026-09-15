@@ -160,7 +160,7 @@ try{
   await page.waitForFunction(()=>document.querySelectorAll('#lureCatalogBody .lureCatalogItem').length===4,{timeout:10000});
   assert.ok(has(requests,'lure-catalog-daiwa-surf-flatfish-v34.js'),'Hirame loads DAIWA surf shard');
   assert.ok(has(requests,'lure-catalog-majorcraft-surf-flatfish-v34.js'),'Hirame loads Major Craft surf shard');
-  assert.deepEqual(await page.locator('#lureCatalogBody .lureCatalogItem b').allTextContents(),['フラットジャンキー ロデムR4ブレード 21g','フラットジャンキー ロデムR4ブレード 28g','浜王 21g','浜王 28g']);
+  assert.deepEqual(await page.locator('#lureCatalogBody .lureCatalogItem b').allTextContents(),['フラットジャンキー ロデムR4ブレード 21g / 4inch','フラットジャンキー ロデムR4ブレード 28g / 4inch','浜王 21g / 4inch','浜王 28g / 4inch']);
 
   const layout=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
   assert.ok(layout.doc<=391&&layout.body<=391&&layout.viewport===390,'390px result remains overflow-free');
