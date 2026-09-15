@@ -12,7 +12,9 @@ const HTTPS=/^https:\/\//i;
 const DATE=/^\d{4}-\d{2}-\d{2}$/;
 const SHA256=/^[a-f0-9]{64}$/;
 const SAFE_FILE=/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[^?#]+$/;
-const LICENSE=/^(?:CC0|Public domain|CC BY(?:-[A-Z]+)?(?: \d(?:\.\d)?)?|CC BY-SA(?: \d(?:\.\d)?)?)$/i;
+const EXTERNAL_LICENSE=/^(?:CC0|Public domain|CC BY(?:-[A-Z]+)?(?: \d(?:\.\d)?)?|CC BY-SA(?: \d(?:\.\d)?)?)$/i;
+const PROJECT_LICENSE='Project original';
+const PROJECT_SOURCE='project-generated-original';
 const RIGHTS=new Set(['unverified','verified','restricted']);
 const TYPES=new Set(['sprite-sheet','file']);
 
@@ -20,9 +22,8 @@ const required=(value,label,errors)=>{if(!text(value))errors.push(`${label} is r
 const nullableText=(value,label,errors)=>{if(value!==null&&value!==undefined&&typeof value!=='string')errors.push(`${label} must be string or null`)};
 
 function attributionRequired(license){return /^CC BY(?:-| |$)/i.test(text(license))}
-function provenanceComplete(record){
-  if(text(record?.asset?.type)!=='file')return true;
-  const p=record?.provenance;
+function isProjectGenerated(record){return text(record?.source)===PROJECT_SOURCE}
+function externalProvenanceComplete(p){
   return Boolean(
     p&&typeof p==='object'&&!Array.isArray(p)&&
     HTTPS.test(text(p.source_file_url))&&
@@ -32,12 +33,34 @@ function provenanceComplete(record){
     text(p.transformation_notice)
   );
 }
+function generatedProvenanceComplete(p){
+  return Boolean(
+    p&&typeof p==='object'&&!Array.isArray(p)&&
+    text(p.generator)&&
+    text(p.model)&&
+    SHA256.test(text(p.prompt_sha256))&&
+    SHA256.test(text(p.output_sha256))&&
+    DATE.test(text(p.generated_at))&&
+    Array.isArray(p.transformations)&&p.transformations.length>0&&p.transformations.every(item=>text(item))&&
+    text(p.transformation_notice)
+  );
+}
+function provenanceComplete(record){
+  if(text(record?.asset?.type)!=='file')return true;
+  return isProjectGenerated(record)?generatedProvenanceComplete(record?.provenance):externalProvenanceComplete(record?.provenance);
+}
 
 export function publicationReady(record){
   if(text(record?.rights_status)!=='verified')return false;
-  if(!LICENSE.test(text(record?.license)))return false;
-  if(!HTTPS.test(text(record?.source_url)))return false;
   if(!DATE.test(text(record?.verified_at)))return false;
+  if(isProjectGenerated(record)){
+    if(text(record?.asset?.type)!=='file')return false;
+    if(text(record?.license)!==PROJECT_LICENSE)return false;
+    if(record?.source_url!=null&&text(record.source_url))return false;
+    return generatedProvenanceComplete(record?.provenance);
+  }
+  if(!EXTERNAL_LICENSE.test(text(record?.license)))return false;
+  if(!HTTPS.test(text(record?.source_url)))return false;
   if(attributionRequired(record.license)&&(!text(record.author)||!text(record.attribution)))return false;
   if(!provenanceComplete(record))return false;
   return true;
@@ -54,7 +77,7 @@ function validateAsset(asset,label,errors){
   }
 }
 
-function validateProvenance(provenance,label,errors){
+function validateExternalProvenance(provenance,label,errors){
   if(!provenance||typeof provenance!=='object'||Array.isArray(provenance)){errors.push(`${label}.provenance is required for verified file assets`);return}
   required(provenance.source_file_url,`${label}.provenance.source_file_url`,errors);
   if(text(provenance.source_file_url)&&!HTTPS.test(text(provenance.source_file_url)))errors.push(`${label}.provenance.source_file_url must use https`);
@@ -62,6 +85,22 @@ function validateProvenance(provenance,label,errors){
   if(!SHA256.test(text(provenance.output_sha256)))errors.push(`${label}.provenance.output_sha256 must be lowercase SHA-256`);
   if(!Array.isArray(provenance.transformations)||!provenance.transformations.length||provenance.transformations.some(item=>!text(item)))errors.push(`${label}.provenance.transformations must be a non-empty string array`);
   required(provenance.transformation_notice,`${label}.provenance.transformation_notice`,errors);
+}
+
+function validateGeneratedProvenance(provenance,label,errors){
+  if(!provenance||typeof provenance!=='object'||Array.isArray(provenance)){errors.push(`${label}.provenance is required for verified project-generated file assets`);return}
+  required(provenance.generator,`${label}.provenance.generator`,errors);
+  required(provenance.model,`${label}.provenance.model`,errors);
+  if(!SHA256.test(text(provenance.prompt_sha256)))errors.push(`${label}.provenance.prompt_sha256 must be lowercase SHA-256`);
+  if(!SHA256.test(text(provenance.output_sha256)))errors.push(`${label}.provenance.output_sha256 must be lowercase SHA-256`);
+  if(!DATE.test(text(provenance.generated_at)))errors.push(`${label}.provenance.generated_at must be YYYY-MM-DD`);
+  if(!Array.isArray(provenance.transformations)||!provenance.transformations.length||provenance.transformations.some(item=>!text(item)))errors.push(`${label}.provenance.transformations must be a non-empty string array`);
+  required(provenance.transformation_notice,`${label}.provenance.transformation_notice`,errors);
+}
+
+function validateProvenance(record,label,errors){
+  if(isProjectGenerated(record))validateGeneratedProvenance(record?.provenance,label,errors);
+  else validateExternalProvenance(record?.provenance,label,errors);
 }
 
 function validateRecord(record,label,errors){
@@ -73,8 +112,17 @@ function validateRecord(record,label,errors){
   if(record.source_url!=null&&text(record.source_url)&&!HTTPS.test(text(record.source_url)))errors.push(`${label}.source_url must use https`);
   if(record.verified_at!=null&&text(record.verified_at)&&!DATE.test(text(record.verified_at)))errors.push(`${label}.verified_at must be YYYY-MM-DD`);
   if(!RIGHTS.has(text(record.rights_status)))errors.push(`${label}.rights_status must be unverified, verified, or restricted`);
-  if(record.provenance!=null)validateProvenance(record.provenance,label,errors);
-  if(text(record.rights_status)==='verified'&&text(record.asset?.type)==='file'&&record.provenance==null)validateProvenance(null,label,errors);
+
+  if(isProjectGenerated(record)){
+    if(text(record.asset?.type)!=='file')errors.push(`${label} project-generated original must use a direct file asset`);
+    if(text(record.license)!==PROJECT_LICENSE)errors.push(`${label}.license must be ${PROJECT_LICENSE} for project-generated original`);
+    if(record.source_url!=null&&text(record.source_url))errors.push(`${label}.source_url must be null for project-generated original`);
+  }else if(text(record.license)===PROJECT_LICENSE){
+    errors.push(`${label}.license ${PROJECT_LICENSE} is reserved for ${PROJECT_SOURCE}`);
+  }
+
+  if(record.provenance!=null)validateProvenance(record,label,errors);
+  if(text(record.rights_status)==='verified'&&text(record.asset?.type)==='file'&&record.provenance==null)validateProvenance(record,label,errors);
   if(text(record.rights_status)==='verified'&&!publicationReady(record))errors.push(`${label} verified rights are incomplete or not publication-safe`);
 }
 
@@ -101,13 +149,16 @@ export function validateAuthoring(data){
   return errors;
 }
 
-const cloneProvenance=provenance=>provenance?{
-  source_file_url:text(provenance.source_file_url),
-  source_sha256:text(provenance.source_sha256),
-  output_sha256:text(provenance.output_sha256),
-  transformations:provenance.transformations.map(text),
-  transformation_notice:text(provenance.transformation_notice)
-}:null;
+const cloneProvenance=provenance=>{
+  if(!provenance)return null;
+  const out={};
+  for(const key of ['source_file_url','source_sha256','generator','model','prompt_sha256','output_sha256','generated_at']){
+    if(provenance[key]!=null)out[key]=text(provenance[key]);
+  }
+  if(Array.isArray(provenance.transformations))out.transformations=provenance.transformations.map(text);
+  if(provenance.transformation_notice!=null)out.transformation_notice=text(provenance.transformation_notice);
+  return out;
+};
 
 const cloneRecord=record=>({
   species_name:text(record.species_name),
