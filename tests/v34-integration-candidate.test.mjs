@@ -10,15 +10,17 @@ const requiredIds=Object.freeze([
   'daiwa-lightgame-jighead-v34','shimano-lightgame-jighead-v34',
   'daiwa-surf-flatfish-v34','majorcraft-surf-flatfish-v34',
   'daiwa-seabass-v34','shimano-seabass-v34',
-  'daiwa-tairaba-v34','shimano-tairaba-v34'
+  'daiwa-tairaba-v34','shimano-tairaba-v34',
+  'daiwa-area-trout-spoon-v34','shimano-area-trout-spoon-v34',
+  'daiwa-native-trout-minnow-v34','shimano-native-trout-minnow-v34'
 ]);
 
 test('V34 integration candidate composes one complete research manifest',()=>{
-  assert.equal(manifest.version,'LURE-CATALOG-7');
-  assert.equal(manifest.batches.length,14);
-  assert.equal(manifest.batches.reduce((sum,batch)=>sum+batch.expected_rows,0),29);
-  assert.equal(new Set(manifest.batches.map(batch=>batch.id)).size,14,'batch ids must be unique');
-  assert.equal(new Set(manifest.batches.map(batch=>batch.file)).size,14,'batch files must be unique');
+  assert.equal(manifest.version,'LURE-CATALOG-8');
+  assert.equal(manifest.batches.length,18);
+  assert.equal(manifest.batches.reduce((sum,batch)=>sum+batch.expected_rows,0),37);
+  assert.equal(new Set(manifest.batches.map(batch=>batch.id)).size,18,'batch ids must be unique');
+  assert.equal(new Set(manifest.batches.map(batch=>batch.file)).size,18,'batch files must be unique');
   assert.ok(manifest.batches.every(batch=>batch.stage==='research'));
   for(const id of requiredIds)assert.ok(manifest.batches.some(batch=>batch.id===id),`missing integrated batch ${id}`);
   for(const batch of manifest.batches)assert.equal(existsSync(new URL(batch.file,root)),true,`missing ${batch.file}`);

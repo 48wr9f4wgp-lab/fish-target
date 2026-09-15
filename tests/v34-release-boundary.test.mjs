@@ -40,9 +40,9 @@ test('publication build excludes all eight unreviewed Batch 2 fish visuals',()=>
   assert.ok(publication.records.every(record=>record.development_only===false));
 });
 
-test('all 29 integrated lure rows remain research-only',()=>{
+test('all 37 integrated lure rows remain research-only',()=>{
   const rows=lureRows();
-  assert.equal(rows.length,29);
+  assert.equal(rows.length,37);
   assert.ok(rows.every(row=>row.publication_ready===false));
   assert.doesNotMatch(JSON.stringify(rows),/"price"|"stock"|"color_sku"/i);
 });

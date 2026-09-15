@@ -1,5 +1,5 @@
 {
-  "version": "LURE-CATALOG-7",
+  "version": "LURE-CATALOG-8",
   "batches": [
     {"id":"daiwa-kamasu-light-2026","maker":"DAIWA","file":"lure-catalog-daiwa-kamasu-light-2026.js","expected_rows":3,"stage":"research","targets":["カマス"]},
     {"id":"daiwa-sawara-blade-2026","maker":"DAIWA","file":"lure-catalog-daiwa-sawara-blade-2026.js","expected_rows":2,"stage":"research","targets":["サワラ"]},
@@ -14,6 +14,10 @@
     {"id":"daiwa-seabass-v34","maker":"DAIWA","file":"lure-catalog-daiwa-seabass-v34.js","expected_rows":1,"stage":"research","targets":["シーバス"]},
     {"id":"shimano-seabass-v34","maker":"SHIMANO","file":"lure-catalog-shimano-seabass-v34.js","expected_rows":1,"stage":"research","targets":["シーバス"]},
     {"id":"daiwa-tairaba-v34","maker":"DAIWA","file":"lure-catalog-daiwa-tairaba-v34.js","expected_rows":2,"stage":"research","targets":["マダイ"]},
-    {"id":"shimano-tairaba-v34","maker":"SHIMANO","file":"lure-catalog-shimano-tairaba-v34.js","expected_rows":2,"stage":"research","targets":["マダイ"]}
+    {"id":"shimano-tairaba-v34","maker":"SHIMANO","file":"lure-catalog-shimano-tairaba-v34.js","expected_rows":2,"stage":"research","targets":["マダイ"]},
+    {"id":"daiwa-area-trout-spoon-v34","maker":"DAIWA","file":"lure-catalog-daiwa-area-trout-spoon-v34.js","expected_rows":2,"stage":"research","targets":["ニジマス"]},
+    {"id":"shimano-area-trout-spoon-v34","maker":"SHIMANO","file":"lure-catalog-shimano-area-trout-spoon-v34.js","expected_rows":2,"stage":"research","targets":["ニジマス"]},
+    {"id":"daiwa-native-trout-minnow-v34","maker":"DAIWA","file":"lure-catalog-daiwa-native-trout-minnow-v34.js","expected_rows":2,"stage":"research","targets":["ヤマメ・イワナ"]},
+    {"id":"shimano-native-trout-minnow-v34","maker":"SHIMANO","file":"lure-catalog-shimano-native-trout-minnow-v34.js","expected_rows":2,"stage":"research","targets":["ヤマメ・イワナ"]}
   ]
 }
