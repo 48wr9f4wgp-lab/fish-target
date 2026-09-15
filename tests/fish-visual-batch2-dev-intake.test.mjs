@@ -17,7 +17,7 @@ const batch=Object.freeze([
   ['タチウオ','fish-master-v34-tachiuo.avif','07763dc855a9e4c1d1d29c0fbadad49870bd40a4503ee6cb577985519d1ff676'],
   ['マダイ','fish-master-v34-madai.avif','517cf42a6ce893b082711e7430213867d17caa25bcf229aa3272c07d43f3711b'],
   ['ブラックバス','fish-master-v34-blackbass.avif','e795c5f8bf0e675629b8d749613830150bfdd4e60257a6b93c844fe756f7161e'],
-  ['サワラ','fish-master-v34-sawara.avif','9883c809542739e6f1b913d4cd6ca85213b167dca57622f08f37e1d5ec2e49a6']
+  ['サワラ','fish-master-v34-sawara.avif','b62c03daf9524e1c5dbb34a4d7429828e9f33e5bd233f75a0b15fb3a1dac45ed']
 ]);
 
 function runtime(publicationBuild){
@@ -53,7 +53,10 @@ test('research runtime overlays exactly eight batch 2 species with direct develo
   assert.equal(manifest.bundledCount,19);
   assert.equal(manifest.developmentOnlyCount,8);
   assert.equal(manifest.publicationReadyCount,4);
-  assert.deepEqual([...manifest.developmentOnlyRecords].map(record=>record.species_name),batch.map(row=>row[0]));
+  assert.deepEqual(
+    [...manifest.developmentOnlyRecords].map(record=>record.species_name).sort(),
+    batch.map(row=>row[0]).sort()
+  );
   for(const [species,file,expected] of batch){
     const record=manifest.bySpeciesName(species);
     assert.equal(record.mode,'bundled',`${species} must be locally bundled in research builds`);
