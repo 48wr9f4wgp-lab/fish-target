@@ -59,7 +59,7 @@ test('trip dashboard V37 exposes a slack-watch window without claiming catch pro
   assert.match(html,/id="tripDashSlackLabelV37"/);
   assert.match(html,/id="tripDashSlackSubV37"/);
   assert.match(page,/function slackWatchWindow\(times,velocities,nowIndex=0\)/);
-  assert.match(page,/slack:v<=0\.6/);
+  assert.match(page,/slack=v<=0\.6/);
   assert.match(page,/弱まり→止まり→動き出し/);
   assert.match(css,/\.tripDashSlackBandV37/);
   assert.match(css,/\.tripDashSlackCenterV37/);
