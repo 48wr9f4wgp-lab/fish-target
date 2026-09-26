@@ -143,11 +143,40 @@
 </section>
 <section class="view conditionsView" data-feature="field-live" id="conditions">
 <header class="conditionsHead"><button aria-label="プランへ戻る" class="conditionsBack" id="conditionsBack" type="button">‹</button><div><span>TRIP CONDITIONS</span><h1>釣行判断</h1><p><b id="conditionsFish">魚種未選択</b><span id="conditionsPlace"> · 地点未取得</span></p></div><span class="conditionsStatus" id="conditionsPageStatus">未取得</span></header>
-<main class="conditionsBody">
-<section class="conditionsDecisionCard"><div class="conditionsDecisionHead"><div><span>24H DECISION</span><b>いつ・どんな条件で狙うか</b></div><small>確率ではなく、条件の重なりを理由付きで表示</small></div>
+<main class="conditionsBody conditionsBodyV35">
+<section class="conditionsLocationV35" aria-label="釣行地">
+<div class="conditionsLocationHeadV35"><div><span>LOCATION</span><b>釣行地</b></div><small>場所を選ぶと更新</small></div>
+<div id="conditionsLocationMountV35"></div>
+</section>
+<section class="tripDashboardV35 is-empty" id="tripDashboardV35" aria-label="釣行ダッシュボード">
+<div class="tripDashTopV35">
+<div><span class="tripDashEyebrowV35">TRIP DASHBOARD</span><h2 id="tripDashPlaceV35">釣行地を選択</h2><small id="tripDashScopeV35">魚種未選択 · 汎用判断</small></div>
+<div class="tripDashMetaV35"><div><b id="tripDashDateV35">--/--</b><span id="tripDashStatusV35">未取得</span></div><small id="tripDashSunV35">☀ --:--　☾ --:--</small><button id="tripDashRefreshV35" type="button" aria-label="釣行条件を更新">↻</button></div>
+</div>
+<div class="tripDashHeroV35">
+<div class="tripDashLevelV35"><span>潮位目安 <small>モデル</small></span><strong id="tripDashLevelV35">-- cm</strong><small id="tripDashTrendV35">地点を選んで取得</small></div>
+<div class="tripDashTurnV35"><span id="tripDashTurnLabelV35">次の潮位変化</span><b id="tripDashTurnTimeV35">--:--</b><small id="tripDashTurnEtaV35">--</small></div>
+</div>
+<div class="tripDashGraphV35" id="tripDashGraphV35" role="img" aria-label="24時間の潮位目安グラフ"></div>
+<div class="tripDashNextV35">
+<div><span>NEXT SLACK</span><b id="tripDashSlackV35">--</b></div>
+<div><span id="tripDashBiteLabelV35">釣行しやすい時間</span><b id="tripDashBiteV35">--</b></div>
+</div>
+<div class="tripDashMiniV35">
+<div><span>天気</span><b id="tripDashWeatherV35">--</b><small id="tripDashRainV35">--</small></div>
+<div><span>風</span><b id="tripDashWindV35">--</b><small id="tripDashWindSubV35">--</small></div>
+<div><span>波</span><b id="tripDashWaveV35">--</b><small id="tripDashWaveSubV35">--</small></div>
+<div><span>水温</span><b id="tripDashTempV35">--</b><small id="tripDashTempSubV35">--</small></div>
+</div>
+<div class="tripDashVerdictV35"><div><span>釣り目安</span><b id="tripDashVerdictV35">地点を選んで取得</b></div><small id="tripDashVerdictSubV35">風・雨・波の操作条件をまとめて表示</small></div>
+<div class="tripDashEmptyV35" id="tripDashEmptyV35">上の釣行地を選ぶと、潮・風・波・水温を1画面にまとめる。</div>
+</section>
+<section class="conditionsDecisionCard conditionsDecisionLegacyV35" hidden><div class="conditionsDecisionHead"><div><span>24H DECISION</span><b>いつ・どんな条件で狙うか</b></div><small>確率ではなく、条件の重なりを理由付きで表示</small></div>
 <div class="conditionsDecisionGrid"><div><span>NOW</span><b id="conditionsDecisionNow">地点未取得</b></div><div><span>NEXT SLACK</span><b id="conditionsDecisionSlack">-</b></div><div><span id="conditionsDecisionBiteLabel">釣行しやすい時間</span><b id="conditionsDecisionBite">-</b></div><div><span>海面水温</span><b id="conditionsDecisionSst">-</b></div></div></section>
-<div id="conditionsLiveMount"></div>
-<div id="conditionsAutoMount"></div>
+<details class="conditionsDetailsV35" id="conditionsDetailsV35">
+<summary><span><b>詳しい条件を見る</b><small>気象・海況・6時間比較・出典</small></span><em>開く</em></summary>
+<div class="conditionsDetailsBodyV35"><div id="conditionsLiveMount"></div><div id="conditionsAutoMount"></div></div>
+</details>
 <div class="conditionsActions"><button class="conditionsChooseFishBtn" id="conditionsChooseFishBtn" type="button">この条件から魚を選ぶ</button><button class="conditionsPackBtn" id="conditionsPackBtn" type="button">持ち物チェック</button><button class="conditionsFieldModeBtn" id="conditionsFieldModeBtn" type="button">現場モードへ</button></div>
 <p class="conditionsNote">モデル値は釣行判断の補助。安全・立入可否・現地の波や流れを優先してください。</p>
 </main>

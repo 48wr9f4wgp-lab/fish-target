@@ -30,3 +30,14 @@ test('conditions extension is shipped in the offline shell',()=>{
   assert.match(build,/'conditions-page-v34\.css'/);
   assert.match(build,/'conditions-page-v34\.js'/);
 });
+test('trip conditions V35 uses a dashboard-first one-glance hierarchy',()=>{
+  const html=text('index.html'),page=text('conditions-page-v34.js'),css=text('conditions-page-v34.css');
+  for(const id of ['tripDashboardV35','tripDashPlaceV35','tripDashLevelV35','tripDashTurnTimeV35','tripDashGraphV35','tripDashWeatherV35','tripDashWindV35','tripDashWaveV35','tripDashTempV35','conditionsDetailsV35'])assert.match(html,new RegExp(`id="${id}"`));
+  assert.match(page,/function tideTurns\(\)/);
+  assert.match(page,/function renderDashboardGraph\(\)/);
+  assert.match(page,/function syncDashboard\(\)/);
+  assert.match(page,/conditionsLocationMountV35/);
+  assert.match(css,/\.tripDashboardV35\{/);
+  assert.match(css,/\.tripDashMiniV35\{/);
+  assert.match(css,/\.conditionsDetailsV35\{/);
+});
