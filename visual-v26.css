@@ -123,6 +123,7 @@ html.clarity-v27 .tackleCount p{grid-column:1/-1!important;text-align:center!imp
 html.clarity-v27 .tackleEmptyCta{gap:2px!important;padding:15px 17px!important}
 html.clarity-v27 .tackleEmptyCta span{font-size:10px!important}
 html.clarity-v27 .fitEmpty{gap:3px!important;padding:13px!important}
+
 html.clarity-v27 .fitEmpty span{font-size:10px!important}
 html.clarity-v27 .fitItems{gap:7px!important}
 html.clarity-v27 .fitItem{padding:11px 12px!important}
@@ -146,3 +147,36 @@ html.app-shell-v26 #result .choices button{min-width:44px!important;min-height:4
 html.app-shell-v26 #copy{min-height:44px!important;font-size:12px!important}
 /* An inactive global dock must not cover the active sheet's form. */
 html.app-shell-v26 .appTabBarV26[inert]{visibility:hidden!important;pointer-events:none!important}
+
+/* V34 legibility: keep the actual choice readable when text grows. */
+#home #quick.quick>button{white-space:normal!important;overflow-wrap:anywhere!important;text-overflow:clip!important;line-height:1.3!important}
+#home .fish.discoveryCardV26 .name,#home .fish.discoveryCardV26 .methodSmall{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;line-height:1.4!important}
+#home .fish.discoveryCardV26>div:not(.art){overflow:visible!important}
+#home .fish.discoveryCardV26{height:auto!important}
+#result .planCard .planTop{grid-template-columns:minmax(0,1fr) auto!important}
+#result .planCard .planTop>div:first-child{grid-column:1/-1!important}
+#result .planCard .method{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;line-height:1.2!important}
+#result .why{display:block!important;overflow:visible!important;-webkit-line-clamp:unset!important;overflow-wrap:anywhere!important}
+#result #favoriteBtn{font-size:22px!important;flex-shrink:0!important}
+#resultRailV26 button,#resultDockV20.ux23Dock button{white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.3!important}
+#result .body{padding-bottom:calc(110px + env(safe-area-inset-bottom))!important}
+html{scroll-padding-top:90px;scroll-padding-bottom:110px}
+#result button,#result summary{scroll-margin-top:95px;scroll-margin-bottom:120px}
+@media(max-width:320px){
+  #home .grid{grid-template-columns:1fr!important}
+  #resultRailV26{position:static!important}
+  #resultDockV20.ux23Dock{position:static!important;margin:12px!important;grid-template-columns:1fr 1fr!important}
+  #resultDockV20.ux23Dock #fieldModeBtn{grid-column:1/-1!important}
+  #result .body{padding-bottom:18px!important}
+  html{scroll-padding-top:12px;scroll-padding-bottom:12px}
+  #result button,#result summary{scroll-margin-top:12px;scroll-margin-bottom:12px}
+}
+/* A user text-size override can enlarge type without changing CSS viewport width. */
+body.largeTextV34 #resultRailV26{position:static!important}
+body.largeTextV34 #resultDockV20.ux23Dock{position:static!important;margin:12px!important;grid-template-columns:1fr 1fr!important}
+body.largeTextV34 #resultDockV20.ux23Dock #fieldModeBtn{grid-column:1/-1!important}
+body.largeTextV34 #result .body{padding-bottom:18px!important}
+/* Muted 11–12px labels are still ordinary text and need clear contrast. */
+.appTabBarV26 button:not(.on){color:#425c62}
+#resultRailV26 button:not(.on){color:#435e64}
+#home .fish.discoveryCardV26 p{color:#465f65!important}

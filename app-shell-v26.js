@@ -177,6 +177,9 @@
 
   function syncShell(){
     ensureTabBar();ensureResultRail();polishTackleSheet();installCatalogSearchDebounce();ensurePrivacyPanel();tagFishCards();simplifyDynamicCopy();
+    const railLabel=$('#resultRailV26 button');
+    const enlarged=railLabel&&parseFloat(getComputedStyle(railLabel).fontSize)>=18;
+    document.body.classList.toggle('largeTextV34',Boolean(enlarged));
     const current=$('.view.on')?.id;
     document.body.classList.toggle('resultOpenV26',current==='result'||current==='fieldmode');
     document.body.classList.toggle('savedOpenV26',current==='saved');
@@ -188,5 +191,10 @@
   const mo=new MutationObserver(scheduleSync);
   mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','hidden']});
   syncShell();
+  const textLayoutObserver=new ResizeObserver(scheduleSync);
+  for(const selector of ['#resultRailV26','#resultDockV20','.fieldModeHead']){
+    const element=$(selector);if(element)textLayoutObserver.observe(element);
+  }
+  window.addEventListener('resize',scheduleSync);
   globalThis.FISH_TARGET_PRIVACY_CONTROLS=Object.freeze({version:'PRIVACY-RC-1',ownedStorageKeys:OWNED_STORAGE_KEYS,ownedStoragePrefixes:OWNED_STORAGE_PREFIXES});
 })();

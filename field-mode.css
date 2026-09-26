@@ -12,3 +12,11 @@
 .fmCondition{margin-top:15px;border-radius:14px;padding:12px 13px;background:#0e3037;border:1px solid #ffffff16;color:#c8d8da;font-size:12px;line-height:1.6}.fmCondition strong{color:#73ded2}.fmBackPlan{width:100%;min-height:50px;margin-top:16px;border:1px solid #ffffff28;background:#ffffff10;color:#eaf6f5;border-radius:15px;font-size:13px;font-weight:950}.fieldModeView.on ~ .nav{display:none}
 @media(max-width:390px){.fieldModeBody{padding-left:12px;padding-right:12px}.fmFirst{padding:14px}.fmFirst h2{font-size:28px}.fmTackle b{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.fieldBack:active,.fmBackPlan:active,.fieldModeLaunch:active{transform:none}}
+/* The status is allowed to take a second row instead of pushing the title off screen. */
+.fieldModeHead{grid-template-columns:44px minmax(0,1fr) auto}
+.fieldModeHead>div{min-width:0;overflow-wrap:anywhere}
+.fieldModeHead span,.fieldModeHead small{letter-spacing:0;overflow-wrap:anywhere}
+.fieldStatusMini{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.fieldTarget h1,.fmFirst h2{overflow-wrap:anywhere}
+.fmGrid span,.fmNext span{color:#435e64}
+@media(max-width:320px){.fieldModeHead{grid-template-columns:44px minmax(0,1fr)}.fieldStatusMini{grid-column:2;justify-self:start}.fmGrid,.fmTackle{grid-template-columns:1fr}}
