@@ -8,7 +8,7 @@ enum FieldCoachPromptBuilder {
         let factsJSON = String(decoding: factsData, as: UTF8.self)
 
         let maxSentences = min(max(request.rules.maxSentences ?? 3, 1), 3)
-        return """
+        let userPrompt = """
         あなたは釣りアプリの「説明係」です。判断係ではありません。
         次の確定済みFACTSだけを使い、日本語で現場向けの短い説明を書いてください。
 
@@ -22,9 +22,10 @@ enum FieldCoachPromptBuilder {
 
         FACTS:
         \(factsJSON)
-
-        回答:
         """
+
+        // LFM2.5 Instruct uses a ChatML-compatible template in its published tokenizer.
+        return "<|im_start|>user\n" + userPrompt + "<|im_end|>\n<|im_start|>assistant\n"
     }
 
     private struct EncodableFacts: Encodable {
