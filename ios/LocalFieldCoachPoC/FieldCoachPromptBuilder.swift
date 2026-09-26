@@ -16,12 +16,12 @@ enum FieldCoachPromptBuilder {
         - 新しい数値、商品、魚種、釣法、条件を追加しない。
         - 計算しない。適合判定しない。安全判定しない。商品を選ばない。
         - FACTSに無い情報は推測しない。
-        - 最大(maxSentences)文。
+        - 最大\(maxSentences)文。
         - プレーンテキストのみ。
         - 情報不足なら、ある情報だけ説明する。
 
         FACTS:
-        (factsJSON)
+        \(factsJSON)
 
         回答:
         """
