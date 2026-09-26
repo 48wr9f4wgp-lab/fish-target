@@ -84,7 +84,8 @@
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
 
   function syncPackTab(active){
-    $$('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&button.dataset.appTab==='pack'));
+    const hasPackTab=Boolean($('#appPackTabV30'));
+    $('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&(hasPackTab?button.dataset.appTab==='pack':button.dataset.appTab==='conditions')));
     if(active)return;
     const current=$('.view.on')?.id;
     const fallback=current==='saved'?'saved':current==='home'?'home':current==='conditions'?'conditions':null;
