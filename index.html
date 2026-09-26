@@ -72,8 +72,14 @@
 <div><span>最大瞬間風</span><b id="wxGust">-</b></div><div><span>降水</span><b id="wxRain">-</b></div>
 </div>
 <div class="marineGrid" hidden="" id="marineGrid">
-<div><span>波高</span><b id="seaWave">-</b></div><div><span>海面水温</span><b id="seaTemp">-</b></div>
+<div><span>波高</span><b id="seaWave">-</b></div><div><span>波周期</span><b id="seaWavePeriod">-</b></div>
+<div><span>うねり</span><b id="seaSwell">-</b></div><div><span>海面水温</span><b id="seaTemp">-</b></div>
 <div><span>流れ</span><b id="seaCurrent">-</b></div><div><span>海面高度</span><b id="seaLevel">-</b></div>
+</div>
+<div class="tripSignalsV2" hidden id="tripSignalsV2">
+<section class="tripSignalCard tempSignal" hidden id="seaTempSignalV2"><div class="tripSignalTop"><span>WATER TEMP · 24H</span><b id="seaTempTrend">-</b></div><div class="tripSignalValue"><strong id="seaTemp24Now">-</strong><small id="seaTempDelta">-</small></div><div class="seaTempSpark" id="seaTempSpark" role="img" aria-label="24時間の海面水温推移"></div></section>
+<section class="tripSignalCard mazumeSignal" hidden id="mazumeSignalV2"><div class="tripSignalTop"><span>MAZUME</span><b>薄明込み</b></div><div class="mazumeRows"><div><span>朝</span><strong id="mazumeMorning">-</strong></div><div><span>夕</span><strong id="mazumeEvening">-</strong></div></div><small class="tripSignalNote" id="sunTimes">-</small></section>
+<section class="tripSignalCard waveSignal" hidden id="waveSignalV2"><div class="tripSignalTop"><span>WAVE / SWELL</span><b>周期</b></div><div class="tripSignalValue"><strong id="wavePeriodNow">-</strong><small>波高 / 周期</small></div><div class="swellNow" id="swellNow">-</div><small class="tripSignalNote">うねりは「来る方向」を表示</small></section>
 </div>
 <div class="tideFlow" hidden="" id="tideFlow">
 <div class="tideFlowHead"><div><b>潮流 + タイドグラフ · 24H</b><small>潮汐込み海面高度と潮流を同じ時間軸で表示</small></div><span class="tideFlowState" id="tideFlowState">-</span></div>
@@ -89,7 +95,7 @@
 </div>
 <div class="fieldSafety" id="fieldSafety"></div>
 <div class="tideOfficial" id="tideOfficial"><div><b>気象庁 潮位表</b><small>天文潮位の予測。実測潮位ではない。</small></div><a href="https://www.data.jma.go.jp/kaiyou/db/tide/suisan/index.php" id="jmaTideLink" rel="noopener" target="_blank">公式を開く ›</a></div>
-<p class="sourceNote">Weather / Marine model: Open-Meteo（CC BY 4.0・Preview評価用途）。海況モデルは沿岸精度に限界があり航海用途不可。天文潮位: 気象庁。商用公開時はAPI契約を再設計する。</p>
+<p class="sourceNote">Weather / Marine model: Open-Meteo（CC BY 4.0・Preview評価用途）。海況モデルは沿岸精度に限界があり航海用途不可。日の出/日没もOpen-Meteo。薄明/まずめ帯は民間薄明（太陽高度 -6°）と日出没前後30分を端末計算した目安。天文潮位: 気象庁。商用公開時はAPI契約を再設計する。</p>
 </section><h2 class="sectionTitle liveTitle" data-feature="field-live">LIVE AUTO ADJUST<small>取得した条件を、最初の1投・規格・持ち物へ自動反映。</small></h2><section class="card autoAdjust" data-feature="field-live" id="autoAdjust">
 <div class="autoAdjustHead"><div><strong>AUTO GAME PLAN</strong><small id="autoAdjustUpdated">FIELD LIVE未取得でも基準プランは使用可能</small></div><span class="autoMode" id="autoMode">BASE</span></div>
 <div class="autoPickGrid">

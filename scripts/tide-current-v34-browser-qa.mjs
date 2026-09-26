@@ -12,15 +12,21 @@ try{
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   const weatherMock={
     current:{temperature_2m:22,precipitation:0,weather_code:1,wind_speed_10m:3,wind_gusts_10m:5,wind_direction_10m:90,time:hours[0]},
-    hourly:{time:weatherHours,temperature_2m:weatherHours.map(()=>22),precipitation:weatherHours.map(()=>0),weather_code:weatherHours.map(()=>1),wind_speed_10m:weatherHours.map(()=>3),wind_gusts_10m:weatherHours.map(()=>5)}
+    hourly:{time:weatherHours,temperature_2m:weatherHours.map(()=>22),precipitation:weatherHours.map(()=>0),weather_code:weatherHours.map(()=>1),wind_speed_10m:weatherHours.map(()=>3),wind_gusts_10m:weatherHours.map(()=>5)},
+    daily:{time:['2026-09-26','2026-09-27'],sunrise:['2026-09-26T05:34','2026-09-27T05:35'],sunset:['2026-09-26T17:39','2026-09-27T17:38']}
   };
   const marineMock={
     latitude:34.6833,longitude:138.9667,
-    current:{wave_height:0.5,sea_surface_temperature:24,ocean_current_velocity:1.2,ocean_current_direction:90,sea_level_height_msl:0.1,time:hours[0]},
+    current:{wave_height:0.5,wave_period:8,wave_direction:120,swell_wave_height:0.4,swell_wave_period:12,swell_wave_direction:135,sea_surface_temperature:24,ocean_current_velocity:1.2,ocean_current_direction:90,sea_level_height_msl:0.1,time:hours[0]},
     hourly:{
       time:hours,
       wave_height:hours.map(()=>0.5),
-      sea_surface_temperature:hours.map(()=>24),
+      wave_period:hours.map(()=>8),
+      wave_direction:hours.map(()=>120),
+      swell_wave_height:hours.map(()=>0.4),
+      swell_wave_period:hours.map(()=>12),
+      swell_wave_direction:hours.map(()=>135),
+      sea_surface_temperature:hours.map((_,i)=>24+(0.5*i/23)),
       ocean_current_velocity:[1.2,0.7,0.2,0.6,1.0,1.4,1.0,0.5,0.2,0.4,0.9,1.3,1.1,0.8,0.4,0.2,0.5,0.9,1.4,1.0,0.6,0.3,0.5,0.8],
       ocean_current_direction:hours.map((_,i)=>(90+i*5)%360),
       sea_level_height_msl:[0.10,0.16,0.24,0.33,0.39,0.42,0.40,0.34,0.25,0.15,0.06,-0.02,-0.08,-0.11,-0.09,-0.03,0.06,0.16,0.27,0.35,0.39,0.37,0.31,0.22]
@@ -46,6 +52,13 @@ try{
   await page.locator('#tideFlow').waitFor({state:'visible'});
   assert.match(await page.locator('#conditionsDecisionBiteLabel').innerText(),/釣行しやすい時間/);
   assert.doesNotMatch(await page.locator('#conditionsDecisionSst').innerText(),/^-$/);
+  await page.locator('#tripSignalsV2').waitFor({state:'visible'});
+  assert.match(await page.locator('#seaTempTrend').innerText(),/上昇/);
+  assert.match(await page.locator('#seaTempDelta').innerText(),/\+0\.5℃ \/ 24h/);
+  assert.match(await page.locator('#mazumeMorning').innerText(),/05:/);
+  assert.match(await page.locator('#wavePeriodNow').innerText(),/0\.5m \/ 8\.0s/);
+  assert.match(await page.locator('#swellNow').innerText(),/0\.4m \/ 12\.0s \/ 南東から/);
+  assert.ok(await page.locator('#tideFlowChart .mazumeBand').count()>=1,'mazume band appears on the 24h tide/current chart');
   await page.locator('#conditionsChooseFishBtn').click();
   await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='home');
   await page.locator('button.fish[data-fish="シーバス"]').click();

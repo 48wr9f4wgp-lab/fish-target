@@ -39,3 +39,20 @@ test('tide current widget keeps tide height and current concepts separate',()=>{
   assert.match(app,/const liveCurrent=Number\(LIVE\.marine\?\.current\)/);
   assert.match(app,/地合い候補は魚の基本時間帯と気象・海況の重なりを使う目安/);
 });
+
+test('trip conditions V2 adds water-temperature trend, mazume and wave-period signals',()=>{
+  const html=text('index.html');
+  const app=text('app.js');
+  assert.match(html,/id="tripSignalsV2"/);
+  assert.match(html,/id="seaTempTrend"/);
+  assert.match(html,/id="mazumeMorning"/);
+  assert.match(html,/id="wavePeriodNow"/);
+  assert.match(html,/id="swellNow"/);
+  assert.match(app,/daily','sunrise,sunset/);
+  assert.match(app,/wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction/);
+  assert.match(app,/function civilTwilightWindow\(sunrise,sunset,lat\)/);
+  assert.match(app,/function seaTempTrend\(values\)/);
+  assert.match(app,/function renderTripSignals\(\)/);
+  assert.match(app,/class="mazumeBand"/);
+  assert.match(html,/民間薄明/);
+});
