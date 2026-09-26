@@ -30,6 +30,9 @@ try{
   await page.waitForFunction(()=>document.documentElement.dataset.fieldLive==='on');
   await page.locator('button.fish[data-fish="シーバス"]').click();
   await page.locator('#result.on').waitFor({state:'visible'});
+  const conditions=page.locator('#v19Conditions');
+  await conditions.waitFor({state:'visible'});
+  if(await conditions.getAttribute('open')===null)await conditions.locator(':scope > summary').click();
   await page.locator('#spotPresets button',{hasText:'伊豆・下田'}).click();
   await page.locator('#tideFlow').waitFor({state:'visible'});
   assert.match(await page.locator('#tideNow').innerText(),/潮位 上げ/);
