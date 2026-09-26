@@ -80,6 +80,7 @@ try{
   const worker=await readFile(path.join(dist,'sw.js'),'utf8');
   const runtimeExpected=productionBatches.length>0;
   if(!html.includes('data-publication-build="on"'))throw new Error('global publication build marker missing');
+  if(!html.includes('data-field-live="off"'))throw new Error('publication build must force FIELD LIVE off');
   if(!html.includes('data-catalog-publication="on"'))throw new Error('publication catalog marker missing');
   if(!html.includes(`data-catalog-runtime="${runtimeExpected?'on':'off'}"`))throw new Error('publication catalog runtime marker mismatch');
   publicationCache=cacheIdentity(worker,true);
@@ -127,6 +128,7 @@ try{
     const html=await readFile(path.join(dist,'index.html'),'utf8');
     const worker=await readFile(path.join(dist,'sw.js'),'utf8');
     if(!html.includes('data-publication-build="off"'))throw new Error('research build restore global publication marker mismatch');
+    if(!html.includes('data-field-live="on"'))throw new Error('research build restore must re-enable FIELD LIVE preview');
     if(!html.includes('data-catalog-publication="off"'))throw new Error('research build restore publication marker mismatch');
     if(!html.includes('data-catalog-runtime="on"'))throw new Error('research build restore did not re-enable catalog runtime');
     const researchCache=cacheIdentity(worker,false);

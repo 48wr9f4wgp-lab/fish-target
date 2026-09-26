@@ -22,9 +22,13 @@ test('analytics events remain local-only in RC0',()=>{
   assert.doesNotMatch(app+pwa,/google-analytics|googletagmanager|segment\.com|mixpanel|amplitude/i);
 });
 
-test('network-backed FIELD LIVE remains release-disabled',()=>{
+test('network-backed FIELD LIVE is preview-enabled while publication builds force it off',()=>{
   const app=dist('app.js');
-  assert.equal(config.features.fieldLive,false);
+  const html=dist('index.html');
+  const build=text('scripts/build.mjs');
+  assert.equal(config.features.fieldLive,true);
+  assert.match(html,/data-field-live="on"/);
+  assert.match(build,/const fieldLiveEnabled=config\.features\.fieldLive&&!publicationBuild/);
   assert.match(app,/if\(!FEATURES\.fieldLive\)/);
   assert.match(app,/fetchWeather=async\(\)=>\{\}/);
   assert.match(app,/searchSpot=async\(\)=>\{\}/);

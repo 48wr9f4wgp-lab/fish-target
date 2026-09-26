@@ -14,6 +14,7 @@ if(!/^V\d+(?:[.-][A-Za-z0-9]+)*$/.test(config.version))throw new Error('Invalid 
 if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldLive feature flag');
 const buildId=config.version.toLowerCase();
 const publicationBuild=process.env.FISH_TARGET_PUBLICATION_BUILD==='1';
+const fieldLiveEnabled=config.features.fieldLive&&!publicationBuild;
 const cacheBuildPrefix=publicationBuild?`${buildId}-publication`:buildId;
 
 const fishAssetAuthoring=await loadFishAssetAuthoring();
@@ -109,7 +110,7 @@ const replaceBuildTokens=source=>source
   .replaceAll('__BUILD_VERSION__',config.version)
   .replaceAll('__BUILD_ID__',buildId)
   .replaceAll('__CACHE_BUILD_ID__',cacheBuildId)
-  .replaceAll('__FIELD_LIVE_STATE__',config.features.fieldLive?'on':'off');
+  .replaceAll('__FIELD_LIVE_STATE__',fieldLiveEnabled?'on':'off');
 
 const html=replaceBuildTokens(await readFile(path.join(root,'index.html'),'utf8'))
   .replace('<html lang="ja"',`<html lang="ja" data-publication-build="${publicationBuild?'on':'off'}" data-catalog-runtime="${catalogRuntimeEnabled?'on':'off'}" data-catalog-publication="${publicationBuild?'on':'off'}" data-lure-catalog-runtime="${lureRuntimeEnabled?'on':'off'}" data-lure-catalog-targets="${[...lureTargets].join('|')}"`);

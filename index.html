@@ -23,7 +23,7 @@
 <div class="brandRow"><div class="brand">FISH TARGET · SMART GAME PLAN</div><span class="version">__BUILD_VERSION__</span></div>
 <h1>魚を選ぶ。<br/>最初の1投まで決まる。</h1>
 <p>おすすめ釣法、タックル、仕掛けに加えて「まず何を投げるか」「反応がなければ何を変えるか」まで1本化。</p>
-<div class="heroStats"><span>19魚種</span><span data-feature="field-live">LIVE WEATHER</span><span data-feature="field-live">JMA潮位表</span><span>25釣法</span><span>仕掛け図解</span></div>
+<div class="heroStats"><span>19魚種</span><span data-feature="field-live">LIVE WEATHER</span><span data-feature="field-live">潮流・タイド</span><span>25釣法</span><span>仕掛け図解</span></div>
 <div class="search"><span class="searchMark">⌕</span><input aria-label="魚を検索" autocomplete="off" id="q" placeholder="魚を検索　例：ヒラメ、アジ、青物"/><button aria-label="検索を消す" id="clearSearch">×</button></div>
 </header>
 <main class="body">
@@ -69,6 +69,12 @@
 <div class="marineGrid" hidden="" id="marineGrid">
 <div><span>波高</span><b id="seaWave">-</b></div><div><span>海面水温</span><b id="seaTemp">-</b></div>
 <div><span>流れ</span><b id="seaCurrent">-</b></div><div><span>海面高度</span><b id="seaLevel">-</b></div>
+</div>
+<div class="tideFlow" hidden="" id="tideFlow">
+<div class="tideFlowHead"><div><b>潮流 + タイドグラフ · 24H</b><small>潮汐込み海面高度と潮流を同じ時間軸で表示</small></div><span class="tideFlowState" id="tideFlowState">-</span></div>
+<div class="tideFlowChart" id="tideFlowChart" role="img" aria-label="24時間の海面高度と潮流速度"></div>
+<div class="tideFlowLegend"><span><i class="levelKey"></i>潮汐込み海面高度</span><span><i class="currentKey"></i>潮流速度</span><span><i class="slackKey"></i>弱まり候補</span></div>
+<div class="tideFlowMeta" id="tideFlowMeta"></div>
 </div>
 <div class="marineNote" hidden="" id="marineNote"></div>
 <div class="fieldWindow" hidden="" id="fieldWindow">

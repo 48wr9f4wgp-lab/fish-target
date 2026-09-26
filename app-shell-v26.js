@@ -161,7 +161,9 @@
     const grid=$('#home #grid');if(!grid)return;
     const panel=document.createElement('details');
     panel.id='privacyPanelV26';panel.className='privacyPanelV26';
-    panel.innerHTML=`<summary><span><b>データとプライバシー</b><small>端末保存と外部通信</small></span><em>確認 ›</em></summary><div class="privacyBodyV26"><p><strong>端末内に保存：</strong>保存プラン、MY TACKLE、お気に入り・最近見た魚、チェックリスト、アプリ内の利用イベントは、この端末のブラウザ/PWAストレージに保存します。外部Analyticsサービスへ送信しません。</p><p><strong>魚のオンライン写真：</strong>オンライン写真が有効な場合はWikipedia / Wikimediaへ画像候補を問い合わせます。アプリの認証情報やCookieは送信せず、画像にはリファラーを付けません。ただし通常のWeb通信と同様、接続元IPなどは接続先から見える場合があります。</p><p><strong>FIELD LIVE：</strong>現在の公開設定ではOFFです。天候・海況APIへの自動送信は行いません。</p><button class="privacyDeleteV26" id="privacyDeleteV26" type="button">この端末のFISH TARGETデータを削除</button><small class="privacyDeleteNoteV26">FISH TARGETが所有する保存キーと魚写真キャッシュだけを削除します。他のサイトやアプリの保存データは削除しません。</small></div>`;
+    const fieldLiveOn=document.documentElement.dataset.fieldLive==='on';
+    const fieldLiveCopy=fieldLiveOn?'開発プレビューではONです。地点検索では検索語をOpen-Meteo Geocodingへ、選択地点では緯度経度をOpen-Meteo Weather / Marineへ送信します。端末の現在地GPSは自動送信しません。':'公開ビルドではOFFです。天候・海況APIへの自動送信は行いません。';
+    panel.innerHTML=`<summary><span><b>データとプライバシー</b><small>端末保存と外部通信</small></span><em>確認 ›</em></summary><div class="privacyBodyV26"><p><strong>端末内に保存：</strong>保存プラン、MY TACKLE、お気に入り・最近見た魚、チェックリスト、アプリ内の利用イベントは、この端末のブラウザ/PWAストレージに保存します。外部Analyticsサービスへ送信しません。</p><p><strong>魚のオンライン写真：</strong>オンライン写真が有効な場合はWikipedia / Wikimediaへ画像候補を問い合わせます。アプリの認証情報やCookieは送信せず、画像にはリファラーを付けません。ただし通常のWeb通信と同様、接続元IPなどは接続先から見える場合があります。</p><p><strong>FIELD LIVE：</strong>${fieldLiveCopy}</p><button class="privacyDeleteV26" id="privacyDeleteV26" type="button">この端末のFISH TARGETデータを削除</button><small class="privacyDeleteNoteV26">FISH TARGETが所有する保存キーと魚写真キャッシュだけを削除します。他のサイトやアプリの保存データは削除しません。</small></div>`;
     grid.insertAdjacentElement('afterend',panel);
     $('#privacyDeleteV26')?.addEventListener('click',requestOwnedStorageRemoval);
   }
