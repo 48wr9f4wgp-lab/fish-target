@@ -2,9 +2,10 @@
   const state={manifest:null,manifestPromise:null,loaded:new Set(),loading:new Map()};
   const renders=new WeakMap();
   const runtimeOn=()=>document.documentElement?.dataset?.lureCatalogRuntime==='on';
-  const rows=()=>Array.isArray(globalThis.FISH_TARGET_LURE_CATALOG_BATCH_ROWS)
-    ?globalThis.FISH_TARGET_LURE_CATALOG_BATCH_ROWS.flatMap(batch=>Array.isArray(batch?.rows)?batch.rows:[])
-    :[];
+  const rows=batches=>{
+    const registry=new Map((globalThis.FISH_TARGET_LURE_CATALOG_BATCH_ROWS||[]).map(batch=>[batch.id,batch]));
+    return batches.flatMap(batch=>registry.get(batch.id)?.rows||[]);
+  };
   const loadScript=file=>{
     if(state.loaded.has(file))return Promise.resolve();
     if(state.loading.has(file))return state.loading.get(file);
@@ -31,7 +32,7 @@
     const m=await manifest();
     const batches=m.batches.filter(batch=>batch?.stage==='research'&&Array.isArray(batch.targets)&&batch.targets.includes(species));
     await Promise.all(batches.map(batch=>loadScript(batch.file)));
-    return rows().filter(row=>row.targets?.includes(species));
+    return rows(batches).filter(row=>row.targets?.includes(species));
   }
   async function rowsFor(species,method){
     const list=await ensureFor(species);
