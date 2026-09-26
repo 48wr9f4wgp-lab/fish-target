@@ -22,7 +22,8 @@ test('tide current widget is wired to 24h marine data',()=>{
   assert.match(app,/NEXT SLACK|nextSlack/);
   assert.match(app,/潮位 上げ/);
   assert.match(app,/潮位 下げ/);
-  assert.match(app,/cur\?\.water!==\'salt\'/);
+  assert.match(app,/target\?\.water==='fresh'/);
+  assert.match(app,/function liveTarget\(\)/);
   assert.match(app,/renderTideFlow\(\);const marineMsg/);
 });
 
