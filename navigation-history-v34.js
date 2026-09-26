@@ -8,7 +8,7 @@
   const key=row=>`${row.view}/${row.fish||''}/${row.modal||''}`;
   const snapshot=()=>({
     view:document.querySelector('.view.on')?.id||'home',modal:modal(),
-    fish:cur?.name||null,from,
+    fish:(document.querySelector('.view.on')?.id==='conditions'?LIVE.conditionsFish?.name||null:cur?.name||null),from,
     plan:Object.fromEntries(planKeys.filter(k=>Object.hasOwn(state,k)).map(k=>[k,state[k]])),
     home:{query:document.getElementById('q').value,water:waterFilter,style:styleFilter,difficulty:difficultyFilter},
     scroll:window.scrollY
@@ -24,7 +24,7 @@
   function valid(row){
     return row?.version===1&&views.includes(row.view)&&Number.isInteger(row.index)&&row.index>=0
       &&[null,'tackle','pack'].includes(row.modal)&&row.home&&typeof row.home.query==='string'
-      &&row.plan&&typeof row.plan==='object'&&planKeys.every(k=>!Object.hasOwn(row.plan,k)||(['rotationManual','refined'].includes(k)?typeof row.plan[k]==='boolean':k==='rotation'?Number.isInteger(row.plan[k])&&row.plan[k]>=0&&row.plan[k]<100:typeof row.plan[k]==='string'&&row.plan[k].length<200))&&(!['result','conditions','fieldmode'].includes(row.view)||F.some(f=>f.name===row.fish));
+      &&row.plan&&typeof row.plan==='object'&&planKeys.every(k=>!Object.hasOwn(row.plan,k)||(['rotationManual','refined'].includes(k)?typeof row.plan[k]==='boolean':k==='rotation'?Number.isInteger(row.plan[k])&&row.plan[k]>=0&&row.plan[k]<100:typeof row.plan[k]==='string'&&row.plan[k].length<200))&&(!['result','fieldmode'].includes(row.view)||F.some(f=>f.name===row.fish))&&(row.view!=='conditions'||row.fish==null||F.some(f=>f.name===row.fish));
   }
   function sync(){
     queued=false;if(applying||!current)return;
@@ -50,7 +50,7 @@
     globalThis.FISH_TARGET_MODAL_FOCUS?.dismiss();
     const safe=valid(row)?row:{...snapshot(),view:'home',modal:null,index:0,parent:null,version:1};
     const sameBase=before.view===safe.view&&before.fish===safe.fish&&JSON.stringify(before.plan)===JSON.stringify(safe.plan)&&JSON.stringify(before.home)===JSON.stringify(safe.home);
-    const fishScoped=['result','conditions','fieldmode'].includes(safe.view);
+    const fishScoped=['result','fieldmode'].includes(safe.view)||(safe.view==='conditions'&&safe.fish);
     const fishNeedsHydration=fishScoped&&(!cur||cur.name!==safe.fish||!document.getElementById('rname')?.textContent?.trim());
     if(!sameBase||fishNeedsHydration){
       document.getElementById('q').value=safe.home.query.slice(0,200);
@@ -63,6 +63,7 @@
         const plan=Object.fromEntries(planKeys.filter(k=>Object.hasOwn(safe.plan,k)).map(k=>[k,safe.plan[k]]));
         openFish(fish,plan);from=safe.from==='saved'?'saved':'home';
       }
+      if(safe.view==='conditions')globalThis.FISH_TARGET_CONDITIONS_PAGE?.restoreFish?.(safe.fish||null);
       show(safe.view);
     }
     // Let existing MY SET rendering derive from current owned gear, not history.
