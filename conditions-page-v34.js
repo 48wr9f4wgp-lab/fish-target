@@ -28,13 +28,18 @@
   const localMs=value=>{const n=Date.parse(String(value||''));return Number.isFinite(n)?n:NaN};
   const compass=deg=>typeof compass8==='function'?compass8(deg):'-';
 
-  function tideTurns(){
-    const h=LIVE.marineHourly||{},times=h.time||[],levels=(h.sea_level_height_msl||[]).map(Number),out=[];
-    for(let i=1;i<Math.min(times.length,levels.length)-1;i++){
-      const a=levels[i-1],b=levels[i],c=levels[i+1];
+  function dashboardNowIndex(times){const targetTime=LIVE.marine?.time||LIVE.weather?.time;if(typeof nearestTimeIndex==='function'){const i=nearestTimeIndex(times,targetTime);if(i>=0)return i}const target=localMs(targetTime);if(!Number.isFinite(target))return 0;let best=0,delta=Infinity;times.forEach((t,i)=>{const d=Math.abs(localMs(t)-target);if(Number.isFinite(d)&&d<delta){delta=d;best=i}});return best}
+  function dashboardWindow(){
+    const h=LIVE.marineHourly||{},all=h.time||[],absoluteNow=dashboardNowIndex(all),maxStart=Math.max(0,all.length-24),start=Math.max(0,Math.min(absoluteNow-4,maxStart)),end=Math.min(all.length,start+24);
+    return {h,start,end,now:Math.max(0,absoluteNow-start),times:all.slice(start,end),levels:(h.sea_level_height_msl||[]).slice(start,end)};
+  }
+  function tideTurns(times,levels,nowIndex=0){
+    const out=[];
+    for(let i=Math.max(1,nowIndex+1);i<Math.min(times.length,levels.length)-1;i++){
+      const a=Number(levels[i-1]),b=Number(levels[i]),c=Number(levels[i+1]);
       if(![a,b,c].every(Number.isFinite))continue;
-      if(b>=a&&b>c&&Math.max(Math.abs(b-a),Math.abs(b-c))>=0.015)out.push({i,type:'満潮候補',time:times[i],level:b});
-      else if(b<=a&&b<c&&Math.max(Math.abs(b-a),Math.abs(b-c))>=0.015)out.push({i,type:'干潮候補',time:times[i],level:b});
+      if(b>=a&&b>c&&Math.max(Math.abs(b-a),Math.abs(b-c))>=0.015)out.push({i,type:'満潮候補',kind:'high',symbol:'満',time:times[i],level:b});
+      else if(b<=a&&b<c&&Math.max(Math.abs(b-a),Math.abs(b-c))>=0.015)out.push({i,type:'干潮候補',kind:'low',symbol:'干',time:times[i],level:b});
     }
     return out;
   }
@@ -61,7 +66,7 @@
     if(!times?.length||!LIVE.solar?.length)return '';
     let out='';
     for(const w of LIVE.solar){
-      for(const [a,b,label] of [[w.morningStart,w.morningEnd,'朝まずめ'],[w.eveningStart,w.eveningEnd,'夕まずめ']]){
+      for(const [a,b,label] of [[w.morningStart,w.morningEnd,'朝'],[w.eveningStart,w.eveningEnd,'夕']]){
         const x1=dashboardX(times,a),x2=dashboardX(times,b);
         if(x1==null||x2==null||x2<=x1)continue;
         out+=`<rect class="tripDashMazumeV35" x="${x1.toFixed(1)}" y="22" width="${(x2-x1).toFixed(1)}" height="116" rx="5"/><text class="tripDashMazumeLabelV35" x="${((x1+x2)/2).toFixed(1)}" y="34" text-anchor="middle">${label}</text>`;
@@ -70,19 +75,28 @@
     return out;
   }
   function renderDashboardGraph(){
-    const box=byId('tripDashGraphV35'),h=LIVE.marineHourly||{},times=(h.time||[]).slice(0,24),levels=(h.sea_level_height_msl||[]).slice(0,times.length);
+    const box=byId('tripDashGraphV35'),win=dashboardWindow(),times=win.times,levels=win.levels,nowIdx=win.now;
     if(!box||times.length<2||levels.filter(v=>Number.isFinite(Number(v))).length<2){if(box)box.innerHTML='';return}
-    const pts=dashboardPoints(levels),pairs=pts.split(' '),first=pairs[0]||'18,132',last=pairs[pairs.length-1]||'342,132',turns=tideTurns().slice(0,3);
+    const pts=dashboardPoints(levels),pairs=pts.split(' '),first=pairs[0]||'18,132',last=pairs[pairs.length-1]||'342,132',turns=tideTurns(times,levels,nowIdx).slice(0,3),nowX=18+324*(nowIdx/Math.max(1,times.length-1));
     const ticks=[0,6,12,18,23].filter(i=>i<times.length).map(i=>{const x=18+324*(i/Math.max(1,times.length-1));return `<text class="tripDashTickV35" x="${x.toFixed(1)}" y="158" text-anchor="${i===0?'start':i===times.length-1?'end':'middle'}">${fmtClock(times[i])}</text>`}).join('');
-    const markers=turns.map(t=>{const x=18+324*(t.i/Math.max(1,times.length-1)),y=dashboardY(levels,t.i);return y==null?'':`<g class="tripDashTurnMarkV35"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4"/><text x="${x.toFixed(1)}" y="${Math.max(20,y-9).toFixed(1)}" text-anchor="middle">${fmtClock(t.time)}</text></g>`}).join('');
-    const nowY=dashboardY(levels,0);
-    const current=Number(LIVE.marine?.current),flow=Number.isFinite(current)?`潮流 ${current.toFixed(1)} km/h`:'潮流 --';
-    box.innerHTML=`<svg viewBox="0 0 360 168" aria-hidden="true">${dashboardMazume(times)}<line class="tripDashGridV35" x1="18" y1="82" x2="342" y2="82"/><polygon class="tripDashAreaV35" points="${pts} ${last.split(',')[0]},140 ${first.split(',')[0]},140"/><polyline class="tripDashCurveV35" points="${pts}"/><line class="tripDashNowLineV35" x1="18" y1="22" x2="18" y2="140"/><text class="tripDashNowLabelV35" x="22" y="47">NOW</text>${nowY==null?'':`<circle class="tripDashNowDotV35" cx="18" cy="${nowY.toFixed(1)}" r="4.5"/>`}<text class="tripDashFlowV35" x="342" y="18" text-anchor="end">${flow}</text>${markers}${ticks}</svg>`;
-    box.setAttribute('aria-label',`24時間の潮位目安。現在 ${fmtLevel(LIVE.marine?.level)}。${flow}。`);
+    const markers=turns.map(t=>{const x=18+324*(t.i/Math.max(1,times.length-1)),y=dashboardY(levels,t.i);return y==null?'':`<g class="tripDashTurnMarkV35 ${t.kind}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5"/><text x="${x.toFixed(1)}" y="${Math.max(19,y-9).toFixed(1)}" text-anchor="middle">${t.symbol} ${fmtClock(t.time)}</text></g>`}).join('');
+    const nowY=dashboardY(levels,nowIdx),current=Number(LIVE.marine?.current),flow=Number.isFinite(current)?`潮流 ${current.toFixed(1)} km/h`:'潮流 --';
+    box.innerHTML=`<svg viewBox="0 0 360 168" aria-hidden="true">${dashboardMazume(times)}<line class="tripDashGridV35" x1="18" y1="82" x2="342" y2="82"/><polygon class="tripDashAreaV35" points="${pts} ${last.split(',')[0]},140 ${first.split(',')[0]},140"/><polyline class="tripDashCurveV35" points="${pts}"/><line class="tripDashNowLineV35" x1="${nowX.toFixed(1)}" y1="22" x2="${nowX.toFixed(1)}" y2="140"/><text class="tripDashNowLabelV35" x="${(nowX+4).toFixed(1)}" y="47">NOW</text>${nowY==null?'':`<circle class="tripDashNowDotV35" cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4.5"/>`}<text class="tripDashFlowV35" x="342" y="18" text-anchor="end">${flow}</text>${markers}${ticks}</svg>`;
+    box.dataset.nowPercent=String(Math.round(100*nowIdx/Math.max(1,times.length-1)));
+    box.setAttribute('aria-label',`24時間の潮位目安。過去約4時間とこれから約20時間。現在 ${fmtLevel(LIVE.marine?.level)}。${flow}。`);
   }
 
+  function humanVerdict(fit){
+    if(fit.includes('見合わせ'))return ['無理せず見合わせ','風・雨・波の条件が厳しい'];
+    if(fit.includes('要注意'))return ['風・波に注意','軽い仕掛けより安全余裕を優先'];
+    const now=localMs(LIVE.marine?.time||LIVE.weather?.time),bite=localMs(LIVE.tideDecision?.biteTime),slack=localMs(LIVE.tideDecision?.nextSlackTime);
+    if(target()&&Number.isFinite(now)&&Number.isFinite(bite)&&bite>=now&&bite-now<=90*60000)return ['地合い接近',`候補 ${fmtClock(LIVE.tideDecision.biteTime)}`];
+    if(Number.isFinite(now)&&Number.isFinite(slack)&&slack>=now&&slack-now<=90*60000)return ['潮止まり近い',`次の弱まり ${fmtClock(LIVE.tideDecision.nextSlackTime)}`];
+    if(fit.includes('操作しやすい'))return ['今は狙いやすい','風・雨・波は極端ではない'];
+    return ['まだ狙える',LIVE.tideDecision?.biteWindow&&LIVE.tideDecision.biteWindow!=='条件重なり待ち'?`条件重なり ${LIVE.tideDecision.biteWindow}`:'大きな悪条件は出ていない'];
+  }
   function syncDashboard(){
-    const dash=byId('tripDashboardV35'),fish=target(),place=LIVE?.place?.name||null,w=LIVE.weather||null,m=LIVE.marine||null,h=LIVE.marineHourly||{};
+    const dash=byId('tripDashboardV35'),fish=target(),place=LIVE?.place?.name||null,w=LIVE.weather||null,m=LIVE.marine||null,h=LIVE.marineHourly||{},loc=byId('conditionsLocationMountV35')?.closest('.conditionsLocationV35'),edit=byId('conditionsLocationEditV36');
     if(!dash)return;
     const hasData=Boolean(place&&w);
     dash.classList.toggle('is-empty',!hasData);
@@ -97,25 +111,27 @@
     set('tripDashLevelV35',fmtLevel(m?.level));
     const trend=LIVE.tideDecision?.trend||text('tideFlowState','地点を選んで取得');
     set('tripDashTrendV35',trend);
-    const turn=tideTurns()[0]||null;
+    const win=dashboardWindow(),turn=tideTurns(win.times,win.levels,win.now)[0]||null,nowMs=localMs(m?.time||w?.time),turnMs=localMs(turn?.time),deltaMin=Number.isFinite(nowMs)&&Number.isFinite(turnMs)?Math.max(0,Math.round((turnMs-nowMs)/60000)):null;
     set('tripDashTurnLabelV35',turn?`次の${turn.type}`:'次の潮位変化');
     set('tripDashTurnTimeV35',turn?fmtClock(turn.time):'--:--');
-    set('tripDashTurnEtaV35',turn?`あと約${turn.i}時間 · ${fmtLevel(turn.level)}`:'24hモデルから算出');
+    set('tripDashTurnEtaV35',turn?`${deltaMin!=null?(deltaMin<60?'あと'+deltaMin+'分':'あと約'+Math.round(deltaMin/60)+'時間'):'まもなく'} · ${fmtLevel(turn.level)}`:'24hモデルから算出');
     set('tripDashSlackV35',LIVE.tideDecision?.nextSlack||text('tideNextSlack','--'));
     set('tripDashBiteLabelV35',fish?'地合い候補':'釣行しやすい時間');
     set('tripDashBiteV35',LIVE.tideDecision?.biteWindow||text('tideBiteWindow','--'));
     set('tripDashWeatherV35',w?text('wxCode','--'):'--');
-    set('tripDashRainV35',w?`雨 ${w.precipitation??'-'}mm`:'--');
-    set('tripDashWindV35',w?`${w.wind??'-'}m/s`:'--');
-    set('tripDashWindSubV35',w?`${compass(w.direction)} · 突風 ${w.gust??'-'}m/s`:'--');
+    set('tripDashRainV35',w?`雨${Number(w.precipitation??0).toFixed(1)}mm`:'--');
+    const wind=Number(w?.wind),gust=Number(w?.gust);
+    set('tripDashWindV35',Number.isFinite(wind)?`${wind.toFixed(1)}m/s`:'--');
+    set('tripDashWindSubV35',w?`${compass(w.direction)} · 突風${Number.isFinite(gust)?gust.toFixed(1):'-'}`:'--');
     set('tripDashWaveV35',m?.wave!=null?`${Number(m.wave).toFixed(1)}m · ${m.wavePeriod!=null?Number(m.wavePeriod).toFixed(0)+'s':'--'}`:'--');
-    set('tripDashWaveSubV35',m?.swell!=null?`うねり ${Number(m.swell).toFixed(1)}m · ${m.swellPeriod!=null?Number(m.swellPeriod).toFixed(0)+'s':'--'}`:'海況モデル');
+    set('tripDashWaveSubV35',m?.swell!=null?`うねり${Number(m.swell).toFixed(1)}m · ${m.swellPeriod!=null?Number(m.swellPeriod).toFixed(0)+'s':'--'}`:'海況モデル');
     set('tripDashTempV35',m?.sst!=null?`${Number(m.sst).toFixed(1)}℃`:'--');
-    const temp=typeof seaTempTrend==='function'?seaTempTrend((h.sea_surface_temperature||[]).slice(0,24)):null;
-    set('tripDashTempSubV35',temp?`${temp.label} ${temp.delta>=0?'+':''}${temp.delta.toFixed(1)}℃ / 24h`:'24h推移');
-    set('tripDashVerdictV35',fit);
-    const bite=LIVE.tideDecision?.biteWindow;
-    set('tripDashVerdictSubV35',bite&&bite!=='条件重なり待ち'?`${fish?'地合い':'条件重なり'} ${bite}`:'風・雨・波の操作条件をまとめた目安');
+    const n=typeof marineNowIndex==='function'?marineNowIndex(h.time||[]):0,temp=typeof seaTempTrend==='function'?seaTempTrend((h.sea_surface_temperature||[]).slice(n,n+24)):null;
+    set('tripDashTempSubV35',temp?`${temp.label} · ${temp.delta>=0?'+':''}${temp.delta.toFixed(1)}℃/24h`:'24h推移');
+    const verdict=humanVerdict(fit);set('tripDashVerdictV35',verdict[0]);set('tripDashVerdictSubV35',verdict[1]);
+    if(loc){const changed=loc.dataset.place!==String(place||'');loc.classList.toggle('is-selected',hasData);if(changed){loc.dataset.place=String(place||'');loc.classList.remove('is-editing')}}
+    set('conditionsLocationLabelV36',place?`釣行地 · ${place}`:'釣行地を選ぶ');
+    if(edit){edit.hidden=!place;edit.textContent=loc?.classList.contains('is-editing')?'閉じる':'変更'}
     const refresh=byId('tripDashRefreshV35');if(refresh)refresh.disabled=!LIVE.place;
     renderDashboardGraph();
   }
@@ -149,6 +165,7 @@
   byId('conditionsPackBtn')?.addEventListener('click',()=>globalThis.FISH_TARGET_QUICK_PACK?.open?.());
   byId('conditionsFieldModeBtn')?.addEventListener('click',()=>{if(target())byId('fieldModeBtn')?.click()});
   byId('tripDashRefreshV35')?.addEventListener('click',()=>{if(LIVE.place)void fetchWeather(LIVE.place)});
+  byId('conditionsLocationEditV36')?.addEventListener('click',()=>{const loc=byId('conditionsLocationMountV35')?.closest('.conditionsLocationV35');if(!loc)return;loc.classList.toggle('is-editing');const edit=byId('conditionsLocationEditV36');if(edit)edit.textContent=loc.classList.contains('is-editing')?'閉じる':'変更'});
   byId('conditionsDetailsV35')?.addEventListener('toggle',event=>{const em=event.currentTarget.querySelector('summary em');if(em)em.textContent=event.currentTarget.open?'閉じる':'開く'});
 
   globalThis.FISH_TARGET_CONDITIONS_PAGE=Object.freeze({version:'CONDITIONS-V35-DASHBOARD',sync,open:openGlobal,openGlobal,openForFish,restoreFish});

@@ -56,3 +56,11 @@ test('trip conditions V2 adds water-temperature trend, mazume and wave-period si
   assert.match(app,/class="mazumeBand"/);
   assert.match(html,/民間薄明/);
 });
+
+test('marine decision timeline keeps four hours of history before NOW',()=>{
+  const app=text('app.js');
+  assert.match(app,/set\('past_hours','4'\)/);
+  assert.match(app,/function marineNowIndex\(times\)/);
+  assert.match(app,/function marineWindow24\(h\)/);
+  assert.match(app,/nowX=x\(nowIdx\)/);
+});

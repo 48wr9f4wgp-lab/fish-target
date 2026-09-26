@@ -41,3 +41,15 @@ test('trip conditions V35 uses a dashboard-first one-glance hierarchy',()=>{
   assert.match(css,/\.tripDashMiniV35\{/);
   assert.match(css,/\.conditionsDetailsV35\{/);
 });
+
+test('trip dashboard V36 collapses location controls and uses human-readable field verdicts',()=>{
+  const html=text('index.html'),page=text('conditions-page-v34.js'),css=text('conditions-page-v34.css');
+  assert.match(html,/id="conditionsLocationEditV36"/);
+  assert.match(page,/function humanVerdict\(fit\)/);
+  assert.match(page,/dashboardNowIndex/);
+  assert.match(page,/tripDashTurnMarkV35/);
+  assert.match(page,/t\.kind/);
+  assert.match(css,/\.conditionsLocationV35\.is-selected:not\(\.is-editing\)/);
+  assert.match(css,/\.tripDashTurnMarkV35\.high/);
+  assert.match(css,/\.tripDashTurnMarkV35\.low/);
+});

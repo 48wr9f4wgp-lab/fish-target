@@ -103,3 +103,24 @@
   .tripDashTurnV35 small{grid-column:1/-1}
   .tripDashMiniV35{grid-template-columns:1fr 1fr}
 }
+
+/* V36 field polish */
+.conditionsLocationHeadV35{min-height:34px;align-items:center}
+.conditionsLocationHeadV35 button{min-width:56px;min-height:36px;border:1px solid #c9dfdc;border-radius:999px;background:#f7fbfa;color:#35656a;font-size:9px;font-weight:950;padding:6px 11px}
+.conditionsLocationV35.is-selected:not(.is-editing){margin-bottom:6px}
+.conditionsLocationV35.is-selected:not(.is-editing) .conditionsLocationHeadV35{margin-bottom:0;padding:0 3px}
+.conditionsLocationV35.is-selected:not(.is-editing) .conditionsLocationHeadV35 span{display:none}
+.conditionsLocationV35.is-selected:not(.is-editing) .conditionsLocationHeadV35 b{font-size:11px;color:#56777b}
+.conditionsLocationV35.is-selected:not(.is-editing) #conditionsLocationMountV35{display:none}
+.conditionsLocationV35.is-editing #conditionsLocationMountV35{display:block}
+.tripDashTurnMarkV35.high circle{fill:#54d9d9}
+.tripDashTurnMarkV35.low circle{fill:#8ba5ff}
+.tripDashTurnMarkV35.high text{fill:#9ee5e2}
+.tripDashTurnMarkV35.low text{fill:#b8c2ff}
+.tripDashMazumeV35{opacity:.055}
+.tripDashMazumeLabelV35{font-size:5px;letter-spacing:.08em}
+.tripDashMiniV35 b{font-variant-numeric:tabular-nums}
+.tripDashMiniV35 small{min-height:18px}
+.tripDashVerdictV35 b{font-size:16px;letter-spacing:-.015em}
+.conditionsBodyV35{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+@media(max-width:390px){.tripDashMiniV35 b{font-size:10.5px}.tripDashMiniV35 small{font-size:6.6px}}
