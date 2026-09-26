@@ -53,14 +53,17 @@
     if($('#appTabBarV26'))return;
     const bar=document.createElement('nav');
     bar.id='appTabBarV26';bar.className='appTabBarV26';bar.setAttribute('aria-label','メインナビゲーション');
+    const fieldLiveOn=document.documentElement.dataset.fieldLive==='on';bar.dataset.tabs=fieldLiveOn?'4':'3';
     bar.innerHTML=`
       <button class="on" data-app-tab="home" type="button"><span class="tabIcon">⌕</span><b>探す</b></button>
+      ${fieldLiveOn?'<button data-app-tab="conditions" type="button"><span class="tabIcon">≋</span><b>釣行</b></button>':''}
       <button data-app-tab="saved" type="button"><span class="tabIcon">▣</span><b>保存</b></button>
       <button data-app-tab="tackle" type="button"><span class="tabIcon">◎</span><b>タックル</b></button>`;
     document.body.appendChild(bar);
     bar.addEventListener('click',e=>{
       const btn=e.target.closest('button');if(!btn)return;
       if(btn.dataset.appTab==='tackle'){$('#tackleManage')?.click();return}
+      if(btn.dataset.appTab==='conditions'){globalThis.FISH_TARGET_CONDITIONS_PAGE?.openGlobal?.();return}
       activateView(btn.dataset.appTab);
     });
   }
@@ -183,9 +186,9 @@
     const enlarged=railLabel&&parseFloat(getComputedStyle(railLabel).fontSize)>=18;
     document.body.classList.toggle('largeTextV34',Boolean(enlarged));
     const current=$('.view.on')?.id;
-    document.body.classList.toggle('resultOpenV26',current==='result'||current==='conditions'||current==='fieldmode');
+    document.body.classList.toggle('resultOpenV26',current==='result'||current==='fieldmode');
     document.body.classList.toggle('savedOpenV26',current==='saved');
-    if(current==='home'||current==='saved')syncTabs(current);
+    if(current==='home'||current==='saved'||current==='conditions')syncTabs(current);
   }
 
   let syncQueued=false;
