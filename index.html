@@ -70,6 +70,12 @@
 <div><span>波高</span><b id="seaWave">-</b></div><div><span>海面水温</span><b id="seaTemp">-</b></div>
 <div><span>流れ</span><b id="seaCurrent">-</b></div><div><span>海面高度</span><b id="seaLevel">-</b></div>
 </div>
+<div class="tideFlow" hidden="" id="tideFlow">
+<div class="tideFlowHead"><div><b>TIDE + CURRENT · 24H</b><small>海面高度と潮流を同じ時間軸で表示</small></div><span class="tideFlowState" id="tideFlowState">-</span></div>
+<div class="tideFlowChart" id="tideFlowChart" role="img" aria-label="24時間の海面高度と潮流速度"></div>
+<div class="tideFlowLegend"><span><i class="levelKey"></i>海面高度</span><span><i class="currentKey"></i>潮流速度</span><span><i class="slackKey"></i>弱まり候補</span></div>
+<div class="tideFlowMeta" id="tideFlowMeta"></div>
+</div>
 <div class="marineNote" hidden="" id="marineNote"></div>
 <div class="fieldWindow" hidden="" id="fieldWindow">
 <div class="windowHead"><b>NEXT 6 HOURS</b><small>風・雨・波と対象魚の基本時間帯から、釣行のしやすさだけを比較</small></div>
