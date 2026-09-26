@@ -71,8 +71,8 @@ try{
   assert.deepEqual(snapshot.bundledFiles,snapshot.authoredFiles,'runtime uses the authored direct files and sprite sheet');
   assert.equal(snapshot.bundledRights,true,'runtime cannot promote rights beyond canonical authoring');
   assert.equal(snapshot.remoteRights,true,'remote fallbacks remain runtime license gated');
-  assert.equal(snapshot.publicationReady,2,'two current previews cannot inherit approval of their original assets');
-  assert.equal(snapshot.publicationReadyCount,2,'no preview asset is silently promoted');
+  assert.equal(snapshot.publicationReady,0,'four current previews cannot inherit approval of their original assets');
+  assert.equal(snapshot.publicationReadyCount,0,'no preview asset is silently promoted');
   assert.equal(snapshot.hirame?.species_name,'ヒラメ','species aliases resolve through canonical registry');
   assert.equal(snapshot.aji?.mode,'bundled','local fish resolves to bundled asset');
   assert.equal(snapshot.aji?.asset?.file,'fish-real-v7.avif');
@@ -173,7 +173,7 @@ try{
   assert.equal(fixtureSnapshot.record?.provenance?.output_sha256,'b'.repeat(64));
   assert.equal(fixtureSnapshot.bundledCount,20);
   assert.equal(fixtureSnapshot.remoteCount,43);
-  assert.equal(fixtureSnapshot.publicationReadyCount,3);
+  assert.equal(fixtureSnapshot.publicationReadyCount,1);
   assert.equal(fixtureSnapshot.renderer,'manifest-bundled-sprite-or-file-with-svg-fallback');
   assert.deepEqual(fixtureSnapshot.assetTypes.sort(),['file','sprite-sheet']);
   assert.ok(fixtureSnapshot.localSpecies.includes('サバ'),'remote photo resolver treats direct file assets as local');

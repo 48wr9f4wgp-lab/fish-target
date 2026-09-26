@@ -27,8 +27,8 @@ try{
   });
   assert.ok(decoded.results.length>0);
   assert.ok(decoded.results.every(row=>!row.error&&row.width>0&&row.height>0),`bundled assets must actually decode: ${JSON.stringify(decoded)}`);
-  assert.equal(decoded.development,2,'only the two separately recorded pilot repairs are development previews');
-  assert.equal(decoded.publication,2,'preview assets must not inherit the original pilot rights-ready status');
+  assert.equal(decoded.development,4,'only the four separately recorded pilot repairs are development previews');
+  assert.equal(decoded.publication,0,'preview assets must not inherit the original pilot rights-ready status');
 
   await fish('ブリ・ワラサ');
   const hierarchy=await page.evaluate(()=>{

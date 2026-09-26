@@ -16,7 +16,7 @@ function runtime(publication){
 
 test('preview selection preserves the separately approved publication original',()=>{
   const development=runtime(false),publication=runtime(true);
-  assert.equal(data.development_previews.length,2);
+  assert.equal(data.development_previews.length,4);
   for(const preview of data.development_previews){
     const name=preview.species_name,original=data.assets.find(row=>row.species_name===name);
     assert.equal(development.resolve(name).asset.file,preview.asset.file);

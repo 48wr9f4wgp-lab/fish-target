@@ -23,12 +23,12 @@ try{
       return {name:row.species_name,transparent:transparent/(data.length/4),opaque:opaque/(data.length/4),file:row.asset.file};
     }));
   });
-  assert.equal(metrics.length,2);
+  assert.equal(metrics.length,4);
   for(const metric of metrics){assert.ok(metric.transparent>.55,`${metric.name} must have true transparency`);assert.ok(metric.opaque>.12,`${metric.name} must retain an opaque fish body`)}
 
   for(const width of [375,390,430]){
     await page.setViewportSize({width,height:844});
-    for(const [i,name] of ['ブリ・ワラサ','ニジマス'].entries()){
+    for(const [i,name] of ['ブリ・ワラサ','ニジマス','ヒラメ','アオリイカ'].entries()){
       await page.locator('#q').fill(name);
       const card=page.locator(`button.fish[data-fish="${name}"]`);
       await card.scrollIntoViewIfNeeded();

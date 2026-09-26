@@ -1,5 +1,5 @@
 {
-  "version": "FISH-VISUAL-REPAIR-V34-1",
+  "version": "FISH-VISUAL-REPAIR-V34-2",
   "date": "2026-09-26",
   "status": "DEVELOPMENT_REVIEW",
   "user_approval": "NOT_REQUESTED",
@@ -33,6 +33,32 @@
       "output_sha256": "376f9a23d877b6f707d7db1fcd43823ad65b7f893f3ad99ea422c971609cfe6b",
       "generation_sha256": "eaaec97dae67c4cbf2b418364cac9280b3155800aaeec5d0d49783fefbbc4933",
       "prompt_sha256": "8c7bc24f4bc2cdbcf4fb67c1ce8060a6cd3b64f290a40d36a69c264546d6619d"
+    },
+    {
+      "species_name": "ヒラメ",
+      "source_file": "fish-master-v34-hirame.avif",
+      "output_file": "fish-preview-v34-hirame.webp",
+      "generation_file": "exec-9adb7fdb-e29b-4af1-b927-3718a28e39c5.png",
+      "prompts": [
+        "Use case: background-extraction. Edit this existing project-generated Japanese flounder / hirame (Paralichthys olivaceus) field-guide illustration into one clean transparent mobile-app asset. Preserve the depicted eyed-side anatomy, asymmetric flat body, both eyes on the same side, large mouth, mottled brown coloration and pale spots, continuous dorsal and anal fin outlines, whole tail, natural realistic illustration style and original proportions. Keep the HEAD pointing LEFT as in this reference: do NOT mirror a flatfish or change its eye-side anatomy. Remove the white background to true alpha transparency, no shadow, aura, floor, white halo or scenery. Keep the body opaque, clean edges and full silhouette; center on a landscape 3:2 canvas with 10% clear margin on each side. No labels, text, frame, hooks, watermark, extra animals or fantasy features."
+      ],
+      "source_sha256": "6f3736ab006a932d411cf5673d95e51fe17af4660de3e3bb7e26a89a0dcc36e4",
+      "output_sha256": "7f0483e37411c80e7d09573a5b784353399d35de7b8d46e2219ffa744340b50b",
+      "generation_sha256": "cb81f01e2c0d98be6df0fd1bc00caf003a339f3347a96aa2a84717e2d6e9ddb5",
+      "prompt_sha256": "3cc20ebfd9e50a83b54ad24fd8e2880e33ce0208182534f35ef28848a343327a"
+    },
+    {
+      "species_name": "アオリイカ",
+      "source_file": "fish-master-v34-aoriika.avif",
+      "output_file": "fish-preview-v34-aoriika.webp",
+      "generation_file": "exec-5785fc29-b8e6-4ce4-96b7-2d6f756754ec.png",
+      "prompts": [
+        "Use case: background-extraction. Edit the attached existing project-generated aoriika / bigfin reef squid (Sepioteuthis lessoniana) field-guide illustration into one clean transparent mobile-app asset. Preserve its broad oval mantle, long lateral fins extending along most of the mantle, mottled brown chromatophores, translucent pale tissue, large visible eye, existing arm arrangement and two longer feeding tentacles. Preserve the reference orientation: arms to LEFT, mantle to RIGHT. Preserve natural proportions and restrained realistic premium field-guide illustration style, not cartoon or cuttlefish. Remove the white canvas to true alpha transparency; no shadow, glow, halo, floor, scenery or stray background pixels. Keep the whole animal and every arm tip visible centered on landscape 3:2, with about 10% clear margins. Natural fin membrane translucency is allowed, but retain the solid body. No labels, text, watermark, logo, hooks or extra creatures."
+      ],
+      "source_sha256": "9bcf5ab43250c0abfaf24d004cde80fcf0123d03869dff4d9a0c6a4dad0ce4b1",
+      "output_sha256": "e19ab58d3e1f97a230efe50a8f69949b87503b21b52ccc110ebc2f7507f98224",
+      "generation_sha256": "96060a6cec0714d01f59a7f0862298aaa3030aee3fba8b18002a9610e0d313a4",
+      "prompt_sha256": "859ff15a3b81f4b896a47b581feb0d8cbd7a3c4f22dbce0e1ca0f360810e784d"
     }
   ],
   "encoding": "ffmpeg libwebp quality=86 compression_level=6; original dimensions and alpha preserved; no post-generation repaint",
