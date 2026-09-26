@@ -24,7 +24,7 @@ test('tide current widget is wired to 24h marine data',()=>{
   assert.match(app,/潮位 下げ/);
   assert.match(app,/target\?\.water==='fresh'/);
   assert.match(app,/function liveTarget\(\)/);
-  assert.match(app,/renderTideFlow\(\);const marineMsg/);
+  assert.match(app,/renderTideFlow\(\);renderTripSignals\(\);const marineMsg/);
 });
 
 test('tide current widget keeps tide height and current concepts separate',()=>{
