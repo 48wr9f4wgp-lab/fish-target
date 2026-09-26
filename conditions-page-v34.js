@@ -18,6 +18,6 @@
   function openGlobal(){LIVE.conditionsFish=null;sync();show('conditions');renderFieldLive();if(LIVE.place&&LIVE.weather&&!LIVE.marine)void fetchWeather(LIVE.place);track('conditions_page_open',{fish:null,place:LIVE?.place?.name||null,mode:'global'})}
   function openForFish(){if(typeof cur==='undefined'||!cur)return;LIVE.conditionsFish=cur;sync();show('conditions');renderFieldLive();track('conditions_page_open',{fish:cur.name,place:LIVE?.place?.name||null,mode:'fish'})}
   function restoreFish(name){LIVE.conditionsFish=name?F.find(f=>f.name===name)||null:null;sync();renderFieldLive()}
-  byId('conditionsOpenBtn')?.addEventListener('click',openForFish);byId('conditionsBack')?.addEventListener('click',()=>show('result'));byId('conditionsChooseFishBtn')?.addEventListener('click',()=>show('home'));byId('conditionsFieldModeBtn')?.addEventListener('click',()=>{if(target())byId('fieldModeBtn')?.click()});
+  byId('conditionsOpenBtn')?.addEventListener('click',openForFish);byId('conditionsBack')?.addEventListener('click',()=>show('result'));byId('conditionsChooseFishBtn')?.addEventListener('click',()=>show('home'));byId('conditionsPackBtn')?.addEventListener('click',()=>globalThis.FISH_TARGET_QUICK_PACK?.open?.());byId('conditionsFieldModeBtn')?.addEventListener('click',()=>{if(target())byId('fieldModeBtn')?.click()});
   globalThis.FISH_TARGET_CONDITIONS_PAGE=Object.freeze({version:'CONDITIONS-V34-GLOBAL',sync,open:openGlobal,openGlobal,openForFish,restoreFish});sync();
 })();
