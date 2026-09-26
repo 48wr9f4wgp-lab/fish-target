@@ -9,8 +9,16 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const dist=path.join(root,'dist');
 const buildConfig=JSON.parse(await readFile(path.join(root,'build.config.json'),'utf8'));
 const buildId=buildConfig.version.toLowerCase();
-const researchCache=`fish-target-shell-${buildId}`;
-const publicationCache=`${researchCache}-publication`;
+const researchCachePrefix=`fish-target-shell-${buildId}`;
+const publicationCachePrefix=`${researchCachePrefix}-publication`;
+function cacheIdentity(worker,publication){
+  const cache=worker.match(/const CACHE='([^']+)';/)?.[1]||'';
+  const prefix=`${publication?publicationCachePrefix:researchCachePrefix}-`;
+  if(!cache.startsWith(prefix)||!/^[a-f0-9]{16}$/.test(cache.slice(prefix.length))){
+    throw new Error(`${publication?'publication':'research'} service worker cache must include its mode and content fingerprint`);
+  }
+  return cache;
+}
 const manifest=JSON.parse(await readFile(path.join(root,'catalog-batch-manifest.json'),'utf8'));
 const productionBatches=manifest.batches.filter(batch=>batch.stage==='production');
 const researchFiles=[...new Set(manifest.batches.filter(batch=>batch.stage==='research').flatMap(batch=>batch.files||[]))];
@@ -64,6 +72,7 @@ function serviceWorkerHarness(worker){
 }
 
 let primaryError=null;
+let publicationCache=null;
 try{
   runBuild(true);
   const html=await readFile(path.join(dist,'index.html'),'utf8');
@@ -72,7 +81,7 @@ try{
   if(!html.includes('data-publication-build="on"'))throw new Error('global publication build marker missing');
   if(!html.includes('data-catalog-publication="on"'))throw new Error('publication catalog marker missing');
   if(!html.includes(`data-catalog-runtime="${runtimeExpected?'on':'off'}"`))throw new Error('publication catalog runtime marker mismatch');
-  if(!worker.includes(`const CACHE='${publicationCache}';`))throw new Error('publication service worker cache is not publication-specific');
+  publicationCache=cacheIdentity(worker,true);
   if(/__(?:BUILD_VERSION|BUILD_ID|CACHE_BUILD_ID|FIELD_LIVE_STATE|SHELL_MANIFEST)__/.test(worker))throw new Error('publication service worker contains unresolved build token');
   if(!(await exists('catalog-loader.js')))throw new Error('publication build must retain fail-closed catalog loader');
   if(!(await exists('tackle.js')))throw new Error('publication build must retain MY TACKLE manual fallback');
@@ -92,10 +101,12 @@ try{
   }
 
   const {handlers,stores}=serviceWorkerHarness(worker);
-  stores.set(researchCache,new Map([
-    ['/catalog.js',new Response('stale research catalog')],
-    ['/fish-real-v7.avif',new Response('stale unverified fish binary')]
-  ]));
+  for(const staleCache of [researchCachePrefix,`${researchCachePrefix}-0123456789abcdef`]){
+    stores.set(staleCache,new Map([
+      ['/catalog.js',new Response('stale research catalog')],
+      ['/fish-real-v7.avif',new Response('stale unverified fish binary')]
+    ]));
+  }
   let installPromise;
   handlers.install({waitUntil:promise=>{installPromise=promise}});
   await installPromise;
@@ -114,8 +125,8 @@ try{
     if(!html.includes('data-publication-build="off"'))throw new Error('research build restore global publication marker mismatch');
     if(!html.includes('data-catalog-publication="off"'))throw new Error('research build restore publication marker mismatch');
     if(!html.includes('data-catalog-runtime="on"'))throw new Error('research build restore did not re-enable catalog runtime');
-    if(!worker.includes(`const CACHE='${researchCache}';`))throw new Error('research build restore service worker cache mismatch');
-    if(worker.includes(`const CACHE='${publicationCache}';`))throw new Error('research build restore retained publication cache id');
+    const researchCache=cacheIdentity(worker,false);
+    if(researchCache===publicationCache)throw new Error('research build restore retained publication cache id');
     if(!(await exists('catalog-batch-manifest.json')))throw new Error('research build restore missing catalog manifest');
     for(const file of fishFiles){if(!(await exists(file)))throw new Error(`research build restore missing fish asset: ${file}`)}
   }catch(error){if(!primaryError)primaryError=error;else console.error(error)}
