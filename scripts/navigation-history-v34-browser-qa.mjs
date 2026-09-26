@@ -37,9 +37,8 @@ try{
  await page.locator('#tackleClose').click();await settled();
  await page.waitForFunction(()=>FISH_TARGET_NAVIGATION.getState()?.modal===null);
  await page.reload();await settled();await view('result');
- const reloadDiag=await page.evaluate(()=>({view:document.querySelector('.view.on')?.id||null,rname:document.getElementById('rname')?.textContent||'',cur:typeof cur!=='undefined'?cur?.name||null:null,nav:globalThis.FISH_TARGET_NAVIGATION?.getState?.()||null,historyState:history.state?.fishTargetNavigationV34||null}));
- console.log('NAV_RELOAD_DIAG',JSON.stringify(reloadDiag));
- assert.equal(await page.locator('#rname').innerText(),'シーバス');
+ await page.waitForFunction(()=>document.getElementById('rname')?.textContent?.trim()==='シーバス');
+ assert.equal((await page.locator('#rname').textContent()||'').trim(),'シーバス');
  assert.equal(await page.locator('[data-method-id].on').getAttribute('data-method-id'),selected);
  await page.locator('#back').click();await view('home');
  await page.locator('#appPackTabV30').click();
