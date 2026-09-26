@@ -92,7 +92,8 @@ try{
   await page.locator('#tripDashboardV35:not(.is-empty)').waitFor({state:'visible'});
   assert.match(await page.locator('#tripDashTrendV35').textContent(),/潮位 上げ/);
   assert.match(await page.locator('#tripDashTrendV35').textContent(),/弱まり傾向/);
-  assert.match(await page.locator('#tripDashSlackV35').textContent(),/20:00 · 0\.2km\/h/);
+  assert.equal((await page.locator('#tripDashSlackV35').textContent()||'').trim(),'19:00–21:00');
+  assert.match(await page.locator('#tripDashSlackSubV37').textContent(),/中心 20:00 · 0\.2km\/h/);
   assert.doesNotMatch(await page.locator('#tripDashBiteV35').textContent(),/^-$/);
   assert.equal(await page.locator('#tripDashGraphV35 .tripDashCurveV35').count(),1);
   assert.match(await page.locator('#tideFlowMeta').textContent(),/地合い候補は魚の基本時間帯と気象・海況の重なりを使う目安/);
