@@ -117,7 +117,7 @@ html.clarity-v27 .fitNote{display:none!important}
 html.clarity-v27 .tackleEntryModes{gap:5px!important;margin-bottom:9px!important}
 html.clarity-v27 .tackleEntryModes button{min-height:44px!important;font-size:12px!important}
 html.clarity-v27 .catalogSearch input{font-weight:700!important}
-html.clarity-v27 .tackleFormGrid label{font-size:9px!important;letter-spacing:.04em}
+html.clarity-v27 .tackleFormGrid label{font-size:12px!important;line-height:1.5;letter-spacing:.04em}
 html.clarity-v27 .tackleCount{grid-template-columns:1fr 1fr!important}
 html.clarity-v27 .tackleCount p{grid-column:1/-1!important;text-align:center!important;font-size:10px!important;line-height:1!important}
 html.clarity-v27 .tackleEmptyCta{gap:2px!important;padding:15px 17px!important}
@@ -139,3 +139,10 @@ html.app-shell-v26.clarity-v27 #save,
 html.app-shell-v26.clarity-v27 #ux23MethodChange{font-size:12px!important}
 html.app-shell-v26 :is(button,input,select,summary,a):focus-visible{outline:3px solid #16887f!important;outline-offset:3px}
 html.app-shell-v26 .appTackleSheetV26 .tackleAdd:disabled{opacity:.5;cursor:not-allowed}
+
+/* Short labels still need a full touch target. Keep horizontal filter scrolling. */
+html.app-shell-v26 #home .filters button,
+html.app-shell-v26 #result .choices button{min-width:44px!important;min-height:44px!important}
+html.app-shell-v26 #copy{min-height:44px!important;font-size:12px!important}
+/* An inactive global dock must not cover the active sheet's form. */
+html.app-shell-v26 .appTabBarV26[inert]{visibility:hidden!important;pointer-events:none!important}

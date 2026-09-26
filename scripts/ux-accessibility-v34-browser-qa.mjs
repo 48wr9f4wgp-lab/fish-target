@@ -11,6 +11,13 @@ try{
   let requests=0;
   await page.route('**/catalog-providers.js*',route=>++requests===1?route.abort():route.continue());
   await page.goto(BASE);await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'));
+  assert.equal(await page.locator('#q').getAttribute('aria-label'),'魚を検索');
+  await page.locator('#v19FilterDetails summary').click();
+  const sea=page.locator('#waterFilters button').filter({hasText:/^海$/});
+  await page.waitForFunction(()=>getComputedStyle(document.querySelector('#waterFilters button[data-v="salt"]')).minWidth==='44px');
+  const seaWidth=await sea.evaluate(e=>e.getBoundingClientRect().width);
+  assert.ok(seaWidth>=44,`short water filter ${width}: ${seaWidth}`);
+  await page.locator('#v19FilterDetails summary').click();
   await page.locator('#q').fill('シーバス');await page.locator('button.fish[data-fish="シーバス"]').click();
   await page.waitForFunction(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.().status==='ready');
   await page.locator('#autoBuildNextV32').click();
@@ -18,6 +25,7 @@ try{
   assert.match(await page.locator('#rodCatalogLoadState').innerText(),/読み込めません/);
   assert.equal(await page.locator('#addCatalogRod').isDisabled(),true);
   assert.equal(await page.evaluate(()=>document.activeElement.id),'tackleClose');
+  assert.equal(await page.locator('#appTabBarV26').isVisible(),false,'inactive global dock must not cover dialog fields');
   assert.equal(await page.locator('#result').evaluate(el=>Boolean(el.closest('[inert]'))),true);
   await page.keyboard.press('Shift+Tab');
   assert.equal(await page.evaluate(()=>Boolean(document.activeElement.closest('#tackleSheet'))),true);
@@ -30,6 +38,7 @@ try{
   await page.waitForFunction(()=>!document.getElementById('addCatalogRod').disabled);
   assert.equal(requests,2);
   await page.locator('[data-kind="rod"] [data-mode="manual"]').click();
+  assert.ok(await page.locator('.tackleFormGrid label').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize))>=12,'manual entry labels must remain readable');
   await page.locator('#rodName').fill('監査用ロッド');
   await page.setViewportSize({width,height:500});
   await page.locator('#rodName').scrollIntoViewIfNeeded();
@@ -43,6 +52,9 @@ try{
   await page.locator('#tackleClose').click();
   await page.locator('#tackleEditFromResult').scrollIntoViewIfNeeded();
   const height=await page.locator('#tackleEditFromResult').evaluate(e=>e.getBoundingClientRect().height);assert.ok(height>=44);
+  await page.locator('#result details').evaluateAll(rows=>rows.forEach(e=>e.open=true));
+  for(const button of await page.locator('#seasons button').all())assert.ok(await button.evaluate(e=>e.getBoundingClientRect().width)>=44);
+  assert.ok(await page.locator('#copy').evaluate(e=>e.getBoundingClientRect().height)>=44);
   await page.locator('#fieldModeBtn').click();
   assert.equal(await page.evaluate(()=>scrollY),0,'view transitions start at the answer, without inherited scroll');
   assert.equal(await page.locator('.fmFirst').isVisible(),true);
@@ -52,6 +64,7 @@ try{
   await page.locator('#appPackTabV30').click();await page.keyboard.press('Shift+Tab');
   assert.equal(await page.evaluate(()=>Boolean(document.activeElement.closest('#packStandaloneV30'))),true);
   await page.keyboard.press('Escape');assert.equal(await page.locator('#packStandaloneV30').isHidden(),true);
+  assert.equal(await page.locator('#appTabBarV26').isVisible(),true,'dock returns after closing the sheet');
   assert.equal(await page.evaluate(()=>document.activeElement.id),'appPackTabV30');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   assert.deepEqual(errors,[]);await context.close();
