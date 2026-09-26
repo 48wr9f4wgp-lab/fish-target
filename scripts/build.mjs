@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import {cp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {generateRuntimeSource as generateFishAssetRuntimeSource,loadAuthoring as loadFishAssetAuthoring,publicationReady as fishAssetPublicationReady,validateAuthoring as validateFishAssetAuthoring} from './fish-asset-authoring.mjs';
+import {generateRuntimeSource as generateFishAssetRuntimeSource,loadAuthoring as loadFishAssetAuthoring,publicationReady as fishAssetPublicationReady,validateAuthoring as validateFishAssetAuthoring,verifyAssetFiles as verifyFishAssetFiles} from './fish-asset-authoring.mjs';
 import {generateIcons} from './generate-icons.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -19,6 +19,7 @@ const cacheBuildPrefix=publicationBuild?`${buildId}-publication`:buildId;
 const fishAssetAuthoring=await loadFishAssetAuthoring();
 const fishAssetErrors=validateFishAssetAuthoring(fishAssetAuthoring);
 if(fishAssetErrors.length)throw new Error(`Fish asset authoring invalid during build:\n- ${fishAssetErrors.join('\n- ')}`);
+await verifyFishAssetFiles(fishAssetAuthoring);
 const expectedFishAssetRuntime=generateFishAssetRuntimeSource(fishAssetAuthoring);
 const currentFishAssetRuntime=await readFile(path.join(root,'fish-asset-authoring-generated.js'),'utf8').catch(()=>null);
 if(currentFishAssetRuntime!==expectedFishAssetRuntime)throw new Error('Generated fish asset runtime is stale. Run npm run fish-assets:generate.');
@@ -31,6 +32,7 @@ const publicationSafeFishFiles=new Set(sourceFishAssetFiles.filter(file=>{
   return records.length>0&&records.every(fishAssetPublicationReady);
 }));
 const fishAssetFiles=publicationBuild?sourceFishAssetFiles.filter(file=>publicationSafeFishFiles.has(file)):sourceFishAssetFiles;
+const previewFishFiles=publicationBuild?[]:(fishAssetAuthoring.development_previews||[]).map(record=>record.asset.file);
 
 const catalogManifest=JSON.parse(await readFile(path.join(root,'catalog-batch-manifest.json'),'utf8'));
 if(!catalogManifest||!Array.isArray(catalogManifest.batches))throw new Error('Invalid catalog batch manifest');
@@ -75,7 +77,7 @@ const copiedAssets=[...new Set([
   'target-method-data-v3-part1.js','target-method-data-v3-part2.js','target-method-data-v3-part3.js','target-method-data-v3-part4.js','target-method-data-v3-part5.js','target-method-data-v3.js',
   'target-method-data-v4-part1.js','target-method-data-v4-part2.js','target-method-data-v4-part3.js','target-method-data-v4-part4.js','target-method-data-v4-part5.js','target-method-data-v4.js','species-method-authoring-generated.js','species-method-authoring-runtime.js','target-methods-v1.js','species-registry.js','fish-asset-authoring-generated.js','fish-asset-manifest.js','method-registry.js','resolver-engine.js','resolver-shadow.js','resolver-tackle-ui.js',
   'catalog-loader.js',...catalogDistributionAssets,...lureLazyRuntimeAssets,'tackle.js','tackle-set-rules-v31.js','tackle-set-resolver-v31.js','fit-explain.js','simplify.js','visual-pass.js','fish-real.js','fish-photo-v27.js','visual-v8.js','result-ux-v20.js','result-ux-v21.js','result-ux-v23.js','app-shell-v26.js','trip-pack-rules-v34.js','pack-checklist-v28.js','tackle-auto-build-v29.js',
-  ...fishAssetFiles,
+  ...fishAssetFiles,...previewFishFiles,
   'manifest.webmanifest','icon.svg'
 ])];
 const generatedAssets=['apple-touch-icon.png','icon-192.png','icon-512.png','icon-maskable-512.png'];

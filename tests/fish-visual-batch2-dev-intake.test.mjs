@@ -48,8 +48,8 @@ test('batch 2 development assets are byte-locked AVIF files',()=>{
 
 test('quarantined batch 2 uses the existing canonical fallback in development',()=>{
   const manifest=runtime(false);
-  assert.equal(manifest.developmentOnlyCount,0);
-  assert.equal(manifest.publicationReadyCount,4);
+  assert.equal(manifest.developmentOnlyCount,2,'separate pilot repairs may be reviewed without reviving batch 2');
+  assert.equal(manifest.publicationReadyCount,2,'repair previews cannot inherit the original pilot approval');
   for(const [species,file] of batch){
     const record=manifest.bySpeciesName(species);
     assert.equal(record.asset.type,'sprite-sheet');

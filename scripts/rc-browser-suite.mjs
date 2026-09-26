@@ -7,6 +7,7 @@ export const suite=Object.freeze([
   'result-ux-v20-browser-qa',
   'v34-completion-browser-qa',
   'fish-asset-manifest-browser-qa',
+  'fish-visual-preview-browser-qa',
   'visual-v24-browser-qa',
   'visual-v25-browser-qa',
   'app-shell-v26-browser-qa',

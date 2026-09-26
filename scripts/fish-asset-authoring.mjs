@@ -71,6 +71,7 @@ function validateAsset(asset,label,errors){
   if(!TYPES.has(text(asset.type)))errors.push(`${label}.asset.type must be sprite-sheet or file`);
   required(asset.file,`${label}.asset.file`,errors);
   if(text(asset.file)&&!SAFE_FILE.test(text(asset.file)))errors.push(`${label}.asset.file must be a safe relative path`);
+  if(asset.display_scale!==undefined&&(!Number.isFinite(asset.display_scale)||asset.display_scale<0.5||asset.display_scale>1))errors.push(`${label}.asset.display_scale must be between 0.5 and 1`);
   if(text(asset.type)==='sprite-sheet'){
     for(const key of ['slot','columns','rows'])if(!Number.isInteger(asset[key])||asset[key]<0||(key!=='slot'&&asset[key]===0))errors.push(`${label}.asset.${key} must be a valid integer`);
     if(Number.isInteger(asset.slot)&&Number.isInteger(asset.columns)&&Number.isInteger(asset.rows)&&asset.columns>0&&asset.rows>0&&asset.slot>=asset.columns*asset.rows)errors.push(`${label}.asset.slot exceeds sheet capacity`);
@@ -146,6 +147,21 @@ export function validateAuthoring(data){
       if(slots.has(key))errors.push(`duplicate fish asset slot: ${key}`);else slots.add(key);
     }
   }
+  const previews=data.development_previews??[];
+  if(!Array.isArray(previews))errors.push('development_previews must be an array');
+  else{
+    const previewNames=new Set(),files=new Set(data.assets.map(record=>record?.asset?.file));
+    for(const [index,record] of previews.entries()){
+      const label=`development_previews[${index}]`;
+      validateRecord(record,label,errors);
+      if(!names.has(record?.species_name)||previewNames.has(record?.species_name))errors.push(`${label} must replace one unique existing species`);
+      previewNames.add(record?.species_name);
+      if(record?.source!==PROJECT_SOURCE||record?.rights_status!=='unverified'||record?.review_status!=='pending-user-review')errors.push(`${label} must remain a project-generated pending review`);
+      if(record?.asset?.type!=='file'||files.has(record?.asset?.file))errors.push(`${label} must use a separate direct file`);
+      files.add(record?.asset?.file);
+      validateGeneratedProvenance(record?.provenance,label,errors);
+    }
+  }
   return errors;
 }
 
@@ -170,21 +186,22 @@ const cloneRecord=record=>({
   attribution:record.attribution==null?null:text(record.attribution),
   verified_at:record.verified_at==null?null:text(record.verified_at),
   rights_status:text(record.rights_status),
+  ...(record.review_status?{review_status:text(record.review_status)}:{}),
   ...(record.provenance?{provenance:cloneProvenance(record.provenance)}:{}),
   publication_ready:publicationReady(record)
 });
 
-export function toRuntimePayload(data){return {version:data.version,policy:data.policy,bundled_sheet:text(data.bundled_sheet),assets:data.assets.map(cloneRecord)}}
+export function toRuntimePayload(data){return {version:data.version,policy:data.policy,bundled_sheet:text(data.bundled_sheet),assets:data.assets.map(cloneRecord),development_previews:(data.development_previews||[]).map(cloneRecord)}}
 export function generateRuntimeSource(data){return `(()=>{globalThis.FISH_TARGET_FISH_ASSET_AUTHORING=Object.freeze(${JSON.stringify(toRuntimePayload(data))})})();\n`}
 export async function loadAuthoring(){return JSON.parse(await readFile(AUTHORING_PATH,'utf8'))}
 
 export async function verifyAssetFiles(data){
-  for(const record of data.assets){
+  for(const record of [...data.assets,...(data.development_previews||[])]){
     const file=text(record.asset?.file);
     if(!file)continue;
     const target=path.join(root,file);
     await access(target).catch(()=>{throw new Error(`Fish asset file missing: ${file}`)});
-    if(text(record.rights_status)==='verified'&&text(record.asset?.type)==='file'){
+    if((text(record.rights_status)==='verified'||record.review_status==='pending-user-review')&&text(record.asset?.type)==='file'){
       const expected=text(record.provenance?.output_sha256);
       if(!SHA256.test(expected))throw new Error(`Fish asset output hash missing: ${record.species_name}`);
       const actual=createHash('sha256').update(await readFile(target)).digest('hex');

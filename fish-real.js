@@ -140,7 +140,7 @@
     const detail=host.id==='tart'||Boolean(host.closest('#result'));
     const maxWidth=width*(detail?.92:.90);
     const maxHeight=height*(detail?.86:.82);
-    const scale=Math.min(maxWidth/crop.sw,maxHeight/crop.sh);
+    const scale=Math.min(maxWidth/crop.sw,maxHeight/crop.sh)*(asset.display_scale||1);
     const drawWidth=crop.sw*scale;
     const drawHeight=crop.sh*scale;
     const dx=(width-drawWidth)/2;

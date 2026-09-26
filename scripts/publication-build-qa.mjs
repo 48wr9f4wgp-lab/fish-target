@@ -29,6 +29,7 @@ const publicationFishFiles=fishFiles.filter(file=>{
   return records.length>0&&records.every(fishAssetPublicationReady);
 });
 const blockedFishFiles=fishFiles.filter(file=>!publicationFishFiles.includes(file));
+const previewFishFiles=(fishAuthoring.development_previews||[]).map(record=>record.asset.file);
 const exists=async file=>access(path.join(dist,file)).then(()=>true,()=>false);
 const runBuild=publication=>{
   const result=spawnSync(process.execPath,['scripts/build.mjs'],{
@@ -89,6 +90,9 @@ try{
   if(await exists('catalog-fixtures.js'))throw new Error('synthetic catalog fixtures leaked into publication build');
   for(const file of researchFiles){if(await exists(file))throw new Error(`research catalog batch leaked into publication build: ${file}`)}
   for(const file of blockedFishFiles){if(await exists(file))throw new Error(`unverified fish binary leaked into publication build: ${file}`)}
+  for(const file of previewFishFiles){
+    if(await exists(file)||worker.includes(file))throw new Error(`development preview leaked into publication assets/cache: ${file}`);
+  }
   for(const file of publicationFishFiles){if(!(await exists(file)))throw new Error(`publication-ready fish binary missing from publication build: ${file}`)}
   if(runtimeExpected){
     if(!(await exists('catalog-batch-manifest.json')))throw new Error('publication manifest missing with production batches');
@@ -129,6 +133,7 @@ try{
     if(researchCache===publicationCache)throw new Error('research build restore retained publication cache id');
     if(!(await exists('catalog-batch-manifest.json')))throw new Error('research build restore missing catalog manifest');
     for(const file of fishFiles){if(!(await exists(file)))throw new Error(`research build restore missing fish asset: ${file}`)}
+    for(const file of previewFishFiles){if(!(await exists(file))||!worker.includes(file))throw new Error(`research build restore missing preview/offline asset: ${file}`)}
   }catch(error){if(!primaryError)primaryError=error;else console.error(error)}
 }
 if(primaryError)throw primaryError;

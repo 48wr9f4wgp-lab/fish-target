@@ -6,8 +6,9 @@
   const PUBLICATION_BUILD=document.documentElement.dataset.publicationBuild==='on';
   const SHEET=authoring.bundled_sheet;
   // Batch 2 is quarantined: visual-contract failures and a corrupt AVIF.
-  // Keep the original canonical fallback until replacement art is reviewed.
-  const effectiveAssets=authoring.assets;
+  // Reviewed development previews never replace publication authoring.
+  const previews=new Map((PUBLICATION_BUILD?[]:(authoring.development_previews||[])).map(record=>[record.species_name,record]));
+  const effectiveAssets=authoring.assets.map(record=>previews.get(record.species_name)||record);
   const authoredByName=new Map(effectiveAssets.map(record=>[record.species_name,record]));
   const fileRecords=new Map();
   for(const authored of effectiveAssets){
@@ -23,7 +24,7 @@
     const authored=authoredByName.get(species.name)||null;
     const file=String(authored?.asset?.file||'').trim();
     const bundled=Boolean(authored?.asset)&&(!PUBLICATION_BUILD||publicationSafeFiles.has(file));
-    const developmentOnly=false;
+    const developmentOnly=bundled&&previews.has(species.name);
     return Object.freeze({
       species_id:species.species_id,
       species_name:species.name,
