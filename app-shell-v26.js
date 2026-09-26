@@ -6,6 +6,7 @@
   // Shared by the two existing sheets: keep interaction inside the active dialog.
   let activeModal=null;
   globalThis.FISH_TARGET_MODAL_FOCUS=Object.freeze({
+    dismiss(){activeModal?.onClose()},
     open(element,onClose){
       if(activeModal?.element===element)return;
       activeModal?.onClose();

@@ -76,6 +76,7 @@
       await loadScript('./trip-pack-rules-v34.js','trip-pack-rules-v34-js');
       await loadScript('./pack-checklist-v28.js','pack-checklist-v28-js');
       await loadScript('./tackle-auto-build-v29.js','tackle-auto-build-v29-js');
+      await loadScript('./navigation-history-v34.js','navigation-history-v34-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
       await maybeLoadLureUi();
     }catch(err){console.error('extension bootstrap failed',err)}
