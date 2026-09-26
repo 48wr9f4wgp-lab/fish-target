@@ -53,3 +53,15 @@ test('trip dashboard V36 collapses location controls and uses human-readable fie
   assert.match(css,/\.tripDashTurnMarkV35\.high/);
   assert.match(css,/\.tripDashTurnMarkV35\.low/);
 });
+
+test('trip dashboard V37 exposes a slack-watch window without claiming catch probability',()=>{
+  const html=text('index.html'),page=text('conditions-page-v34.js'),css=text('conditions-page-v34.css');
+  assert.match(html,/id="tripDashSlackLabelV37"/);
+  assert.match(html,/id="tripDashSlackSubV37"/);
+  assert.match(page,/function slackWatchWindow\(times,velocities,nowIndex=0\)/);
+  assert.match(page,/slack:v<=0\.6/);
+  assert.match(page,/弱まり→止まり→動き出し/);
+  assert.match(css,/\.tripDashSlackBandV37/);
+  assert.match(css,/\.tripDashSlackCenterV37/);
+  assert.doesNotMatch(page,/潮止まり.*釣れる/);
+});

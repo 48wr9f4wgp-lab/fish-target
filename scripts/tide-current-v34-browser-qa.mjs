@@ -68,6 +68,11 @@ try{
   assert.equal(await page.locator('#conditionsLocationMountV35').isVisible(),false,'selected location controls collapse after choice');
   assert.equal((await page.locator('#conditionsLocationEditV36').textContent()||'').trim(),'変更');
   assert.doesNotMatch(await page.locator('#tripDashVerdictV35').textContent(),/^標準$/,'verdict must use human language');
+  assert.equal((await page.locator('#tripDashSlackLabelV37').textContent()||'').trim(),'潮止まり前後');
+  assert.equal((await page.locator('#tripDashSlackV35').textContent()||'').trim(),'19:00–21:00');
+  assert.match(await page.locator('#tripDashSlackSubV37').textContent(),/中心 20:00 · 0\.2km\/h/);
+  assert.equal(await page.locator('#tripDashGraphV35 .tripDashSlackBandV37').count(),1,'slack watch band appears on the main graph');
+  assert.equal(await page.locator('#tripDashGraphV35 .tripDashSlackCenterV37').count(),1,'slack center line appears on the main graph');
   for(const width of [375,390,430]){await page.setViewportSize({width,height:844});const metrics=await page.evaluate(()=>{const d=document.getElementById('tripDashboardV35'),mini=[...document.querySelectorAll('.tripDashMiniV35>div')];return {doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,dash:d.getBoundingClientRect().width,viewport:innerWidth,mini:mini.map(x=>({client:x.clientWidth,scroll:x.scrollWidth}))}});assert.ok(metrics.doc<=width+1&&metrics.body<=width+1,`dashboard overflow at ${width}: ${JSON.stringify(metrics)}`);assert.ok(metrics.mini.every(x=>x.scroll<=x.client+1),`mini-card horizontal overflow at ${width}: ${JSON.stringify(metrics.mini)}`)}
   await page.setViewportSize({width:390,height:844});
   await page.locator('#conditionsChooseFishBtn').click();

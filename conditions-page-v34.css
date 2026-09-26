@@ -124,3 +124,11 @@
 .tripDashVerdictV35 b{font-size:16px;letter-spacing:-.015em}
 .conditionsBodyV35{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 @media(max-width:390px){.tripDashMiniV35 b{font-size:10.5px}.tripDashMiniV35 small{font-size:6.6px}}
+
+/* V37 slack-watch band */
+.tripDashSlackBandV37{fill:#e9903b;opacity:.11}
+.tripDashSlackCenterV37{stroke:#ef9a47;stroke-width:1;stroke-dasharray:3 3;opacity:.78}
+.tripDashSlackLabelV37{fill:#efb678;font-size:5.5px;font-weight:950;letter-spacing:.04em}
+.tripDashSlackWatchV37.slow .tripDashSlackBandV37{opacity:.065}
+.tripDashSlackWatchV37.slow .tripDashSlackCenterV37{opacity:.52}
+.tripDashNextV35>div>small{display:block;font-size:7px;line-height:1.35;color:#86aeb3;margin-top:4px;overflow-wrap:anywhere}
