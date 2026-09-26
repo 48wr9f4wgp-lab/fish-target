@@ -34,9 +34,11 @@ try{
       names:manifest.records.map(row=>row.species_name),
       fieldsComplete:manifest.records.every(row=>['species_id','species_name','asset','source','source_url','author','license','attribution','verified_at','provenance','mode','rights_status','publication_ready'].every(key=>Object.prototype.hasOwnProperty.call(row,key))),
       recordsFrozen:Object.isFrozen(manifest.records)&&manifest.records.every(row=>Object.isFrozen(row)&&(!row.asset||Object.isFrozen(row.asset))&&(!row.provenance||Object.isFrozen(row.provenance))),
-      bundledSlots:bundled.map(row=>row.asset?.slot),
+      bundledSlots:bundled.filter(row=>row.asset?.type==='sprite-sheet').map(row=>row.asset.slot),
+      authoredSlots:authoring.assets.filter(row=>row.asset?.type==='sprite-sheet').map(row=>row.asset.slot),
+      authoredFiles:[...new Set(authoring.assets.map(row=>row.asset.file))],
       bundledFiles:[...new Set(bundled.map(row=>row.asset?.file))],
-      bundledRights:bundled.every(row=>row.source==='project-bundled-existing'&&row.license==='unknown'&&row.rights_status==='unverified'&&row.publication_ready===false&&row.provenance===null),
+      bundledRights:bundled.every(row=>{const expected=authoring.assets.find(asset=>asset.species_name===row.species_name);return expected&&['source','license','rights_status','publication_ready'].every(key=>row[key]===expected[key])}),
       remoteRights:remote.every(row=>row.asset===null&&row.source==='wikimedia-runtime-resolver'&&row.license===null&&row.rights_status==='runtime-license-gated'&&row.publication_ready===false&&row.provenance===null),
       publicationReady:manifest.records.filter(row=>row.publication_ready).length,
       hirame:manifest.resolve('平目'),
@@ -51,24 +53,24 @@ try{
     };
   });
 
-  assert.equal(snapshot.version,'FISH-ASSET-MANIFEST-2');
+  assert.equal(snapshot.version,'FISH-ASSET-MANIFEST-3');
   assert.equal(snapshot.authoringVersion,'FISH-ASSET-AUTHORING-1');
   assert.equal(snapshot.authoringAssets,19,'runtime manifest is generated from current 19 authored bundled assets');
   assert.equal(snapshot.policy,'bundled-first-license-gated-remote-fallback');
-  assert.equal(snapshot.count,60,'manifest covers every current fish species');
+  assert.equal(snapshot.count,63,'manifest covers every current fish species');
   assert.equal(snapshot.count,snapshot.speciesCount,'manifest and species registry stay synchronized');
   assert.equal(snapshot.bundledCount,19,'current bundled AVIF coverage remains explicit');
-  assert.equal(snapshot.remoteFallbackCount,41,'remaining species are explicit license-gated remote fallbacks');
-  assert.equal(new Set(snapshot.speciesIds).size,60,'manifest species IDs are unique');
-  assert.equal(new Set(snapshot.names).size,60,'manifest species names are unique');
+  assert.equal(snapshot.remoteFallbackCount,44,'remaining species are explicit license-gated remote fallbacks');
+  assert.equal(new Set(snapshot.speciesIds).size,63,'manifest species IDs are unique');
+  assert.equal(new Set(snapshot.names).size,63,'manifest species names are unique');
   assert.equal(snapshot.fieldsComplete,true,'every manifest record carries rights, attribution, and provenance fields');
   assert.equal(snapshot.recordsFrozen,true,'manifest read model is immutable');
-  assert.deepEqual(snapshot.bundledSlots,[...Array(19).keys()],'bundled sprite slots are unique and deterministic');
-  assert.deepEqual(snapshot.bundledFiles,['fish-real-v7.avif'],'bundled records point at the current sheet');
-  assert.equal(snapshot.bundledRights,true,'existing bundled asset rights remain explicitly unverified');
+  assert.deepEqual(snapshot.bundledSlots,snapshot.authoredSlots,'sprite slots match canonical authoring');
+  assert.deepEqual(snapshot.bundledFiles,snapshot.authoredFiles,'runtime uses the authored direct files and sprite sheet');
+  assert.equal(snapshot.bundledRights,true,'runtime cannot promote rights beyond canonical authoring');
   assert.equal(snapshot.remoteRights,true,'remote fallbacks remain runtime license gated');
-  assert.equal(snapshot.publicationReady,0,'no asset is silently marked publication-ready without rights evidence');
-  assert.equal(snapshot.publicationReadyCount,0,'manifest publication-ready index stays fail closed');
+  assert.equal(snapshot.publicationReady,4,'only the four provenance-verified pilot assets are rights-ready');
+  assert.equal(snapshot.publicationReadyCount,4,'no additional asset is silently promoted');
   assert.equal(snapshot.hirame?.species_name,'ヒラメ','species aliases resolve through canonical registry');
   assert.equal(snapshot.aji?.mode,'bundled','local fish resolves to bundled asset');
   assert.equal(snapshot.aji?.asset?.file,'fish-real-v7.avif');
@@ -168,8 +170,8 @@ try{
   assert.equal(fixtureSnapshot.record?.publication_ready,true);
   assert.equal(fixtureSnapshot.record?.provenance?.output_sha256,'b'.repeat(64));
   assert.equal(fixtureSnapshot.bundledCount,20);
-  assert.equal(fixtureSnapshot.remoteCount,40);
-  assert.equal(fixtureSnapshot.publicationReadyCount,1);
+  assert.equal(fixtureSnapshot.remoteCount,43);
+  assert.equal(fixtureSnapshot.publicationReadyCount,5);
   assert.equal(fixtureSnapshot.renderer,'manifest-bundled-sprite-or-file-with-svg-fallback');
   assert.deepEqual(fixtureSnapshot.assetTypes.sort(),['file','sprite-sheet']);
   assert.ok(fixtureSnapshot.localSpecies.includes('サバ'),'remote photo resolver treats direct file assets as local');

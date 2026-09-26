@@ -46,56 +46,39 @@ test('batch 2 development assets are byte-locked AVIF files',()=>{
   }
 });
 
-test('research runtime overlays exactly eight batch 2 species with direct development files',()=>{
+test('quarantined batch 2 uses the existing canonical fallback in development',()=>{
   const manifest=runtime(false);
-  assert.equal(manifest.version,'FISH-ASSET-MANIFEST-3');
-  assert.equal(manifest.count,19);
-  assert.equal(manifest.bundledCount,19);
-  assert.equal(manifest.developmentOnlyCount,8);
-  assert.equal(manifest.publicationReadyCount,4);
-  assert.deepEqual(
-    [...manifest.developmentOnlyRecords].map(record=>record.species_name).sort(),
-    batch.map(row=>row[0]).sort()
-  );
-  for(const [species,file,expected] of batch){
-    const record=manifest.bySpeciesName(species);
-    assert.equal(record.mode,'bundled',`${species} must be locally bundled in research builds`);
-    assert.equal(record.asset.type,'file');
-    assert.equal(record.asset.file,file);
-    assert.equal(record.development_only,true);
-    assert.equal(record.publication_ready,false);
-    assert.equal(record.rights_status,'unverified');
-    assert.equal(record.source,'project-generated-original');
-    assert.equal(record.provenance.output_sha256,expected);
-  }
-});
-
-test('publication runtime ignores the development overlay and stays fail-closed',()=>{
-  const manifest=runtime(true);
-  assert.equal(manifest.version,'FISH-ASSET-MANIFEST-3');
   assert.equal(manifest.developmentOnlyCount,0);
   assert.equal(manifest.publicationReadyCount,4);
-  assert.equal(manifest.bundledCount,4);
-  for(const [species] of batch){
+  for(const [species,file] of batch){
     const record=manifest.bySpeciesName(species);
-    assert.equal(record.mode,'remote-fallback',`${species} must not ship as an unreviewed publication asset`);
-    assert.equal(record.asset,null);
+    assert.equal(record.asset.type,'sprite-sheet');
+    assert.notEqual(record.asset.file,file);
     assert.equal(record.development_only,false);
     assert.equal(record.publication_ready,false);
   }
 });
 
-test('build copies batch 2 AVIFs only for non-publication distributions',()=>{
-  assert.match(buildSource,/const devFishAssetFiles=Object\.freeze\(\[/);
-  assert.match(buildSource,/\.\.\.\(publicationBuild\?\[\]:devFishAssetFiles\)/);
-  for(const [,file] of batch)assert.ok(buildSource.includes(`'${file}'`),`${file} missing from dev build file list`);
+test('publication runtime remains fail closed for all quarantined species',()=>{
+  const manifest=runtime(true);
+  assert.equal(manifest.developmentOnlyCount,0);
+  assert.equal(manifest.publicationReadyCount,4);
+  assert.equal(manifest.bundledCount,4);
+  for(const [species] of batch){
+    const record=manifest.bySpeciesName(species);
+    assert.equal(record.mode,'remote-fallback');
+    assert.equal(record.asset,null);
+    assert.equal(record.publication_ready,false);
+  }
 });
 
-test('canonical authoring remains untouched until human identity promotion',()=>{
-  assert.equal(authoring.assets.length,19);
-  for(const [species,file] of batch){
-    const record=authoring.assets.find(asset=>asset.species_name===species);
-    assert.ok(record,`${species} canonical record missing`);
-    assert.notEqual(record.asset?.file,file,`${species} must not be silently promoted into canonical authoring`);
+test('quarantined AVIFs cannot enter the built app or service-worker shell',()=>{
+  const quarantine=JSON.parse(readFileSync(new URL('../authoring/fish-visual-quarantine-v34.json',import.meta.url),'utf8'));
+  assert.deepEqual(quarantine.assets.map(row=>row.file).sort(),batch.map(row=>row[1]).sort());
+  const worker=readFileSync(new URL('../dist/sw.js',import.meta.url),'utf8');
+  for(const [,file] of batch){
+    assert.equal(existsSync(new URL(`../dist/${file}`,import.meta.url)),false,`${file} must remain outside distribution`);
+    assert.equal(worker.includes(file),false);
+    assert.equal(buildSource.includes(`'${file}'`),false);
   }
 });

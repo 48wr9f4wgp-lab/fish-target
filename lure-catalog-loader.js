@@ -1,5 +1,6 @@
 (()=>{
   const state={manifest:null,manifestPromise:null,loaded:new Set(),loading:new Map()};
+  const renders=new WeakMap();
   const runtimeOn=()=>document.documentElement?.dataset?.lureCatalogRuntime==='on';
   const rows=()=>Array.isArray(globalThis.FISH_TARGET_LURE_CATALOG_BATCH_ROWS)
     ?globalThis.FISH_TARGET_LURE_CATALOG_BATCH_ROWS.flatMap(batch=>Array.isArray(batch?.rows)?batch.rows:[])
@@ -11,7 +12,7 @@
       const s=document.createElement('script');
       s.src=file;s.async=true;
       s.onload=()=>{state.loaded.add(file);state.loading.delete(file);resolve()};
-      s.onerror=()=>{state.loading.delete(file);reject(new Error(`lure asset failed: ${file}`))};
+      s.onerror=()=>{s.remove();state.loading.delete(file);reject(new Error(`lure asset failed: ${file}`))};
       document.head.appendChild(s);
     });
     state.loading.set(file,promise);return promise;
@@ -39,14 +40,18 @@
   const add=(parent,tag,text,className='')=>{
     const el=document.createElement(tag);if(className)el.className=className;el.textContent=text;parent.appendChild(el);return el;
   };
-  async function render(host,species,method){
+  async function render(host,species,method,{isCurrent=()=>true}={}){
     if(typeof host==='string')host=document.getElementById(host);
-    if(!host)return;
+    if(!host)return false;
+    const token={};renders.set(host,token);
+    const current=()=>renders.get(host)===token&&isCurrent();
+    if(!current())return false;
     host.replaceChildren();add(host,'p','読み込み中…','lureCatalogStatus');
     try{
       const list=await rowsFor(species,method);
+      if(!current())return false;
       host.replaceChildren();
-      if(!list.length){add(host,'p','この釣り方の市販ルアー / 仕掛け候補はまだ研究中。','lureCatalogStatus');return}
+      if(!list.length){add(host,'p','この釣り方の市販ルアー / 仕掛け候補はまだ研究中。','lureCatalogStatus');return true}
       const ul=add(host,'ul','','lureCatalogList');
       for(const row of list){
         const li=add(ul,'li','','lureCatalogItem');
@@ -59,8 +64,10 @@
         if(row.use_note)add(li,'small',row.use_note,'lureCatalogNote');
       }
       add(host,'small','メーカー公式情報を基にした研究候補。FIRST CASTセット・ルアー完成品・仕掛け部品を区別して表示。色別SKU・在庫・価格は含めない。','lureCatalogDisclaimer');
+      return true;
     }catch{
-      host.replaceChildren();add(host,'p',navigator.onLine?'候補データを読み込めませんでした。':'オフラインでは市販候補を追加読込できません。','lureCatalogStatus');
+      if(current()){host.replaceChildren();add(host,'p',navigator.onLine?'候補データを読み込めませんでした。閉じて開くと再試行できます。':'オフラインでは市販候補を追加読込できません。','lureCatalogStatus')}
+      return false;
     }
   }
   globalThis.FISH_TARGET_LURE_CATALOG=Object.freeze({version:'LURE-CATALOG-2',ensureFor,rowsFor,render});

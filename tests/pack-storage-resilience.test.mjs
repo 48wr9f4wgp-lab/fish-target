@@ -7,8 +7,8 @@ const source=readFileSync(new URL('../pack-checklist-v28.js',import.meta.url),'u
 // Exercise the actual private storage functions without a synthetic DOM implementation.
 const storageSource=source.slice(0,source.indexOf('  function syncPackTab'))+
   'globalThis.storageTest={getConfig,getChecked,saveConfig,saveChecked};})();';
-function runtime(raw,{failWrites=false}={}){
-  const ctx=vm.createContext({console,localStorage:{getItem:()=>raw,setItem:(_,value)=>{if(failWrites)throw new Error('quota exceeded');raw=value}}});
+function runtime(raw,{failWrites=false,items}={}){
+  const ctx=vm.createContext({console,FISH_TARGET_TRIP_PACK:items?{derive:()=>items,planKey:()=>'pack:test'}:undefined,localStorage:{getItem:()=>raw,setItem:(_,value)=>{if(failWrites)throw new Error('quota exceeded');raw=value}}});
   vm.runInContext(storageSource,ctx);
   return {api:ctx.storageTest,raw:()=>raw};
 }
@@ -33,4 +33,29 @@ test('packing failed write does not claim persisted state',()=>{
   assert.equal(api.saveChecked(new Set(['sun'])),false);
   assert.equal(api.getChecked().has('sun'),false);
   assert.equal(raw(),'{}');
+});
+
+test('changing an owned rod or FIRST CAST invalidates only that packed item',()=>{
+  const items=[
+    {id:'plan-rod',name:'ロッド · MY ROD',identity:'rod-a',priority:'required',system:true},
+    {id:'plan-first-cast',name:'FIRST CAST · 40g',priority:'required',system:true}
+  ];
+  const {api,raw}=runtime('{}',{items});
+  api.saveChecked(new Set(['plan-rod','plan-first-cast','unknown-user-item']));
+  assert.equal(api.getChecked().has('plan-rod'),true);
+  items[0].identity='rod-b';
+  assert.equal(api.getChecked().has('plan-rod'),false,'same display name, different physical rod needs a new check');
+  assert.equal(api.getChecked().has('plan-first-cast'),true);
+  items[1].name='FIRST CAST · 60g';
+  assert.equal(api.getChecked().has('plan-first-cast'),false);
+  assert.equal(api.getChecked().has('unknown-user-item'),true);
+  assert.ok(JSON.parse(raw()).__quick_pack_v28_checked['pack:test'].includes('unknown-user-item'));
+});
+
+test('legacy generated checks require confirmation while custom checks and stored data survive',()=>{
+  const raw=JSON.stringify({__quick_pack_v28_checked:{'pack:test':['plan-rod','sun'],'pack:other':['keep']}});
+  const {api,raw:stored}=runtime(raw,{items:[{id:'plan-rod',name:'ROD',priority:'required',system:true}]});
+  assert.equal(api.getChecked().has('plan-rod'),false);
+  assert.equal(api.getChecked().has('sun'),true);
+  assert.equal(stored(),raw,'read-only migration must not rewrite user data');
 });

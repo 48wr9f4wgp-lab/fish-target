@@ -70,7 +70,7 @@ const report={
   policy:policy.version,
   species:{total:species.length,bundled:bundledNames.size,uncovered:uncoveredFish.length},
   visual,
-  plans:{total:plans.length,critical_complete:plans.length-criticalMissing.length,critical_missing:criticalMissing.length},
+  plans:{total:plans.length,critical_complete:plans.length-criticalMissing.length,critical_missing:criticalMissing.length,critical_coverage_scope:'presence of rod/reel/main_line/terminal/first_cast; not validation of fishing semantics'},
   catalog:{batches:catalog.batches.length,expected_rows:expectedRows,stages:stageCounts},
   lure_catalog:{
     batches:lureCatalog.batches.length,

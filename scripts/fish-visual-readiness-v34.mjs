@@ -102,6 +102,7 @@ export async function collectVisualReadiness(){
   const registeredNames=new Set(model.records.map(row=>text(row.name)).filter(Boolean));
   const assets=readJson('authoring/fish-assets.v1.json').assets||[];
   const candidates=readJson('authoring/fish-asset-candidates.v1.json').records||[];
+  const quarantine=readJson('authoring/fish-visual-quarantine-v34.json');
   const bundled=assets.filter(asset=>registeredNames.has(text(asset.species_name)));
   const publication=bundled.filter(publicationReady);
   const publicationNames=new Set(publication.map(asset=>text(asset.species_name)));
@@ -124,6 +125,9 @@ export async function collectVisualReadiness(){
     targets:registeredNames.size,
     bundled:bundled.length,
     publication_ready:publication.length,
+    publication_ready_scope:'provenance-and-integrity; visual approval is a separate gate',
+    quarantined_assets:quarantine.assets.length,
+    quarantine_status:quarantine.status,
     publication_blocked_bundled:bundled.length-publication.length,
     verified_candidates:verifiedCandidateNames.size,
     taxonomy_review:taxonomyReviewNames.size,

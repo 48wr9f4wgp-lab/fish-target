@@ -1,0 +1,64 @@
+{
+  "version": "FISH-VISUAL-QUARANTINE-V34",
+  "reviewed_at": "2026-09-26",
+  "status": "REJECTED_CURRENT_ART",
+  "reason": "Batch 2 conflicts with the canonical field-guide realism; sawara AVIF also fails decoding. Preserve bytes for audit, exclude from runtime and distribution. Replacement art requires human identity review.",
+  "assets": [
+    {
+      "species": "シーバス",
+      "file": "fish-master-v34-seabass.avif",
+      "sha256": "1c6d2a60b6756c055e7bc69b1108b411d8586d007c26adf7f916755aaa2144f0",
+      "decode_status": "DECODED_PILLOW",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    },
+    {
+      "species": "アジ",
+      "file": "fish-master-v34-aji.avif",
+      "sha256": "8678c123bdb34afbb9e919c17e184f48f26c396ef98809f838131c482e946f79",
+      "decode_status": "DECODED_PILLOW",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    },
+    {
+      "species": "メバル",
+      "file": "fish-master-v34-mebaru.avif",
+      "sha256": "e18fa6c60c581590c3270dc4eeef93611ee2b8c069bd063fef02e84ad0c08baa",
+      "decode_status": "DECODED_PILLOW",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    },
+    {
+      "species": "マゴチ",
+      "file": "fish-master-v34-magochi.avif",
+      "sha256": "453ff2972794f2c8249137ba62200e6ab8ff95bb9e9f51bd4e35f90a9212f86c",
+      "decode_status": "DECODED_PILLOW",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    },
+    {
+      "species": "タチウオ",
+      "file": "fish-master-v34-tachiuo.avif",
+      "sha256": "07763dc855a9e4c1d1d29c0fbadad49870bd40a4503ee6cb577985519d1ff676",
+      "decode_status": "DECODED_PILLOW",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    },
+    {
+      "species": "マダイ",
+      "file": "fish-master-v34-madai.avif",
+      "sha256": "517cf42a6ce893b082711e7430213867d17caa25bcf229aa3272c07d43f3711b",
+      "decode_status": "DECODED_PILLOW",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    },
+    {
+      "species": "ブラックバス",
+      "file": "fish-master-v34-blackbass.avif",
+      "sha256": "e795c5f8bf0e675629b8d749613830150bfdd4e60257a6b93c844fe756f7161e",
+      "decode_status": "DECODED_PILLOW",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    },
+    {
+      "species": "サワラ",
+      "file": "fish-master-v34-sawara.avif",
+      "sha256": "b62c03daf9524e1c5dbb34a4d7429828e9f33e5bd233f75a0b15fb3a1dac45ed",
+      "decode_status": "FAILED_TRUNCATED",
+      "visual_status": "REJECTED_STYLE_AND_DIRECTION"
+    }
+  ]
+}

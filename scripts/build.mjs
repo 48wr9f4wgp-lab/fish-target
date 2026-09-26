@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import {cp, mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -13,7 +14,7 @@ if(!/^V\d+(?:[.-][A-Za-z0-9]+)*$/.test(config.version))throw new Error('Invalid 
 if(typeof config.features?.fieldLive!=='boolean')throw new Error('Missing fieldLive feature flag');
 const buildId=config.version.toLowerCase();
 const publicationBuild=process.env.FISH_TARGET_PUBLICATION_BUILD==='1';
-const cacheBuildId=publicationBuild?`${buildId}-publication`:buildId;
+const cacheBuildPrefix=publicationBuild?`${buildId}-publication`:buildId;
 
 const fishAssetAuthoring=await loadFishAssetAuthoring();
 const fishAssetErrors=validateFishAssetAuthoring(fishAssetAuthoring);
@@ -21,19 +22,8 @@ if(fishAssetErrors.length)throw new Error(`Fish asset authoring invalid during b
 const expectedFishAssetRuntime=generateFishAssetRuntimeSource(fishAssetAuthoring);
 const currentFishAssetRuntime=await readFile(path.join(root,'fish-asset-authoring-generated.js'),'utf8').catch(()=>null);
 if(currentFishAssetRuntime!==expectedFishAssetRuntime)throw new Error('Generated fish asset runtime is stale. Run npm run fish-assets:generate.');
-const devFishAssetFiles=Object.freeze([
-  'fish-master-v34-seabass.avif',
-  'fish-master-v34-aji.avif',
-  'fish-master-v34-mebaru.avif',
-  'fish-master-v34-magochi.avif',
-  'fish-master-v34-tachiuo.avif',
-  'fish-master-v34-madai.avif',
-  'fish-master-v34-blackbass.avif',
-  'fish-master-v34-sawara.avif'
-]);
 const sourceFishAssetFiles=[...new Set([
-  ...fishAssetAuthoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean),
-  ...(publicationBuild?[]:devFishAssetFiles)
+  ...fishAssetAuthoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean)
 ])];
 if(!sourceFishAssetFiles.length)throw new Error('Fish asset authoring has no bundled files');
 const publicationSafeFishFiles=new Set(sourceFishAssetFiles.filter(file=>{
@@ -104,6 +94,14 @@ if(lureRuntimeEnabled){
   await writeFile(path.join(output,'lure-catalog-manifest.json'),JSON.stringify(distributionLureManifest,null,2));
 }
 await generateIcons(output);
+
+// A changed asset must trigger a new SW even when the display version is unchanged.
+const contentHash=createHash('sha256');
+for(const file of [...new Set([...copiedAssets,...generatedAssets,'index.html','sw.js','build.config.json'])].sort()){
+  const base=generatedAssets.includes(file)?output:root;
+  contentHash.update(file+'\0').update(await readFile(path.join(base,file))).update('\0');
+}
+const cacheBuildId=`${cacheBuildPrefix}-${contentHash.digest('hex').slice(0,16)}`;
 
 const replaceBuildTokens=source=>source
   .replaceAll('__BUILD_VERSION__',config.version)

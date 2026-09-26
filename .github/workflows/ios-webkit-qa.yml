@@ -4,7 +4,6 @@ on:
   push:
     branches: [chatgpt/rc-ios-webkit-*]
   pull_request:
-    branches: [chatgpt/rc-integration-2026-09-03]
 
 concurrency:
   group: rc-ios-webkit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -39,4 +38,5 @@ jobs:
           done
           curl -fsS http://127.0.0.1:4173/dist/ >/dev/null
           node scripts/ios-webkit-rc-qa.mjs
+          FISH_TARGET_QA_ENGINE=webkit node scripts/v34-completion-browser-qa.mjs
           FISH_TARGET_QA_ENGINE=webkit node scripts/rc-storage-resilience-browser-qa.mjs
