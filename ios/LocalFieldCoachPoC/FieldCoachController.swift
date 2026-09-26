@@ -39,8 +39,9 @@ final class FieldCoachController: NSObject, WKScriptMessageHandler {
                 do {
                     let prompt = try FieldCoachPromptBuilder.build(request)
                     let output = try await engine.complete(prompt: prompt, maxTokens: 120)
+                    let guarded = try FieldCoachOutputGuard.sanitize(output, request: request)
                     await MainActor.run {
-                        resolve(requestID: request.requestId, text: output)
+                        resolve(requestID: request.requestId, text: guarded)
                     }
                 } catch {
                     await MainActor.run {
