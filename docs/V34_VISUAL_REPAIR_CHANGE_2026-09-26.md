@@ -1,6 +1,6 @@
 # FISH TARGET V34 — 代表魚の表示品質修正
 
-> 最新更新: 続行指示により下記「第2段階」まで実装。最初の2種の記録は履歴として保持。
+> 最新更新: 代表4種に加え、隔離8種の新規制作も開発版へ組込み。続編は `V34_VISUAL_BATCH2_REPLACEMENT_2026-09-26.md`。本書の段階別記録は履歴として保持。
 
 - scope: title-local / development review
 - baseline: `00abe530207ec251cd09016a860640dfc1dba49c`

@@ -1,0 +1,103 @@
+{
+  "version": "FISH-VISUAL-REPLACEMENT-BATCH2-V34",
+  "status": "DEVELOPMENT_PREVIEW_PENDING_USER_REVIEW",
+  "generated_at": "2026-09-26",
+  "assets": [
+    {
+      "species_name": "シーバス",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-seabass.webp",
+      "generation_file": "exec-48a5504c-5418-4381-8154-5051d3e3cb36.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Japanese sea bass Lateolabrax japonicus. Elongated silver body, dark gray-green back, large terminal mouth reaching near eye, distinctly spiny anterior and soft posterior dorsal sections. Not a deep-bodied black bass."
+      ],
+      "prompt_sha256": "bdf0fc46a903c33f72ce7be94677fdc27fcad8e1b50c6abd66376ccc80e0a478",
+      "output_sha256": "9c46a07c54c4ba82c8553f0882c2980e5dee4bc4256f511c4c8c6efc15d7cfc3",
+      "generation_sha256": "316f1ab1d4ec8fb8a8589dd060b1ab0c451f0f36b908fe744cf8f6f63edf55e7"
+    },
+    {
+      "species_name": "アジ",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-aji.webp",
+      "generation_file": "exec-eb2f75f4-5b18-44eb-b26e-0ee17571fba7.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Japanese jack mackerel Trachurus japonicus. Moderately compressed slender silver body, blue-green dorsal surface, conspicuous bony scutes along rear lateral line, yellowish deeply forked tail, dark mark at upper rear gill cover. No tuna finlets or mackerel bars."
+      ],
+      "prompt_sha256": "c52a6c6bbe67e7516fa54ca80269f34ec0025fc643fa73a009fdc0b5477068ea",
+      "output_sha256": "2db8a1ee1956aadb2eabce5ed9e3eee11d15f291c10ebdd78fdb6900fa11eaaa",
+      "generation_sha256": "90d50c82606c818871d7055d750e15d76173f17ab432f6bd43e8036b0a5d5595"
+    },
+    {
+      "species_name": "メバル",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-mebaru.webp",
+      "generation_file": "exec-4708c779-074f-4b4c-9c5d-150d139c750f.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Typical Japanese coastal mebaru rockfish, Sebastes inermis group, warm brown subtly mottled body. Compact relatively deep profile, naturally large round eye, spiny dorsal, moderately sized mouth. Accurate natural rockfish anatomy, no exaggerated cartoon eye or giant grouper mouth."
+      ],
+      "prompt_sha256": "11584427fc31a0c32529d74e01848351a70fad5cf7a2c4afe9f7bbbbe4e053ed",
+      "output_sha256": "cca6d2ef59abfc2bacbc2fe6010f1540664ac5ee47cb26947383dc078fba31db",
+      "generation_sha256": "97dc452d6e44efc3fe9694cddbbb450a6c13cf48300255856fd117bc3fca929d"
+    },
+    {
+      "species_name": "マゴチ",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-magochi.webp",
+      "generation_file": "exec-ff196c3a-7483-4c02-acc9-b2963505d4f4.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Japanese flathead Platycephalus sp., magochi. Broad flattened triangular head, eyes high on head, wide horizontal mouth, long tapering sandy brown mottled body, separated dorsal fins and broad pectoral fins. Subtle elevated side view to show flattened head; not a flatfish, not a round-headed goby."
+      ],
+      "prompt_sha256": "651f4e07d73e738c6be58e4674c3f4e2a8bea8c84276a1e86ca4fdb38e774a00",
+      "output_sha256": "d44ea99ede41ad73c9a30d1e25f6cff98f19a5e3a422cc886e904e1e98e3ac71",
+      "generation_sha256": "90c002ef2de13320fed32f82feaff706a57aa36a16de2799638e546f4b777ecc"
+    },
+    {
+      "species_name": "タチウオ",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-tachiuo.webp",
+      "generation_file": "exec-d0e84cb8-d89c-4c00-814b-cb0b7d91a218.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Largehead hairtail Trichiurus lepturus group, Japanese tachiuo. Very long thin laterally compressed metallic silver ribbon body tapering into a fine whiplike point WITHOUT a caudal fin, long continuous low dorsal fin, pointed snout with visible modest sharp teeth. No forked tail, no cylindrical eel body. Body almost straight with a gentle natural curve, full tail visible."
+      ],
+      "prompt_sha256": "d5beaa420dc446d7e31593a7d7a7cbceb132875298a7f4e79bfd59dc409b8142",
+      "output_sha256": "5ef4d2a4171109f67b883e1a6f4f05bdd7c7a077b3a1e81c694929fca5c68c82",
+      "generation_sha256": "a17354868fcb0c901c9bc5cec36109c7dcd35b57ba44f644c86075d64ecfbb9b"
+    },
+    {
+      "species_name": "マダイ",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-madai.webp",
+      "generation_file": "exec-6c99a544-910e-4adf-b4a2-bedf447ff7cf.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Red sea bream Pagrus major. Deep oval pink-red body, subtle small blue spots on upper flanks, pale silver-pink belly, natural spiny dorsal, forked red tail, small strong mouth. Restrained realistic color, not bright tropical fish."
+      ],
+      "prompt_sha256": "8c75b68a0f8d22553fbf77570a5137267b4c47cd1a88e573e51f5a2303b937fe",
+      "output_sha256": "4aec684e9734655bede1ca2ce6bd352a912213c47e9eaa041567fbaee85624a8",
+      "generation_sha256": "d765994ddf5d46ce526f90e5392e0849ccfe792b0b3895e7181e4f9dee1112f2"
+    },
+    {
+      "species_name": "ブラックバス",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-blackbass.webp",
+      "generation_file": "exec-5b9ebef4-2a15-43fa-9dd6-d69d1eac7697.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Largemouth bass Micropterus salmoides. Olive-green upper body, cream belly, dark irregular broken horizontal flank stripe, robust bass proportions, large lower jaw with upper jaw extending to behind eye, connected spiny and soft dorsal with deep notch. No adipose fin."
+      ],
+      "prompt_sha256": "14dd227433f1554acb04b8bd3eeada914cb93c648767a6be0bbb9009660d0a37",
+      "output_sha256": "fb86c2c9a050fb05c4990874bca3779828c6e217c891a4565315e98b723ff0cf",
+      "generation_sha256": "636d4b0cf257a286e4e9ffa374da5c56676431361f80c0359eb57a97dbf3ddd3"
+    },
+    {
+      "species_name": "サワラ",
+      "source_kind": "new-project-generated",
+      "output_file": "fish-preview-v34-sawara.webp",
+      "generation_file": "exec-41de477e-cb33-4282-8c4f-2cd0cb389634.png",
+      "prompts": [
+        "Create ONE premium natural-history field-guide fish illustration, photorealistic restrained painterly scientific realism, detailed natural scales and fins, lifelike adult specimen. Isolated full body in strict horizontal profile, HEAD RIGHT and tail LEFT, centered with 8-10 percent clear margins all sides, landscape 1536x1024 canvas. True transparent alpha background. No cast shadow, glow, background colors, water, scenery, text, labels, ruler, hooks, blood, borders or watermark. Entire silhouette and every fin and tail fully visible. Natural neutral lighting, no cartoon outlines, no cute stylization. Species identity takes priority over drama. Japanese Spanish mackerel Scomberomorus niphonius. Long streamlined narrow silver body, blue-gray back, rows of small dark gray rounded spots on flanks, pointed head and moderate toothed mouth, deeply forked tail, small finlets behind dorsal and anal fins. No barracuda giant fangs, no plain unmarked body."
+      ],
+      "prompt_sha256": "c9333bf373395e51d616ba89891bb964e4e81e8ff85174efb5909d1a87f779f5",
+      "output_sha256": "5593e99e63d9069b21955ae514cfe474ffc335fae607b50a49d20cf421176f88",
+      "generation_sha256": "ed2c271fa53214966354e85181183cb79a507cc5175cb475d01751d63830a292"
+    }
+  ]
+}

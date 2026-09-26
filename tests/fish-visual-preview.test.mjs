@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {generateRuntimeSource,validateAuthoring,verifyAssetFiles} from '../scripts/fish-asset-authoring.mjs';
@@ -14,17 +15,39 @@ function runtime(publication){
   return context.FISH_TARGET_FISH_ASSET_MANIFEST;
 }
 
-test('preview selection preserves the separately approved publication original',()=>{
+test('preview selection preserves publication originals and excludes unapproved replacements',()=>{
   const development=runtime(false),publication=runtime(true);
-  assert.equal(data.development_previews.length,4);
+  assert.equal(data.development_previews.length,12);
   for(const preview of data.development_previews){
     const name=preview.species_name,original=data.assets.find(row=>row.species_name===name);
     assert.equal(development.resolve(name).asset.file,preview.asset.file);
     assert.equal(development.resolve(name).development_only,true);
     assert.equal(development.resolve(name).publication_ready,false);
-    assert.equal(publication.resolve(name).asset.file,original.asset.file);
+    if(original.rights_status==='verified'){
+      assert.equal(publication.resolve(name).asset.file,original.asset.file);
+      assert.equal(publication.resolve(name).publication_ready,true);
+    }else{
+      assert.equal(publication.resolve(name).asset,null);
+      assert.equal(publication.resolve(name).mode,'remote-fallback');
+      assert.equal(publication.resolve(name).publication_ready,false);
+    }
     assert.equal(publication.resolve(name).development_only,false);
-    assert.equal(publication.resolve(name).publication_ready,true);
+  }
+});
+
+test('batch 2 replacements retain exact generation prompts and independent output provenance',async()=>{
+  const evidence=JSON.parse(await readFile(new URL('../authoring/fish-visual-replacement-batch2-v34.json',import.meta.url)));
+  assert.equal(evidence.assets.length,8);
+  assert.equal(new Set(evidence.assets.map(row=>row.species_name)).size,8);
+  for(const row of evidence.assets){
+    const preview=data.development_previews.find(record=>record.species_name===row.species_name);
+    assert.equal(row.source_kind,'new-project-generated');
+    assert.equal(row.output_file,preview.asset.file);
+    assert.equal(row.output_sha256,preview.provenance.output_sha256);
+    assert.equal(createHash('sha256').update(JSON.stringify(row.prompts)).digest('hex'),row.prompt_sha256);
+    assert.equal(row.prompt_sha256,preview.provenance.prompt_sha256);
+    assert.match(row.generation_sha256,/^[a-f0-9]{64}$/);
+    assert.equal(preview.provenance.source_sha256,undefined,'new art must not pretend to derive from quarantined bytes');
   }
 });
 

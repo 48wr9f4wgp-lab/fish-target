@@ -37,7 +37,7 @@ try{
       fieldsComplete:manifest.records.every(row=>['species_id','species_name','asset','source','source_url','author','license','attribution','verified_at','provenance','mode','rights_status','publication_ready'].every(key=>Object.prototype.hasOwnProperty.call(row,key))),
       recordsFrozen:Object.isFrozen(manifest.records)&&manifest.records.every(row=>Object.isFrozen(row)&&(!row.asset||Object.isFrozen(row.asset))&&(!row.provenance||Object.isFrozen(row.provenance))),
       bundledSlots:bundled.filter(row=>row.asset?.type==='sprite-sheet').map(row=>row.asset.slot),
-      authoredSlots:authoring.assets.filter(row=>row.asset?.type==='sprite-sheet').map(row=>row.asset.slot),
+      authoredSlots:effective.filter(row=>row.asset?.type==='sprite-sheet').map(row=>row.asset.slot),
       authoredFiles:[...new Set(effective.map(row=>row.asset.file))],
       bundledFiles:[...new Set(bundled.map(row=>row.asset?.file))],
       bundledRights:bundled.every(row=>{const expected=effective.find(asset=>asset.species_name===row.species_name);return expected&&['source','license','rights_status','publication_ready'].every(key=>row[key]===expected[key])}),
@@ -67,15 +67,15 @@ try{
   assert.equal(new Set(snapshot.names).size,63,'manifest species names are unique');
   assert.equal(snapshot.fieldsComplete,true,'every manifest record carries rights, attribution, and provenance fields');
   assert.equal(snapshot.recordsFrozen,true,'manifest read model is immutable');
-  assert.deepEqual(snapshot.bundledSlots,snapshot.authoredSlots,'sprite slots match canonical authoring');
+  assert.deepEqual(snapshot.bundledSlots,snapshot.authoredSlots,'sprite slots match effective development authoring');
   assert.deepEqual(snapshot.bundledFiles,snapshot.authoredFiles,'runtime uses the authored direct files and sprite sheet');
   assert.equal(snapshot.bundledRights,true,'runtime cannot promote rights beyond canonical authoring');
   assert.equal(snapshot.remoteRights,true,'remote fallbacks remain runtime license gated');
-  assert.equal(snapshot.publicationReady,0,'four current previews cannot inherit approval of their original assets');
+  assert.equal(snapshot.publicationReady,0,'twelve current previews cannot inherit approval of their original assets');
   assert.equal(snapshot.publicationReadyCount,0,'no preview asset is silently promoted');
   assert.equal(snapshot.hirame?.species_name,'ヒラメ','species aliases resolve through canonical registry');
   assert.equal(snapshot.aji?.mode,'bundled','local fish resolves to bundled asset');
-  assert.equal(snapshot.aji?.asset?.file,'fish-real-v7.avif');
+  assert.equal(snapshot.aji?.asset?.file,'fish-preview-v34-aji.webp');
   assert.equal(snapshot.saba?.mode,'remote-fallback','non-bundled fish resolves to remote fallback');
   assert.equal(snapshot.saba?.asset,null);
   assert.equal(snapshot.realVersion,'V23-REAL9');

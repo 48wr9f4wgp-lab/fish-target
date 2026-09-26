@@ -6,6 +6,7 @@ const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
 const engine=process.env.FISH_TARGET_QA_ENGINE==='webkit'?webkit:chromium;
 const browser=await engine.launch({headless:true});
 const screenshots=process.env.FISH_TARGET_SCREENSHOTS;
+const expectedNames=['ブリ・ワラサ','ニジマス','ヒラメ','アオリイカ','シーバス','アジ','メバル','マゴチ','タチウオ','マダイ','ブラックバス','サワラ'];
 if(screenshots)await mkdir(screenshots,{recursive:true});
 try{
   const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true});
@@ -23,12 +24,12 @@ try{
       return {name:row.species_name,transparent:transparent/(data.length/4),opaque:opaque/(data.length/4),file:row.asset.file};
     }));
   });
-  assert.equal(metrics.length,4);
+  assert.deepEqual(metrics.map(row=>row.name).sort(),[...expectedNames].sort());
   for(const metric of metrics){assert.ok(metric.transparent>.55,`${metric.name} must have true transparency`);assert.ok(metric.opaque>.12,`${metric.name} must retain an opaque fish body`)}
 
   for(const width of [375,390,430]){
     await page.setViewportSize({width,height:844});
-    for(const [i,name] of ['ブリ・ワラサ','ニジマス','ヒラメ','アオリイカ'].entries()){
+    for(const [i,name] of expectedNames.entries()){
       await page.locator('#q').fill(name);
       const card=page.locator(`button.fish[data-fish="${name}"]`);
       await card.scrollIntoViewIfNeeded();

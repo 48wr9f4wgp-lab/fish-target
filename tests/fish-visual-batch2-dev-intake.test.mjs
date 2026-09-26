@@ -46,15 +46,16 @@ test('batch 2 development assets are byte-locked AVIF files',()=>{
   }
 });
 
-test('quarantined batch 2 uses the existing canonical fallback in development',()=>{
+test('new batch 2 previews replace sprites without reviving quarantined binaries',()=>{
   const manifest=runtime(false);
-  assert.equal(manifest.developmentOnlyCount,4,'separate pilot repairs may be reviewed without reviving batch 2');
+  assert.equal(manifest.developmentOnlyCount,12,'twelve separately recorded previews are development only');
   assert.equal(manifest.publicationReadyCount,0,'repair previews cannot inherit the original pilot approval');
   for(const [species,file] of batch){
     const record=manifest.bySpeciesName(species);
-    assert.equal(record.asset.type,'sprite-sheet');
+    assert.equal(record.asset.type,'file');
+    assert.equal(record.asset.file,file.replace('fish-master-','fish-preview-').replace('.avif','.webp'));
     assert.notEqual(record.asset.file,file);
-    assert.equal(record.development_only,false);
+    assert.equal(record.development_only,true);
     assert.equal(record.publication_ready,false);
   }
 });
