@@ -21,7 +21,20 @@ if(fishAssetErrors.length)throw new Error(`Fish asset authoring invalid during b
 const expectedFishAssetRuntime=generateFishAssetRuntimeSource(fishAssetAuthoring);
 const currentFishAssetRuntime=await readFile(path.join(root,'fish-asset-authoring-generated.js'),'utf8').catch(()=>null);
 if(currentFishAssetRuntime!==expectedFishAssetRuntime)throw new Error('Generated fish asset runtime is stale. Run npm run fish-assets:generate.');
-const sourceFishAssetFiles=[...new Set(fishAssetAuthoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean))];
+const devFishAssetFiles=Object.freeze([
+  'fish-master-v34-seabass.avif',
+  'fish-master-v34-aji.avif',
+  'fish-master-v34-mebaru.avif',
+  'fish-master-v34-magochi.avif',
+  'fish-master-v34-tachiuo.avif',
+  'fish-master-v34-madai.avif',
+  'fish-master-v34-blackbass.avif',
+  'fish-master-v34-sawara.avif'
+]);
+const sourceFishAssetFiles=[...new Set([
+  ...fishAssetAuthoring.assets.map(record=>String(record?.asset?.file??'').trim()).filter(Boolean),
+  ...(publicationBuild?[]:devFishAssetFiles)
+])];
 if(!sourceFishAssetFiles.length)throw new Error('Fish asset authoring has no bundled files');
 const publicationSafeFishFiles=new Set(sourceFishAssetFiles.filter(file=>{
   const records=fishAssetAuthoring.assets.filter(record=>String(record?.asset?.file??'').trim()===file);

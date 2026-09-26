@@ -50,8 +50,18 @@ assert.equal(((await page.locator('#result .rotationLabel').textContent())||'').
 assert.equal(((await page.locator('#result .planCard .recommend').textContent())||'').trim(),'STEP 1 · 釣り方','method decision is explicit before first cast');
 
 const first=page.locator('#result .firstCast'),plan=page.locator('#result .planCard'),auto=page.locator('#tackleAutoBuildV29'),fit=page.locator('#tackleFitCard'),gear=page.locator('#gear');
-const firstBox=await first.boundingBox(),planBox=await plan.boundingBox(),autoBox=await auto.boundingBox(),fitBox=await fit.boundingBox(),gearBox=await gear.boundingBox();
-assert.ok(firstBox&&planBox&&planBox.y<firstBox.y,'method controls precede FIRST CAST in the decision flow');
+// show('result') uses smooth scrolling. Read positions in one frame so the
+// changing scroll offset cannot mix coordinates from different frames.
+const flow=await page.evaluate(()=>{
+  const selectors=['#result .planCard','#result .firstCast','#tackleAutoBuildV29','#tackleFitCard','#gear'];
+  const elements=selectors.map(selector=>document.querySelector(selector));
+  return {
+    boxes:elements.map(el=>el?{y:el.getBoundingClientRect().y,height:el.getBoundingClientRect().height}:null),
+    domOrder:elements.every((el,i)=>i===0||Boolean(elements[i-1]&&el&&(elements[i-1].compareDocumentPosition(el)&Node.DOCUMENT_POSITION_FOLLOWING)))
+  };
+});
+const [planBox,firstBox,autoBox,fitBox,gearBox]=flow.boxes;
+assert.ok(flow.domOrder&&firstBox&&planBox&&planBox.y<firstBox.y,'method controls precede FIRST CAST in the decision flow');
 assert.ok(firstBox&&autoBox&&firstBox.y<autoBox.y,'AUTO BUILD follows FIRST CAST immediately');
 assert.ok(fitBox&&gearBox&&fitBox.y<gearBox.y,'MY TACKLE decision comes before generic required tackle');
 assert.ok((await page.locator('#firstBait').boundingBox())?.y<650,'FIRST CAST remains in the opening decision window after the method card');

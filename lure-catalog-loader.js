@@ -52,12 +52,13 @@
         const li=add(ul,'li','','lureCatalogItem');
         add(li,'b',row.display_name||`${row.series} ${row.variant}`);
         const egiSize=row.size_go?`${Number(row.size_go).toFixed(1)}号`:'';
-        const kind=String(row.lure_type||'').includes('component')?'仕掛け部品':'ルアー完成品';
-        const specs=[kind,egiSize,row.length_mm?`${row.length_mm}mm`:'',row.weight_g?`${row.weight_g}g`:'',row.hook_size?`フック ${row.hook_size}`:''].filter(Boolean).join(' / ');
+        const lureType=String(row.lure_type||'');
+        const kind=lureType==='rig-combo'?'FIRST CASTセット':lureType.includes('component')?'仕掛け部品':'ルアー完成品';
+        const specs=[kind,egiSize,row.size_inch?`${row.size_inch}inch`:'',row.length_mm?`${row.length_mm}mm`:'',row.weight_g?`${row.weight_g}g`:'',row.hook_size?`フック ${row.hook_size}`:''].filter(Boolean).join(' / ');
         if(specs)add(li,'span',specs,'lureCatalogSpecs');
         if(row.use_note)add(li,'small',row.use_note,'lureCatalogNote');
       }
-      add(host,'small','メーカー公式情報を基にした研究候補。ルアー完成品と仕掛け部品を含む。色別SKU・在庫・価格は含めない。','lureCatalogDisclaimer');
+      add(host,'small','メーカー公式情報を基にした研究候補。FIRST CASTセット・ルアー完成品・仕掛け部品を区別して表示。色別SKU・在庫・価格は含めない。','lureCatalogDisclaimer');
     }catch{
       host.replaceChildren();add(host,'p',navigator.onLine?'候補データを読み込めませんでした。':'オフラインでは市販候補を追加読込できません。','lureCatalogStatus');
     }
