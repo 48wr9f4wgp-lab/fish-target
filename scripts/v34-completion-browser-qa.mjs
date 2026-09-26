@@ -65,6 +65,8 @@ try{
   await page.locator('#conditionsPackBtn').click();
   assert.equal(await rod.locator('input').isChecked(),false,'a different physical rod with the same name is not already packed');
   await page.locator('#packStandaloneCloseV30').click();
+  await page.locator('#appTabBarV26 [data-app-tab="home"]').click();
+  await page.locator('#home.on').waitFor({state:'visible'});
 
   // Fail the cold loader once, then reopen the same panel to retry.
   let loaderRequests=0;
