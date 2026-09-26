@@ -72,7 +72,8 @@
       await loadScript('./resolver-tackle-ui.js','resolver-tackle-ui-js');
       await loadScript('./app-shell-v26.js','app-shell-v26-js');
       await loadScript('./pack-checklist-v28.js','pack-checklist-v28-js');
-      await loadScript('./tackle-auto-build-v29.js','tackle-auto-build-v29-js');\n      await loadScript('./local-field-coach-v30.js','local-field-coach-v30-js');
+      await loadScript('./tackle-auto-build-v29.js','tackle-auto-build-v29-js');
+      await loadScript('./local-field-coach-v30.js','local-field-coach-v30-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
       await maybeLoadLureUi();
     }catch(err){console.error('extension bootstrap failed',err)}
