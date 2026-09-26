@@ -50,7 +50,9 @@
     globalThis.FISH_TARGET_MODAL_FOCUS?.dismiss();
     const safe=valid(row)?row:{...snapshot(),view:'home',modal:null,index:0,parent:null,version:1};
     const sameBase=before.view===safe.view&&before.fish===safe.fish&&JSON.stringify(before.plan)===JSON.stringify(safe.plan)&&JSON.stringify(before.home)===JSON.stringify(safe.home);
-    if(!sameBase){
+    const fishScoped=['result','conditions','fieldmode'].includes(safe.view);
+    const fishNeedsHydration=fishScoped&&(!cur||cur.name!==safe.fish||!document.getElementById('rname')?.textContent?.trim());
+    if(!sameBase||fishNeedsHydration){
       document.getElementById('q').value=safe.home.query.slice(0,200);
       waterFilter=['all','salt','fresh'].includes(safe.home.water)?safe.home.water:'all';
       styleFilter=['all','lure','bait'].includes(safe.home.style)?safe.home.style:'all';
