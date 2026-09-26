@@ -87,13 +87,13 @@
     $$('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&button.dataset.appTab==='pack'));
     if(active)return;
     const current=$('.view.on')?.id;
-    const fallback=current==='saved'?'saved':current==='home'?'home':null;
+    const fallback=current==='saved'?'saved':current==='home'?'home':current==='conditions'?'conditions':null;
     if(fallback){const button=$(`#appTabBarV26 button[data-app-tab="${fallback}"]`);if(button)button.classList.add('on')}
   }
 
   function ensureTab(){
     const bar=$('#appTabBarV26');
-    if(!bar||$('#appPackTabV30'))return;
+    if(!bar||$('#appPackTabV30')||bar.querySelector('[data-app-tab="conditions"]'))return;
     const button=document.createElement('button');
     button.id='appPackTabV30';button.dataset.appTab='pack';button.type='button';
     button.innerHTML='<span class="tabIcon">✓</span><b>持ち物</b>';
