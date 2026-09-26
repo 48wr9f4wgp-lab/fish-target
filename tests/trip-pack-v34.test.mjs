@@ -63,6 +63,16 @@ test('standalone packing stays usable without a selected plan',()=>{
   assert.equal(rules.planKey(null),'pack:standalone');
 });
 
+test('an explicitly selected boat or rock location activates safety requirements',()=>{
+  const rules=runtime('salt');
+  const plan={plan_id:'p:1',species_name:'魚',method:'ルアー',places:['堤防','船','磯'],first_cast:{}};
+  for(const selected_place of ['船','磯']){
+    const items=rules.derive({...plan,selected_place},{ownedSet:null});
+    assert.equal(items.find(item=>item.id==='safety-lifejacket').priority,'required');
+  }
+  assert.equal(rules.derive({...plan,selected_place:'堤防'},{ownedSet:null}).find(item=>item.id==='safety-lifejacket').priority,'recommended');
+});
+
 test('owned tackle selection changes labels but never marks anything packed',()=>{
   const rules=runtime({water:'salt',styles:['lure'],tags:[]});
   const plan={plan_id:'p:1',species_name:'魚',method:'ルアー',requirements:{rod:'M',reel:'3000'},first_cast:{bait:'ミノー',size:'100mm'}};

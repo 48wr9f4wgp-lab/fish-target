@@ -3,6 +3,37 @@
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
   document.documentElement.classList.add('app-shell-v26','clarity-v27');
 
+  // Shared by the two existing sheets: keep interaction inside the active dialog.
+  let activeModal=null;
+  globalThis.FISH_TARGET_MODAL_FOCUS=Object.freeze({
+    dismiss(){activeModal?.onClose()},
+    open(element,onClose){
+      if(activeModal?.element===element)return;
+      activeModal?.onClose();
+      const opener=document.activeElement;
+      const siblings=[...document.body.children].filter(el=>el!==element&&!el.contains(element)&&el.id!=='tackleBackdrop');
+      const previous=siblings.map(el=>[el,el.inert]);
+      siblings.forEach(el=>{el.inert=true});
+      activeModal={element,onClose,opener,previous};
+      element.querySelector('button')?.focus({preventScroll:true});
+    },
+    close(element){
+      if(activeModal?.element!==element)return;
+      const {opener,previous}=activeModal;activeModal=null;
+      previous.forEach(([el,value])=>{el.inert=value});
+      if(opener?.isConnected)opener.focus({preventScroll:true});
+    }
+  });
+  document.addEventListener('keydown',event=>{
+    if(!activeModal)return;
+    if(event.key==='Escape'){event.preventDefault();activeModal.onClose();return}
+    if(event.key!=='Tab')return;
+    const items=$$('button,input,select,textarea,a[href],[tabindex]',activeModal.element).filter(el=>!el.disabled&&el.tabIndex>=0&&el.getClientRects().length);
+    const first=items[0],last=items.at(-1);
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus()}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus()}
+  });
+
   const OWNED_STORAGE_KEYS=Object.freeze([
     'fish_target_v9','fish_target_v8','fish_target_v7','fish_target_v6','fish_target_v5',
     'fish_target_v9_checklists','fish_target_v9_events',
@@ -16,20 +47,23 @@
     if(legacy)legacy.click();
     syncTabs(view);
   };
-  const syncTabs=view=>$$('#appTabBarV26 button').forEach(b=>b.classList.toggle('on',b.dataset.appTab===view));
+  const syncTabs=view=>$$('#appTabBarV26 button').forEach(b=>{const active=b.dataset.appTab===view;b.classList.toggle('on',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
 
   function ensureTabBar(){
     if($('#appTabBarV26'))return;
     const bar=document.createElement('nav');
     bar.id='appTabBarV26';bar.className='appTabBarV26';bar.setAttribute('aria-label','メインナビゲーション');
+    const fieldLiveOn=document.documentElement.dataset.fieldLive==='on';bar.dataset.tabs=fieldLiveOn?'4':'3';
     bar.innerHTML=`
       <button class="on" data-app-tab="home" type="button"><span class="tabIcon">⌕</span><b>探す</b></button>
+      ${fieldLiveOn?'<button data-app-tab="conditions" type="button"><span class="tabIcon">≋</span><b>釣行</b></button>':''}
       <button data-app-tab="saved" type="button"><span class="tabIcon">▣</span><b>保存</b></button>
       <button data-app-tab="tackle" type="button"><span class="tabIcon">◎</span><b>タックル</b></button>`;
     document.body.appendChild(bar);
     bar.addEventListener('click',e=>{
       const btn=e.target.closest('button');if(!btn)return;
       if(btn.dataset.appTab==='tackle'){$('#tackleManage')?.click();return}
+      if(btn.dataset.appTab==='conditions'){globalThis.FISH_TARGET_CONDITIONS_PAGE?.openGlobal?.();return}
       activateView(btn.dataset.appTab);
     });
   }
@@ -130,7 +164,9 @@
     const grid=$('#home #grid');if(!grid)return;
     const panel=document.createElement('details');
     panel.id='privacyPanelV26';panel.className='privacyPanelV26';
-    panel.innerHTML=`<summary><span><b>データとプライバシー</b><small>端末保存と外部通信</small></span><em>確認 ›</em></summary><div class="privacyBodyV26"><p><strong>端末内に保存：</strong>保存プラン、MY TACKLE、お気に入り・最近見た魚、チェックリスト、アプリ内の利用イベントは、この端末のブラウザ/PWAストレージに保存します。外部Analyticsサービスへ送信しません。</p><p><strong>魚のオンライン写真：</strong>オンライン写真が有効な場合はWikipedia / Wikimediaへ画像候補を問い合わせます。アプリの認証情報やCookieは送信せず、画像にはリファラーを付けません。ただし通常のWeb通信と同様、接続元IPなどは接続先から見える場合があります。</p><p><strong>FIELD LIVE：</strong>現在の公開設定ではOFFです。天候・海況APIへの自動送信は行いません。</p><button class="privacyDeleteV26" id="privacyDeleteV26" type="button">この端末のFISH TARGETデータを削除</button><small class="privacyDeleteNoteV26">FISH TARGETが所有する保存キーと魚写真キャッシュだけを削除します。他のサイトやアプリの保存データは削除しません。</small></div>`;
+    const fieldLiveOn=document.documentElement.dataset.fieldLive==='on';
+    const fieldLiveCopy=fieldLiveOn?'開発プレビューではONです。地点検索では検索語をOpen-Meteo Geocodingへ、選択地点では緯度経度をOpen-Meteo Weather / Marineへ送信します。端末の現在地GPSは自動送信しません。':'公開ビルドではOFFです。天候・海況APIへの自動送信は行いません。';
+    panel.innerHTML=`<summary><span><b>データとプライバシー</b><small>端末保存と外部通信</small></span><em>確認 ›</em></summary><div class="privacyBodyV26"><p><strong>端末内に保存：</strong>保存プラン、MY TACKLE、お気に入り・最近見た魚、チェックリスト、アプリ内の利用イベントは、この端末のブラウザ/PWAストレージに保存します。外部Analyticsサービスへ送信しません。</p><p><strong>魚のオンライン写真：</strong>オンライン写真が有効な場合はWikipedia / Wikimediaへ画像候補を問い合わせます。アプリの認証情報やCookieは送信せず、画像にはリファラーを付けません。ただし通常のWeb通信と同様、接続元IPなどは接続先から見える場合があります。</p><p><strong>FIELD LIVE：</strong>${fieldLiveCopy}</p><button class="privacyDeleteV26" id="privacyDeleteV26" type="button">この端末のFISH TARGETデータを削除</button><small class="privacyDeleteNoteV26">FISH TARGETが所有する保存キーと魚写真キャッシュだけを削除します。他のサイトやアプリの保存データは削除しません。</small></div>`;
     grid.insertAdjacentElement('afterend',panel);
     $('#privacyDeleteV26')?.addEventListener('click',requestOwnedStorageRemoval);
   }
@@ -146,10 +182,13 @@
 
   function syncShell(){
     ensureTabBar();ensureResultRail();polishTackleSheet();installCatalogSearchDebounce();ensurePrivacyPanel();tagFishCards();simplifyDynamicCopy();
+    const railLabel=$('#resultRailV26 button');
+    const enlarged=railLabel&&parseFloat(getComputedStyle(railLabel).fontSize)>=18;
+    document.body.classList.toggle('largeTextV34',Boolean(enlarged));
     const current=$('.view.on')?.id;
     document.body.classList.toggle('resultOpenV26',current==='result'||current==='fieldmode');
     document.body.classList.toggle('savedOpenV26',current==='saved');
-    if(current==='home'||current==='saved')syncTabs(current);
+    if(current==='home'||current==='saved'||current==='conditions')syncTabs(current);
   }
 
   let syncQueued=false;
@@ -157,5 +196,10 @@
   const mo=new MutationObserver(scheduleSync);
   mo.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','hidden']});
   syncShell();
+  const textLayoutObserver=new ResizeObserver(scheduleSync);
+  for(const selector of ['#resultRailV26','#resultDockV20','.fieldModeHead']){
+    const element=$(selector);if(element)textLayoutObserver.observe(element);
+  }
+  window.addEventListener('resize',scheduleSync);
   globalThis.FISH_TARGET_PRIVACY_CONTROLS=Object.freeze({version:'PRIVACY-RC-1',ownedStorageKeys:OWNED_STORAGE_KEYS,ownedStoragePrefixes:OWNED_STORAGE_PREFIXES});
 })();

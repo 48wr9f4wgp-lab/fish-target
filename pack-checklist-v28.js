@@ -2,6 +2,7 @@
   const STORE_KEY='fish_target_v9_checklists';
   const CONFIG_KEY='__quick_pack_v28_config';
   const CHECKED_KEY='__quick_pack_v28_checked';
+  const SIGNATURE_KEY='__quick_pack_v34_signatures';
   const LEGACY_ACTIVE_KEY='pack:active';
   const DEFAULTS=Object.freeze([
     {id:'sun',name:'日焼け止め'},
@@ -30,12 +31,18 @@
   const normalizeEditable=item=>item&&item.id&&item.name?{id:String(item.id),name:String(item.name),priority:'optional',reason:'自分で追加・編集した項目',system:false}:null;
 
   function currentPlan(){
+    if(typeof document==='undefined')return null;
     const fromAuto=globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.currentPlan?.();
-    if(fromAuto?.plan_id)return fromAuto;
     const species=String($('#rname')?.textContent||'').trim(),method=String($('#pmethod')?.textContent||'').trim();
     if(!species)return null;
     const plans=globalThis.FISH_TARGET_METHOD_REGISTRY?.plansForSpecies?.(species)||[];
-    return plans.find(plan=>String(plan?.method||'').trim()===method)||plans[0]||null;
+    const plan=fromAuto?.plan_id?fromAuto:plans.find(plan=>String(plan?.method||'').trim()===method)||plans[0]||null;
+    if(!plan)return null;
+    return {...plan,selected_place:$('#places button.on')?.textContent?.trim()||'',first_cast:{...plan.first_cast,
+      bait:$('#firstBait')?.textContent?.trim()||plan.first_cast?.bait,
+      size:$('#firstSize')?.textContent?.trim()||plan.first_cast?.size,
+      time:$('#planTime')?.textContent?.trim()||plan.first_cast?.time
+    }};
   }
   const activeKey=()=>globalThis.FISH_TARGET_TRIP_PACK?.planKey?.(currentPlan())||LEGACY_ACTIVE_KEY;
   const contextualConfig=()=>globalThis.FISH_TARGET_TRIP_PACK?.derive?.(currentPlan())||[];
@@ -50,33 +57,44 @@
       const id=String(raw.id),name=String(raw.name),nameKey=normalizeName(name);
       if(ids.has(id)||names.has(nameKey))continue;
       ids.add(id);names.add(nameKey);
-      out.push({id,name,category:String(raw.category||''),priority:PRIORITY_LABEL[raw.priority]?raw.priority:'optional',reason:String(raw.reason||''),system:raw.system===true,safetyCritical:raw.safetyCritical===true});
+      out.push({id,name,category:String(raw.category||''),priority:PRIORITY_LABEL[raw.priority]?raw.priority:'optional',reason:String(raw.reason||''),system:raw.system===true,safetyCritical:raw.safetyCritical===true,identity:String(raw.identity||'')});
     }
     return out;
   };
   const getConfig=()=>mergeConfig(contextualConfig(),getEditableConfig());
   const saveConfig=config=>{const store=readStore();store[CONFIG_KEY]=config.map(item=>({id:String(item.id),name:String(item.name)}));return writeStore(store)};
+  const signature=item=>JSON.stringify([item.name,item.priority,item.identity]);
   const getChecked=()=>{
     const store=readStore(),all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{},key=activeKey();
     const list=all[key]??(key==='pack:standalone'?all[LEGACY_ACTIVE_KEY]:null);
-    return new Set(Array.isArray(list)?list:[]);
+    const signatures=store[SIGNATURE_KEY]?.[key]||{},config=new Map(getConfig().map(item=>[item.id,item]));
+    // Legacy generated checks have no evidence for the current item identity.
+    // Preserve stored data, but require an explicit check for changed gear/casts.
+    return new Set((Array.isArray(list)?list:[]).filter(id=>{const item=config.get(id);return !item?.system||signatures[id]===signature(item)}));
   };
-  const saveChecked=checked=>{const store=readStore();const all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{};all[activeKey()]=[...checked];store[CHECKED_KEY]=all;return writeStore(store)};
+  const saveChecked=checked=>{
+    const store=readStore(),key=activeKey(),all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{};
+    const signatures=isRecord(store[SIGNATURE_KEY])?store[SIGNATURE_KEY]:{};
+    const current=isRecord(signatures[key])?{...signatures[key]}:{};
+    for(const item of getConfig())if(item.system){if(checked.has(item.id))current[item.id]=signature(item);else delete current[item.id]}
+    all[key]=[...checked];signatures[key]=current;store[CHECKED_KEY]=all;store[SIGNATURE_KEY]=signatures;return writeStore(store);
+  };
   const clearChecks=()=>{const store=readStore();const all=isRecord(store[CHECKED_KEY])?store[CHECKED_KEY]:{};delete all[activeKey()];store[CHECKED_KEY]=all;return writeStore(store)};
   const pulse=(el,klass='quickPackPulseV28')=>{if(!el)return;el.classList.remove(klass);void el.offsetWidth;el.classList.add(klass);setTimeout(()=>el.classList.remove(klass),360)};
   const haptic=pattern=>{try{navigator.vibrate?.(pattern)}catch{}};
 
   function syncPackTab(active){
-    $$('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&button.dataset.appTab==='pack'));
+    const hasPackTab=Boolean($('#appPackTabV30'));
+    $$('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&(hasPackTab?button.dataset.appTab==='pack':button.dataset.appTab==='conditions')));
     if(active)return;
     const current=$('.view.on')?.id;
-    const fallback=current==='saved'?'saved':current==='home'?'home':null;
+    const fallback=current==='saved'?'saved':current==='home'?'home':current==='conditions'?'conditions':null;
     if(fallback){const button=$(`#appTabBarV26 button[data-app-tab="${fallback}"]`);if(button)button.classList.add('on')}
   }
 
   function ensureTab(){
     const bar=$('#appTabBarV26');
-    if(!bar||$('#appPackTabV30'))return;
+    if(!bar||$('#appPackTabV30')||bar.querySelector('[data-app-tab="conditions"]'))return;
     const button=document.createElement('button');
     button.id='appPackTabV30';button.dataset.appTab='pack';button.type='button';
     button.innerHTML='<span class="tabIcon">✓</span><b>持ち物</b>';
@@ -163,12 +181,12 @@
   function open(){
     ensureUi();render();const overlay=$('#packStandaloneV30');if(!overlay)return;
     returnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
-    overlay.hidden=false;document.body.classList.add('packOpenV30');syncPackTab(true);$('#packStandaloneCloseV30')?.focus();
+    overlay.hidden=false;document.body.classList.add('packOpenV30');syncPackTab(true);globalThis.FISH_TARGET_MODAL_FOCUS?.open(overlay,close);$('#packStandaloneCloseV30')?.focus();
   }
 
   function close(){
     const overlay=$('#packStandaloneV30');if(!overlay||overlay.hidden)return;
-    overlay.hidden=true;document.body.classList.remove('packOpenV30');syncPackTab(false);returnFocus?.focus?.();returnFocus=null;
+    overlay.hidden=true;document.body.classList.remove('packOpenV30');syncPackTab(false);globalThis.FISH_TARGET_MODAL_FOCUS?.close(overlay);returnFocus?.focus?.();returnFocus=null;
   }
 
   function playPlanEffect(){

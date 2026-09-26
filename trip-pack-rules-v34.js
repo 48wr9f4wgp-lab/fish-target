@@ -16,9 +16,9 @@
     item('prep-battery','モバイルバッテリー','電源','optional','スマホ・ライトの予備電源')
   ]);
 
-  function selectedOwnedSet(){
+  function selectedOwnedSet(plan){
     const state=globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.();
-    return state?.setResult?.myBestSet||null;
+    return state?.plan?.plan_id===plan?.plan_id?state?.setResult?.myBestSet||null:null;
   }
 
   function currentSpecies(plan){
@@ -31,8 +31,8 @@
     const rodName=text(ownedSet?.rod?.name)||text(req.rod)||'推奨ロッドを確認';
     const reelName=text(ownedSet?.reel?.name)||text(req.reel)||'推奨リールを確認';
     const result=[
-      item('plan-rod',`ロッド · ${rodName}`,'タックル','required',ownedSet?.rod?'今回のMY SETで選択':'この釣法の必要ロッド'),
-      item('plan-reel',`リール · ${reelName}`,'タックル','required',ownedSet?.reel?'今回のMY SETで選択':'この釣法の必要リール')
+      item('plan-rod',`ロッド · ${rodName}`,'タックル','required',ownedSet?.rod?'今回のMY SETで選択':'この釣法の必要ロッド',{identity:text(ownedSet?.rod?.id)}),
+      item('plan-reel',`リール · ${reelName}`,'タックル','required',ownedSet?.reel?'今回のMY SETで選択':'この釣法の必要リール',{identity:text(ownedSet?.reel?.id)})
     ];
     if(text(req.line))result.push(item('plan-line',`メインライン · ${text(req.line)}`,'ライン','required','この釣法の基準ライン'));
     if(text(req.leader))result.push(item('plan-leader',`リーダー / ハリス · ${text(req.leader)}`,'ライン','required','この釣法の接続ライン'));
@@ -46,11 +46,10 @@
   function handlingItems(plan){
     if(!plan)return [];
     const req=plan.requirements||{},cast=plan.first_cast||{},species=currentSpecies(plan);
-    const method=text(plan.method),bait=text(cast.bait);
-    const styles=Array.isArray(species?.styles)?species.styles.map(text):[];
+    const method=text(plan.method),bait=text(cast.bait),style=text(plan.style);
     const tags=Array.isArray(species?.tags)?species.tags.map(text):[];
-    const lureLike=styles.includes('lure')||/ルアー|ジグ|エギ|スプーン|ミノー|ワーム|トップ|プラグ/i.test(`${method} ${bait}`);
-    const largeGame=tags.some(tag=>/青物|大型|回遊魚/.test(tag))||/ショアジギング|オフショア|船ジギング|キャスティング|泳がせ/i.test(method);
+    const lureLike=style==='lure'||/ルアー|ジグ|エギ|スプーン|ミノー|ワーム|トップ|プラグ/i.test(`${method} ${bait}`);
+    const largeGame=tags.some(tag=>/青物|大型/.test(tag))||/ショアジギング|オフショア|船ジギング|キャスティング|泳がせ/i.test(method);
     const result=[];
     if(text(req.line)||text(req.leader)||text(req.rig))result.push(item('handling-line-cutter','ラインカッター / ハサミ','ツール','recommended','結束・仕掛け交換時のライン処理'));
     if(lureLike)result.push(item('handling-pliers','プライヤー','ツール','recommended','フック・リング交換や安全な針外し'));
@@ -65,8 +64,9 @@
     const places=Array.isArray(plan.places)?plan.places.map(text):[];
     const time=text(plan.first_cast?.time);
     const species=currentSpecies(plan);
-    const methodBoat=/船|ボート|オフショア/i.test(method);
-    const methodRock=/ロックショア/i.test(method);
+    const selectedPlace=text(plan.selected_place);
+    const methodBoat=/船|ボート|オフショア/i.test(`${method} ${selectedPlace}`);
+    const methodRock=/ロックショア/.test(method)||/磯|岩場/.test(selectedPlace);
     const possibleBoat=places.some(place=>/船|ボート|沖/i.test(place));
     const possibleRock=places.some(place=>/磯|岩場/i.test(place));
     const isNight=/夜|ナイト/i.test(time);
@@ -90,7 +90,7 @@
   }
 
   function derive(plan,options={}){
-    const ownedSet=options.ownedSet===undefined?selectedOwnedSet():options.ownedSet;
+    const ownedSet=options.ownedSet===undefined?selectedOwnedSet(plan):options.ownedSet;
     return unique([...planItems(plan,ownedSet),...handlingItems(plan),...contextItems(plan),...BASE]).map(entry=>({...entry}));
   }
 

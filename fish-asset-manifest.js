@@ -5,9 +5,13 @@
 
   const PUBLICATION_BUILD=document.documentElement.dataset.publicationBuild==='on';
   const SHEET=authoring.bundled_sheet;
-  const authoredByName=new Map(authoring.assets.map(record=>[record.species_name,record]));
+  // Batch 2 is quarantined: visual-contract failures and a corrupt AVIF.
+  // Reviewed development previews never replace publication authoring.
+  const previews=new Map((PUBLICATION_BUILD?[]:(authoring.development_previews||[])).map(record=>[record.species_name,record]));
+  const effectiveAssets=authoring.assets.map(record=>previews.get(record.species_name)||record);
+  const authoredByName=new Map(effectiveAssets.map(record=>[record.species_name,record]));
   const fileRecords=new Map();
-  for(const authored of authoring.assets){
+  for(const authored of effectiveAssets){
     if(!speciesRegistry.resolve(authored.species_name))throw new Error(`Authored fish asset species is not registered: ${authored.species_name}`);
     const file=String(authored?.asset?.file||'').trim();
     if(file){const rows=fileRecords.get(file)||[];rows.push(authored);fileRecords.set(file,rows)}
@@ -20,6 +24,7 @@
     const authored=authoredByName.get(species.name)||null;
     const file=String(authored?.asset?.file||'').trim();
     const bundled=Boolean(authored?.asset)&&(!PUBLICATION_BUILD||publicationSafeFiles.has(file));
+    const developmentOnly=bundled&&previews.has(species.name);
     return Object.freeze({
       species_id:species.species_id,
       species_name:species.name,
@@ -33,7 +38,8 @@
       provenance:bundled?freezeProvenance(authored.provenance):null,
       mode:bundled?'bundled':'remote-fallback',
       rights_status:bundled?authored.rights_status:'runtime-license-gated',
-      publication_ready:bundled?authored.publication_ready===true:false
+      publication_ready:bundled?authored.publication_ready===true:false,
+      development_only:developmentOnly
     });
   });
 
@@ -49,6 +55,7 @@
   const bundledRecords=Object.freeze(records.filter(record=>record.mode==='bundled'));
   const remoteFallbackRecords=Object.freeze(records.filter(record=>record.mode==='remote-fallback'));
   const publicationReadyRecords=Object.freeze(records.filter(record=>record.publication_ready));
+  const developmentOnlyRecords=Object.freeze(records.filter(record=>record.development_only));
   const get=speciesId=>byId.get(String(speciesId??'').trim())||null;
   const bySpeciesName=name=>byName.get(String(name??'').trim())||null;
   const resolve=value=>{
@@ -61,12 +68,13 @@
 
   if(records.length!==speciesRegistry.count)throw new Error(`Fish asset manifest coverage mismatch: ${records.length}/${speciesRegistry.count}`);
   const expectedBundled=PUBLICATION_BUILD
-    ? authoring.assets.filter(record=>publicationSafeFiles.has(String(record?.asset?.file||'').trim())).length
-    : authoring.assets.length;
+    ? effectiveAssets.filter(record=>publicationSafeFiles.has(String(record?.asset?.file||'').trim())).length
+    : effectiveAssets.length;
   if(bundledRecords.length!==expectedBundled)throw new Error(`Fish asset bundled coverage mismatch: ${bundledRecords.length}/${expectedBundled}`);
+  if(PUBLICATION_BUILD&&developmentOnlyRecords.length)throw new Error('Publication build must not expose development-only fish assets');
 
   globalThis.FISH_TARGET_FISH_ASSET_MANIFEST=Object.freeze({
-    version:'FISH-ASSET-MANIFEST-2',
+    version:'FISH-ASSET-MANIFEST-3',
     authoringVersion:authoring.version,
     policy:authoring.policy,
     publicationBuild:PUBLICATION_BUILD,
@@ -74,10 +82,12 @@
     bundledCount:bundledRecords.length,
     remoteFallbackCount:remoteFallbackRecords.length,
     publicationReadyCount:publicationReadyRecords.length,
+    developmentOnlyCount:developmentOnlyRecords.length,
     records:Object.freeze(records.slice()),
     bundledRecords,
     remoteFallbackRecords,
     publicationReadyRecords,
+    developmentOnlyRecords,
     get,
     bySpeciesName,
     resolve,

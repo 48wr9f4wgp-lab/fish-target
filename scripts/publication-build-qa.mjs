@@ -9,8 +9,16 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const dist=path.join(root,'dist');
 const buildConfig=JSON.parse(await readFile(path.join(root,'build.config.json'),'utf8'));
 const buildId=buildConfig.version.toLowerCase();
-const researchCache=`fish-target-shell-${buildId}`;
-const publicationCache=`${researchCache}-publication`;
+const researchCachePrefix=`fish-target-shell-${buildId}`;
+const publicationCachePrefix=`${researchCachePrefix}-publication`;
+function cacheIdentity(worker,publication){
+  const cache=worker.match(/const CACHE='([^']+)';/)?.[1]||'';
+  const prefix=`${publication?publicationCachePrefix:researchCachePrefix}-`;
+  if(!cache.startsWith(prefix)||!/^[a-f0-9]{16}$/.test(cache.slice(prefix.length))){
+    throw new Error(`${publication?'publication':'research'} service worker cache must include its mode and content fingerprint`);
+  }
+  return cache;
+}
 const manifest=JSON.parse(await readFile(path.join(root,'catalog-batch-manifest.json'),'utf8'));
 const productionBatches=manifest.batches.filter(batch=>batch.stage==='production');
 const researchFiles=[...new Set(manifest.batches.filter(batch=>batch.stage==='research').flatMap(batch=>batch.files||[]))];
@@ -21,6 +29,7 @@ const publicationFishFiles=fishFiles.filter(file=>{
   return records.length>0&&records.every(fishAssetPublicationReady);
 });
 const blockedFishFiles=fishFiles.filter(file=>!publicationFishFiles.includes(file));
+const previewFishFiles=(fishAuthoring.development_previews||[]).map(record=>record.asset.file);
 const exists=async file=>access(path.join(dist,file)).then(()=>true,()=>false);
 const runBuild=publication=>{
   const result=spawnSync(process.execPath,['scripts/build.mjs'],{
@@ -64,15 +73,17 @@ function serviceWorkerHarness(worker){
 }
 
 let primaryError=null;
+let publicationCache=null;
 try{
   runBuild(true);
   const html=await readFile(path.join(dist,'index.html'),'utf8');
   const worker=await readFile(path.join(dist,'sw.js'),'utf8');
   const runtimeExpected=productionBatches.length>0;
   if(!html.includes('data-publication-build="on"'))throw new Error('global publication build marker missing');
+  if(!html.includes('data-field-live="off"'))throw new Error('publication build must force FIELD LIVE off');
   if(!html.includes('data-catalog-publication="on"'))throw new Error('publication catalog marker missing');
   if(!html.includes(`data-catalog-runtime="${runtimeExpected?'on':'off'}"`))throw new Error('publication catalog runtime marker mismatch');
-  if(!worker.includes(`const CACHE='${publicationCache}';`))throw new Error('publication service worker cache is not publication-specific');
+  publicationCache=cacheIdentity(worker,true);
   if(/__(?:BUILD_VERSION|BUILD_ID|CACHE_BUILD_ID|FIELD_LIVE_STATE|SHELL_MANIFEST)__/.test(worker))throw new Error('publication service worker contains unresolved build token');
   if(!(await exists('catalog-loader.js')))throw new Error('publication build must retain fail-closed catalog loader');
   if(!(await exists('tackle.js')))throw new Error('publication build must retain MY TACKLE manual fallback');
@@ -80,6 +91,9 @@ try{
   if(await exists('catalog-fixtures.js'))throw new Error('synthetic catalog fixtures leaked into publication build');
   for(const file of researchFiles){if(await exists(file))throw new Error(`research catalog batch leaked into publication build: ${file}`)}
   for(const file of blockedFishFiles){if(await exists(file))throw new Error(`unverified fish binary leaked into publication build: ${file}`)}
+  for(const file of previewFishFiles){
+    if(await exists(file)||worker.includes(file))throw new Error(`development preview leaked into publication assets/cache: ${file}`);
+  }
   for(const file of publicationFishFiles){if(!(await exists(file)))throw new Error(`publication-ready fish binary missing from publication build: ${file}`)}
   if(runtimeExpected){
     if(!(await exists('catalog-batch-manifest.json')))throw new Error('publication manifest missing with production batches');
@@ -92,10 +106,12 @@ try{
   }
 
   const {handlers,stores}=serviceWorkerHarness(worker);
-  stores.set(researchCache,new Map([
-    ['/catalog.js',new Response('stale research catalog')],
-    ['/fish-real-v7.avif',new Response('stale unverified fish binary')]
-  ]));
+  for(const staleCache of [researchCachePrefix,`${researchCachePrefix}-0123456789abcdef`]){
+    stores.set(staleCache,new Map([
+      ['/catalog.js',new Response('stale research catalog')],
+      ['/fish-real-v7.avif',new Response('stale unverified fish binary')]
+    ]));
+  }
   let installPromise;
   handlers.install({waitUntil:promise=>{installPromise=promise}});
   await installPromise;
@@ -112,12 +128,14 @@ try{
     const html=await readFile(path.join(dist,'index.html'),'utf8');
     const worker=await readFile(path.join(dist,'sw.js'),'utf8');
     if(!html.includes('data-publication-build="off"'))throw new Error('research build restore global publication marker mismatch');
+    if(!html.includes('data-field-live="on"'))throw new Error('research build restore must re-enable FIELD LIVE preview');
     if(!html.includes('data-catalog-publication="off"'))throw new Error('research build restore publication marker mismatch');
     if(!html.includes('data-catalog-runtime="on"'))throw new Error('research build restore did not re-enable catalog runtime');
-    if(!worker.includes(`const CACHE='${researchCache}';`))throw new Error('research build restore service worker cache mismatch');
-    if(worker.includes(`const CACHE='${publicationCache}';`))throw new Error('research build restore retained publication cache id');
+    const researchCache=cacheIdentity(worker,false);
+    if(researchCache===publicationCache)throw new Error('research build restore retained publication cache id');
     if(!(await exists('catalog-batch-manifest.json')))throw new Error('research build restore missing catalog manifest');
     for(const file of fishFiles){if(!(await exists(file)))throw new Error(`research build restore missing fish asset: ${file}`)}
+    for(const file of previewFishFiles){if(!(await exists(file))||!worker.includes(file))throw new Error(`research build restore missing preview/offline asset: ${file}`)}
   }catch(error){if(!primaryError)primaryError=error;else console.error(error)}
 }
 if(primaryError)throw primaryError;

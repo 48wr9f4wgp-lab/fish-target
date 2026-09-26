@@ -39,5 +39,5 @@ test('VISUAL8 loads after previous visual layers and ships offline',()=>{
   assert.match(build,/'visual-v8\.css'/);
   assert.match(build,/'visual-v8\.js'/);
   assert.match(config.version,/^V23-/);
-  assert.equal(config.features.fieldLive,false);
+  assert.equal(config.features.fieldLive,true);
 });

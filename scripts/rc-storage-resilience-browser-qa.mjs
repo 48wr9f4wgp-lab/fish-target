@@ -44,7 +44,7 @@ try{
     await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),null,{timeout:20000});
     await page.locator('#grid .fish').first().waitFor({state:'visible',timeout:20000});
-    await page.locator('#appPackTabV30').waitFor({state:'visible'});
+    await page.locator('#appTabBarV26 [data-app-tab="conditions"]').waitFor({state:'visible'});
     const guardState=await page.evaluate(()=>{
       const tackle=JSON.parse(storeGet('fish_target_v17_tackle'));
       return {
@@ -60,16 +60,19 @@ try{
     for(const key of ['fish_target_v9_checklists','fish_target_v16_favorites','fish_target_v16_recent','fish_target_v16_last_plan','fish_target_v9_events']){
       assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),raw,`${key} remains byte-for-byte unchanged after guarded reads`);
     }
-    await page.locator('#appPackTabV30').click();
+    await page.locator('#appTabBarV26 [data-app-tab="conditions"]').click();
+    await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='conditions');
+    await page.locator('#conditionsPackBtn').click();
     await page.locator('#packStandaloneV30').waitFor({state:'visible'});
     const standaloneCount=await page.locator('.quickPackItemV28').count();
     assert.ok(standaloneCount>=8,'standalone packing retains the legacy essentials and may add V34 preparation items');
     assert.equal(await page.evaluate(()=>localStorage.getItem('fish_target_v9_checklists')),raw,'opening does not auto-migrate storage');
     await page.locator('.quickPackItemV28').first().click();
     await page.locator('#packStandaloneCloseV30').click();
-    await page.locator('#appPackTabV30').click();
+    await page.locator('#conditionsPackBtn').click();
     assert.equal((await page.locator('#quickPackCountV28').textContent()).trim(),`1/${standaloneCount}`);
     await page.locator('#packStandaloneCloseV30').click();
+    await page.locator('#appTabBarV26 [data-app-tab="home"]').click();
     await page.locator('#home.on').waitFor({state:'visible'});
     await page.locator('button.fish[data-fish="ブリ・ワラサ"]').click();
     await waitVisible(page,page.locator('#result.on'),'result view',errors);
@@ -87,8 +90,10 @@ try{
     const page=await context.newPage();
     await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
     await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'),null,{timeout:20000});
-    await page.locator('#appPackTabV30').waitFor({state:'visible'});
-    await page.locator('#appPackTabV30').click();
+    await page.locator('#appTabBarV26 [data-app-tab="conditions"]').waitFor({state:'visible'});
+    await page.locator('#appTabBarV26 [data-app-tab="conditions"]').click();
+    await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='conditions');
+    await page.locator('#conditionsPackBtn').click();
     await page.locator('#packStandaloneV30').waitFor({state:'visible'});
     const before=await page.evaluate(()=>localStorage.getItem('fish_target_v9_checklists'));
     await page.evaluate(()=>{const proto=Object.getPrototypeOf(localStorage);Object.defineProperty(proto,'setItem',{configurable:true,value(){throw new DOMException('Quota exceeded','QuotaExceededError')}})});

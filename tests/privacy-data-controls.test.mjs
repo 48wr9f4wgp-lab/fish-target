@@ -40,7 +40,10 @@ test('privacy disclosure accurately states local storage and remaining external 
   assert.match(shell,/外部Analyticsサービスへ送信しません/);
   assert.match(shell,/Wikipedia \/ Wikimedia/);
   assert.match(shell,/接続元IP/);
-  assert.match(shell,/現在の公開設定ではOFF/);
+  assert.match(shell,/fieldLiveOn/);
+  assert.match(shell,/開発プレビューではON/);
+  assert.match(shell,/端末の現在地GPSは自動送信しません/);
+  assert.match(shell,/公開ビルドではOFF/);
   assert.match(shell,/他のサイトやアプリの保存データは削除しません/);
 });
 

@@ -65,7 +65,17 @@ test('current shell installs atomically and removes a stale V19 cache',async()=>
   let activatePromise;
   handlers.activate({waitUntil:promise=>{activatePromise=promise}});
   await activatePromise;
-  assert.deepEqual([...stores.keys()],[`fish-target-shell-${config.version.toLowerCase()}`]);
+  assert.deepEqual([...stores.keys()],[worker.match(/const CACHE='([^']+)'/)[1]]);
+  assert.match([...stores.keys()][0],/-[a-f0-9]{16}$/,'cache identity includes the content fingerprint');
+});
+
+test('activation preserves other apps caches on the same origin',async()=>{
+  const {handlers,stores}=serviceWorkerHarness();
+  stores.set('another-app-cache',new Map([['/other/',new Response('keep')]]));
+  let pending;
+  handlers.activate({waitUntil:promise=>{pending=promise}});
+  await pending;
+  assert.equal(stores.has('another-app-cache'),true);
 });
 
 test('origin unavailable returns the cached current launch, never stale V19',async()=>{

@@ -1,13 +1,14 @@
 (function(){
   const baseShow=show;
+  let fieldFrom='result';
   show=function(v){
     const fm=document.getElementById('fieldmode');
     if(fm)fm.classList.remove('on');
     if(v==='fieldmode'){
-      ['home','result','saved'].forEach(x=>document.getElementById(x)?.classList.remove('on'));
+      ['home','result','saved','conditions'].forEach(x=>document.getElementById(x)?.classList.remove('on'));
       fm?.classList.add('on');
       document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
-      scrollTo({top:0,behavior:'smooth'});
+      scrollTo({top:0,behavior:'instant'});
       return;
     }
     baseShow(v);
@@ -62,12 +63,12 @@
 
     const w=LIVE.weather,m=cur.water==='salt'?LIVE.marine:null;
     let status='基準',text=FEATURES.fieldLive?'現地データ未取得。魚種・季節・時刻の基準プラン。':'魚種・季節・時刻の基準プラン。';
-    if(FEATURES.fieldLive&&w){const f=fieldStatus(+w.wind||0,+w.gust||0,+w.precipitation||0,m?.wave);status=f[0];text=`<strong>${LIVE.place?.name||'現在地'}：</strong>風 ${w.wind??'-'}m/s・突風 ${w.gust??'-'}m/s${m?.wave!=null?`・波 ${m.wave}m`:''}。FIRST CAST補正済み。`;}
+    if(FEATURES.fieldLive&&w){const f=fieldStatus(+w.wind||0,+w.gust||0,+w.precipitation||0,m?.wave),tide=LIVE.tideDecision;status=f[0];text=`<strong>${LIVE.place?.name||'現在地'}：</strong>風 ${w.wind??'-'}m/s・突風 ${w.gust??'-'}m/s${m?.wave!=null?`・波 ${m.wave}m`:''}${m?.current!=null?`・流れ ${m.current}km/h`:''}。FIRST CAST補正済み。${tide?`<br><strong>潮：</strong>${tide.trend} / 次の弱まり ${tide.nextSlack} / 地合い候補 ${tide.biteWindow}`:''}`;}
     set('fmStatus',status);document.getElementById('fmCondition').innerHTML=text;
   }
 
-  function openFieldMode(){if(!cur)return;renderFieldMode();show('fieldmode');track('field_mode_open',{fish:cur.name,method:basePlan().method})}
+  function openFieldMode(){if(!cur)return;fieldFrom=document.querySelector('.view.on')?.id==='conditions'?'conditions':'result';renderFieldMode();show('fieldmode');track('field_mode_open',{fish:cur.name,method:basePlan().method,from:fieldFrom})}
   document.getElementById('fieldModeBtn')?.addEventListener('click',openFieldMode);
-  document.getElementById('fieldBack')?.addEventListener('click',()=>show('result'));
-  document.getElementById('fmBackPlan')?.addEventListener('click',()=>show('result'));
+  document.getElementById('fieldBack')?.addEventListener('click',()=>show(fieldFrom));
+  document.getElementById('fmBackPlan')?.addEventListener('click',()=>show(fieldFrom));
 })();

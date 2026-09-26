@@ -110,19 +110,20 @@ html.clarity-v27 .appTackleSheetV26 .tackleSheetHead h2{font-size:21px!important
 html.clarity-v27 .appTackleSheetV26 .tackleFormCard{padding:14px!important}
 html.clarity-v27 .appTackleSheetV26 .tackleFormCard h3{font-size:18px!important;margin-bottom:10px!important}
 html.clarity-v27 .appTackleSheetV26 .userCatalogNote{justify-self:start!important;padding:6px 9px!important;border-radius:999px!important;font-size:9px!important;line-height:1!important}
-html.clarity-v27 .appTackleSheetV26 .catalogLoadState{min-height:8px!important;font-size:9px!important}
+html.clarity-v27 .appTackleSheetV26 .catalogLoadState{min-height:18px!important;font-size:12px!important;color:#465f66!important;line-height:1.5}
 html.clarity-v27 .appTackleSheetV26 .catalogLine>small,
 html.clarity-v27 .appTackleSheetV26 .ownedEditor>small,
 html.clarity-v27 .fitNote{display:none!important}
 html.clarity-v27 .tackleEntryModes{gap:5px!important;margin-bottom:9px!important}
 html.clarity-v27 .tackleEntryModes button{min-height:44px!important;font-size:12px!important}
 html.clarity-v27 .catalogSearch input{font-weight:700!important}
-html.clarity-v27 .tackleFormGrid label{font-size:9px!important;letter-spacing:.04em}
+html.clarity-v27 .tackleFormGrid label{font-size:12px!important;line-height:1.5;letter-spacing:.04em}
 html.clarity-v27 .tackleCount{grid-template-columns:1fr 1fr!important}
 html.clarity-v27 .tackleCount p{grid-column:1/-1!important;text-align:center!important;font-size:10px!important;line-height:1!important}
 html.clarity-v27 .tackleEmptyCta{gap:2px!important;padding:15px 17px!important}
 html.clarity-v27 .tackleEmptyCta span{font-size:10px!important}
 html.clarity-v27 .fitEmpty{gap:3px!important;padding:13px!important}
+
 html.clarity-v27 .fitEmpty span{font-size:10px!important}
 html.clarity-v27 .fitItems{gap:7px!important}
 html.clarity-v27 .fitItem{padding:11px 12px!important}
@@ -130,3 +131,52 @@ html.clarity-v27 .fitItem{padding:11px 12px!important}
   html.clarity-v27 #home .fish.discoveryCardV26{min-height:184px!important}
   html.clarity-v27 #home .fish.discoveryCardV26 .art{height:108px!important}
 }
+
+/* V34 audited controls: readable, reachable, and visibly focused. */
+html.app-shell-v26.clarity-v27 #tackleEditFromResult,
+html.app-shell-v26.clarity-v27 .targetChip,
+html.app-shell-v26.clarity-v27 .ownedActions button{min-height:44px!important;min-width:44px!important;font-size:12px!important}
+html.app-shell-v26.clarity-v27 #save,
+html.app-shell-v26.clarity-v27 #ux23MethodChange{font-size:12px!important}
+html.app-shell-v26 :is(button,input,select,summary,a):focus-visible{outline:3px solid #16887f!important;outline-offset:3px}
+html.app-shell-v26 .appTackleSheetV26 .tackleAdd:disabled{opacity:.5;cursor:not-allowed}
+
+/* Short labels still need a full touch target. Keep horizontal filter scrolling. */
+html.app-shell-v26 #home .filters button,
+html.app-shell-v26 #result .choices button{min-width:44px!important;min-height:44px!important}
+html.app-shell-v26 #copy{min-height:44px!important;font-size:12px!important}
+/* An inactive global dock must not cover the active sheet's form. */
+html.app-shell-v26 .appTabBarV26[inert]{visibility:hidden!important;pointer-events:none!important}
+
+/* V34 legibility: keep the actual choice readable when text grows. */
+#home #quick.quick>button{white-space:normal!important;overflow-wrap:anywhere!important;text-overflow:clip!important;line-height:1.3!important}
+#home .fish.discoveryCardV26 .name,#home .fish.discoveryCardV26 .methodSmall{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;line-height:1.4!important}
+#home .fish.discoveryCardV26>div:not(.art){overflow:visible!important}
+#home .fish.discoveryCardV26{height:auto!important}
+#result .planCard .planTop{grid-template-columns:minmax(0,1fr) auto!important}
+#result .planCard .planTop>div:first-child{grid-column:1/-1!important}
+#result .planCard .method{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;line-height:1.2!important}
+#result .why{display:block!important;overflow:visible!important;-webkit-line-clamp:unset!important;overflow-wrap:anywhere!important}
+#result #favoriteBtn{font-size:22px!important;flex-shrink:0!important}
+#resultRailV26 button,#resultDockV20.ux23Dock button{white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.3!important}
+#result .body{padding-bottom:calc(110px + env(safe-area-inset-bottom))!important}
+html{scroll-padding-top:90px;scroll-padding-bottom:110px}
+#result button,#result summary{scroll-margin-top:95px;scroll-margin-bottom:120px}
+@media(max-width:320px){
+  #home .grid{grid-template-columns:1fr!important}
+  #resultRailV26{position:static!important}
+  #resultDockV20.ux23Dock{position:static!important;margin:12px!important;grid-template-columns:1fr 1fr!important}
+  #resultDockV20.ux23Dock #fieldModeBtn{grid-column:1/-1!important}
+  #result .body{padding-bottom:18px!important}
+  html{scroll-padding-top:12px;scroll-padding-bottom:12px}
+  #result button,#result summary{scroll-margin-top:12px;scroll-margin-bottom:12px}
+}
+/* A user text-size override can enlarge type without changing CSS viewport width. */
+body.largeTextV34 #resultRailV26{position:static!important}
+body.largeTextV34 #resultDockV20.ux23Dock{position:static!important;margin:12px!important;grid-template-columns:1fr 1fr!important}
+body.largeTextV34 #resultDockV20.ux23Dock #fieldModeBtn{grid-column:1/-1!important}
+body.largeTextV34 #result .body{padding-bottom:18px!important}
+/* Muted 11–12px labels are still ordinary text and need clear contrast. */
+.appTabBarV26 button:not(.on){color:#425c62}
+#resultRailV26 button:not(.on){color:#435e64}
+#home .fish.discoveryCardV26 p{color:#465f65!important}

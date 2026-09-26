@@ -14,13 +14,13 @@ function pngDimensions(file){
   return {width:png.readUInt32BE(16),height:png.readUInt32BE(20)};
 }
 
-test('FIELD LIVE is feature-flagged off from first HTML paint',()=>{
+test('FIELD LIVE preview is on from first paint while the hard-off gate remains available',()=>{
   const html=dist('index.html');
   const style=dist('style.css');
   const app=dist('app.js');
   const fieldMode=dist('field-mode.js');
-  assert.equal(config.features.fieldLive,false);
-  assert.match(html,/data-field-live="off"/);
+  assert.equal(config.features.fieldLive,true);
+  assert.match(html,/data-field-live="on"/);
   assert.match(html,/data-feature="field-live">FIELD LIVE/);
   assert.match(html,/data-feature="field-live">LIVE AUTO ADJUST/);
   assert.match(style,/data-field-live="off"[^\n]+data-feature="field-live"[^\n]+display:none/);
