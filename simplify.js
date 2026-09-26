@@ -85,13 +85,14 @@
 
     if(body&&fieldBtn){
       const fieldLiveEnabled=document.documentElement.dataset.fieldLive==='on';
-      const conditions=makeGroup('v19Conditions',fieldLiveEnabled?'今日の条件を反映':'条件を調整',fieldLiveEnabled?'天候・海況・手動条件でプランを補正':'風・潮・水色を必要な時だけ入力',actions||fieldBtn);
+      const dedicatedConditions=document.getElementById('conditions');
+      const conditions=makeGroup('v19Conditions',fieldLiveEnabled&&dedicatedConditions?'条件を手動調整':fieldLiveEnabled?'今日の条件を反映':'条件を調整',fieldLiveEnabled&&dedicatedConditions?'風・潮・水色を必要な時だけ補正':fieldLiveEnabled?'天候・海況・手動条件でプランを補正':'風・潮・水色を必要な時だけ入力',actions||fieldBtn);
       const cbody=conditions?.querySelector('.v19GroupBody');
       const fieldLive=document.querySelector('#result .fieldLive');
       const autoAdjust=document.getElementById('autoAdjust');
       const refine=document.getElementById('refine');
-      if(fieldLive&&!fieldLive.closest('#v19Conditions'))moveWithHeading(fieldLive,cbody);
-      if(autoAdjust&&!autoAdjust.closest('#v19Conditions'))moveWithHeading(autoAdjust,cbody);
+      if(fieldLive&&!dedicatedConditions&&!fieldLive.closest('#v19Conditions'))moveWithHeading(fieldLive,cbody);
+      if(autoAdjust&&!dedicatedConditions&&!autoAdjust.closest('#v19Conditions'))moveWithHeading(autoAdjust,cbody);
       if(refine&&!refine.closest('#v19Conditions'))cbody.appendChild(refine);
       if(fieldLiveEnabled){
         let state=document.getElementById('v19ConditionState');

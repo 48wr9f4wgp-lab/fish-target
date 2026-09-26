@@ -188,7 +188,7 @@ function speciesArt(f){
 }
 function art(shape){return speciesArt({name:'',shape})}
 function track(name,props={}){try{const k='fish_target_v9_events';let a=JSON.parse(storeGet(k)||'[]');a.push({name,props,ts:Date.now()});storeSet(k,JSON.stringify(a.slice(-120)))}catch{}}
-function show(v){['home','result','saved'].forEach(x=>$(x).classList.remove('on'));$(v).classList.add('on');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));if(v==='saved')renderSaved();scrollTo({top:0,behavior:'instant'})}
+function show(v){['home','result','saved','conditions'].forEach(x=>$(x).classList.remove('on'));$(v).classList.add('on');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));if(v==='saved')renderSaved();scrollTo({top:0,behavior:'instant'})}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('on'),1500)}
 function basePlan(){let p={...cur},o=O[cur.name]?.[state.place];if(o)Object.assign(p,o);if(state.goal==='大物狙い'){p.rod+='（強め優先）';p.leader+='（上限寄り）'}return p}
 function timeFit(p){const d=currentDaypart(),t=p.time||'';if((d==='朝'&&t.includes('朝'))||(d==='夕'&&t.includes('夕'))||(d==='夜'&&t.includes('夜'))||(d==='昼'&&t.includes('昼')))return '高い';if(t.includes('朝夕')&&(d==='朝'||d==='夕'))return '高い';return '標準'}

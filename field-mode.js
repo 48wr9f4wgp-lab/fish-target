@@ -1,10 +1,11 @@
 (function(){
   const baseShow=show;
+  let fieldFrom='result';
   show=function(v){
     const fm=document.getElementById('fieldmode');
     if(fm)fm.classList.remove('on');
     if(v==='fieldmode'){
-      ['home','result','saved'].forEach(x=>document.getElementById(x)?.classList.remove('on'));
+      ['home','result','saved','conditions'].forEach(x=>document.getElementById(x)?.classList.remove('on'));
       fm?.classList.add('on');
       document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
       scrollTo({top:0,behavior:'instant'});
@@ -66,8 +67,8 @@
     set('fmStatus',status);document.getElementById('fmCondition').innerHTML=text;
   }
 
-  function openFieldMode(){if(!cur)return;renderFieldMode();show('fieldmode');track('field_mode_open',{fish:cur.name,method:basePlan().method})}
+  function openFieldMode(){if(!cur)return;fieldFrom=document.querySelector('.view.on')?.id==='conditions'?'conditions':'result';renderFieldMode();show('fieldmode');track('field_mode_open',{fish:cur.name,method:basePlan().method,from:fieldFrom})}
   document.getElementById('fieldModeBtn')?.addEventListener('click',openFieldMode);
-  document.getElementById('fieldBack')?.addEventListener('click',()=>show('result'));
-  document.getElementById('fmBackPlan')?.addEventListener('click',()=>show('result'));
+  document.getElementById('fieldBack')?.addEventListener('click',()=>show(fieldFrom));
+  document.getElementById('fmBackPlan')?.addEventListener('click',()=>show(fieldFrom));
 })();

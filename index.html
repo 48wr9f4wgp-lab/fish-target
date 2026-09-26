@@ -55,7 +55,12 @@
 <div class="rotationLabel">次に替える候補</div><div class="rotation" id="rotation"></div>
 <div class="switchRule" id="switchRule"></div>
 <button class="autoReset" hidden="" id="autoReset" type="button">FIRST CASTをAUTO提案に戻す</button>
-</section><h2 class="coreTitle sectionTitle">必須タックル<small>この4点を合わせれば基本セットが成立。</small></h2><div class="gear" id="gear"></div><h2 class="coreTitle sectionTitle">現場では3ステップ<small>迷ったらこの順番だけ実行。</small></h2><section class="card"><div class="steps" id="steps"></div><div class="tip" id="seasonTip"></div></section><div class="actions"><button id="copy">一覧をコピー</button><button class="save" id="save">このプランを保存</button></div><button class="fieldModeLaunch" id="fieldModeBtn" type="button">現場モードを開く</button><div class="detailDivider">ここから先は条件を詰めたい時だけ</div><h2 class="sectionTitle liveTitle" data-feature="field-live">FIELD LIVE<small>現在天候・海況・次の6時間を取得して、FIRST CASTを自動補正。</small></h2><section class="card fieldLive" data-feature="field-live">
+</section><h2 class="coreTitle sectionTitle">必須タックル<small>この4点を合わせれば基本セットが成立。</small></h2><div class="gear" id="gear"></div><h2 class="coreTitle sectionTitle">現場では3ステップ<small>迷ったらこの順番だけ実行。</small></h2><section class="card"><div class="steps" id="steps"></div><div class="tip" id="seasonTip"></div></section><div class="actions"><button id="copy">一覧をコピー</button><button class="save" id="save">このプランを保存</button></div><button class="fieldModeLaunch" id="fieldModeBtn" type="button">現場モードを開く</button>
+<section class="card conditionsTeaser" data-feature="field-live" id="conditionsTeaser">
+<div class="conditionsTeaserHead"><div><span>TRIP CONDITIONS</span><strong>釣行判断</strong></div><b id="conditionsTeaserStatus">未取得</b></div>
+<div class="conditionsTeaserGrid"><div><span>NOW</span><b id="conditionsTeaserNow">地点を選んで取得</b></div><div><span>NEXT SLACK</span><b id="conditionsTeaserSlack">-</b></div><div><span>地合い候補</span><b id="conditionsTeaserBite">-</b></div></div>
+<button class="conditionsOpenBtn" id="conditionsOpenBtn" type="button">24時間の釣行判断を見る</button>
+</section><div class="detailDivider">ここから先は条件を詰めたい時だけ</div><h2 class="sectionTitle liveTitle" data-feature="field-live">FIELD LIVE<small>現在天候・海況・次の6時間を取得して、FIRST CASTを自動補正。</small></h2><section class="card fieldLive" data-feature="field-live">
 <div class="fieldHead"><div><span class="liveDot"></span><strong>LIVE CONDITIONS</strong><small id="fieldUpdated">釣行地を選んで取得</small></div><span class="fitBadge" id="fieldFit">FIELD STATUS · 未取得</span></div>
 <div class="spotPresets" id="spotPresets"></div>
 <div class="spotSearch"><input autocomplete="off" id="spotQuery" placeholder="市区町村・港周辺を検索 例：沼津、糸魚川"/><button id="spotSearchBtn">検索</button></div>
@@ -128,6 +133,17 @@
 </section>
 <h2 class="sectionTitle">失敗しやすい所<small>初心者が外しやすいポイント</small></h2><section class="card"><ul class="warn" id="mistakes"></ul></section>
 <p class="disclaimer">※ 一般的な国内釣法を基準にした初期推奨。地域、水深、潮、風、魚のサイズ、釣り場ルールで最適解は変わります。安全装備・立入規制・禁漁期間を優先してください。</p>
+</main>
+</section>
+<section class="view conditionsView" data-feature="field-live" id="conditions">
+<header class="conditionsHead"><button aria-label="プランへ戻る" class="conditionsBack" id="conditionsBack" type="button">‹</button><div><span>TRIP CONDITIONS</span><h1>釣行判断</h1><p><b id="conditionsFish">-</b><span id="conditionsPlace"> · 地点未取得</span></p></div><span class="conditionsStatus" id="conditionsPageStatus">未取得</span></header>
+<main class="conditionsBody">
+<section class="conditionsDecisionCard"><div class="conditionsDecisionHead"><div><span>24H DECISION</span><b>いつ・どんな条件で狙うか</b></div><small>確率ではなく、条件の重なりを理由付きで表示</small></div>
+<div class="conditionsDecisionGrid"><div><span>NOW</span><b id="conditionsDecisionNow">地点未取得</b></div><div><span>NEXT SLACK</span><b id="conditionsDecisionSlack">-</b></div><div><span>地合い候補</span><b id="conditionsDecisionBite">-</b></div><div><span>海面水温</span><b id="conditionsDecisionSst">-</b></div></div></section>
+<div id="conditionsLiveMount"></div>
+<div id="conditionsAutoMount"></div>
+<button class="conditionsFieldModeBtn" id="conditionsFieldModeBtn" type="button">現場モードへ</button>
+<p class="conditionsNote">モデル値は釣行判断の補助。安全・立入可否・現地の波や流れを優先してください。</p>
 </main>
 </section>
 <section class="view fieldModeView" id="fieldmode">

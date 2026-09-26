@@ -1,6 +1,6 @@
 (()=>{
   const KEY='fishTargetNavigationV34';
-  const views=['home','result','saved','fieldmode'];
+  const views=['home','result','saved','conditions','fieldmode'];
   const planKeys=['place','season','goal','wind','tide','clarity','rotation','rotationManual','refined','methodKey'];
   let applying=false,current=null,queued=false,restoreToken=0;
   const clone=value=>JSON.parse(JSON.stringify(value));
@@ -13,8 +13,8 @@
     home:{query:document.getElementById('q').value,water:waterFilter,style:styleFilter,difficulty:difficultyFilter},
     scroll:window.scrollY
   });
-  // Fish context only distinguishes result/field entries, never the home tab.
-  const routeKey=row=>key({...row,fish:['result','fieldmode'].includes(row.view)?row.fish:null});
+  // Fish context distinguishes fish-scoped result/conditions/field entries, never home or saved.
+  const routeKey=row=>key({...row,fish:['result','conditions','fieldmode'].includes(row.view)?row.fish:null});
   function write(row,push=false){
     const entry={...row,version:1};
     if(!push&&JSON.stringify(entry)===JSON.stringify(current))return;
@@ -24,7 +24,7 @@
   function valid(row){
     return row?.version===1&&views.includes(row.view)&&Number.isInteger(row.index)&&row.index>=0
       &&[null,'tackle','pack'].includes(row.modal)&&row.home&&typeof row.home.query==='string'
-      &&row.plan&&typeof row.plan==='object'&&planKeys.every(k=>!Object.hasOwn(row.plan,k)||(['rotationManual','refined'].includes(k)?typeof row.plan[k]==='boolean':k==='rotation'?Number.isInteger(row.plan[k])&&row.plan[k]>=0&&row.plan[k]<100:typeof row.plan[k]==='string'&&row.plan[k].length<200))&&(!['result','fieldmode'].includes(row.view)||F.some(f=>f.name===row.fish));
+      &&row.plan&&typeof row.plan==='object'&&planKeys.every(k=>!Object.hasOwn(row.plan,k)||(['rotationManual','refined'].includes(k)?typeof row.plan[k]==='boolean':k==='rotation'?Number.isInteger(row.plan[k])&&row.plan[k]>=0&&row.plan[k]<100:typeof row.plan[k]==='string'&&row.plan[k].length<200))&&(!['result','conditions','fieldmode'].includes(row.view)||F.some(f=>f.name===row.fish));
   }
   function sync(){
     queued=false;if(applying||!current)return;
@@ -57,7 +57,7 @@
       difficultyFilter=['all','easy','mid','advanced'].includes(safe.home.difficulty)?safe.home.difficulty:'all';
       renderFilters();renderHome();
       const fish=F.find(f=>f.name===safe.fish);
-      if(fish&&['result','fieldmode'].includes(safe.view)){
+      if(fish&&['result','conditions','fieldmode'].includes(safe.view)){
         const plan=Object.fromEntries(planKeys.filter(k=>Object.hasOwn(safe.plan,k)).map(k=>[k,safe.plan[k]]));
         openFish(fish,plan);from=safe.from==='saved'?'saved':'home';
       }

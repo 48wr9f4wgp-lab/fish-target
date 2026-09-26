@@ -35,7 +35,7 @@
     if(targetName)new MutationObserver(()=>{void maybeLoadLureUi()}).observe(targetName,{childList:true,subtree:true,characterData:true});
   }
   const extensionStyles=[
-    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css'],['./game-feel-v28.css','game-feel-v28-css'],['./tackle-auto-build-v29.css','tackle-auto-build-v29-css'],['./trip-pack-v34.css','trip-pack-v34-css']
+    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./conditions-page-v34.css','conditions-page-v34-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css'],['./game-feel-v28.css','game-feel-v28-css'],['./tackle-auto-build-v29.css','tackle-auto-build-v29-css'],['./trip-pack-v34.css','trip-pack-v34-css']
   ];
   const extensionCss=Promise.all(extensionStyles.map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
@@ -65,6 +65,7 @@
       await loadScript('./resolver-shadow.js','resolver-shadow-js');
       await loadScript('./fit-explain.js','fit-explain-js');
       await loadScript('./simplify.js','simplify-js');
+      await loadScript('./conditions-page-v34.js','conditions-page-v34-js');
       await loadScript('./visual-pass.js','visual-pass-js');
       await loadScript('./fish-real.js','fish-real-js');
       await loadScript('./visual-v8.js','visual-v8-js');

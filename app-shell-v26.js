@@ -183,7 +183,7 @@
     const enlarged=railLabel&&parseFloat(getComputedStyle(railLabel).fontSize)>=18;
     document.body.classList.toggle('largeTextV34',Boolean(enlarged));
     const current=$('.view.on')?.id;
-    document.body.classList.toggle('resultOpenV26',current==='result'||current==='fieldmode');
+    document.body.classList.toggle('resultOpenV26',current==='result'||current==='conditions'||current==='fieldmode');
     document.body.classList.toggle('savedOpenV26',current==='saved');
     if(current==='home'||current==='saved')syncTabs(current);
   }
