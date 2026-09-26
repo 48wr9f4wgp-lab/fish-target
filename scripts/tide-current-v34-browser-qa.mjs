@@ -10,11 +10,11 @@ const weatherHours=hours.slice(0,8);
 try{
   const page=await browser.newPage({viewport:{width:390,height:844}});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
-  await page.route('https://api.open-meteo.com/**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({
+  const weatherMock={
     current:{temperature_2m:22,precipitation:0,weather_code:1,wind_speed_10m:3,wind_gusts_10m:5,wind_direction_10m:90,time:hours[0]},
     hourly:{time:weatherHours,temperature_2m:weatherHours.map(()=>22),precipitation:weatherHours.map(()=>0),weather_code:weatherHours.map(()=>1),wind_speed_10m:weatherHours.map(()=>3),wind_gusts_10m:weatherHours.map(()=>5)}
-  })}));
-  await page.route('https://marine-api.open-meteo.com/**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({
+  };
+  const marineMock={
     latitude:34.6833,longitude:138.9667,
     current:{wave_height:0.5,sea_surface_temperature:24,ocean_current_velocity:1.2,ocean_current_direction:90,sea_level_height_msl:0.1,time:hours[0]},
     hourly:{
@@ -25,7 +25,16 @@ try{
       ocean_current_direction:hours.map((_,i)=>(90+i*5)%360),
       sea_level_height_msl:[0.10,0.16,0.24,0.33,0.39,0.42,0.40,0.34,0.25,0.15,0.06,-0.02,-0.08,-0.11,-0.09,-0.03,0.06,0.16,0.27,0.35,0.39,0.37,0.31,0.22]
     }
-  })}));
+  };
+  await page.addInitScript(({weatherMock,marineMock})=>{
+    const nativeFetch=globalThis.fetch.bind(globalThis);
+    globalThis.fetch=(input,init)=>{
+      const url=typeof input==='string'?input:String(input?.url||input);
+      if(url.startsWith('https://api.open-meteo.com/v1/forecast'))return Promise.resolve(new Response(JSON.stringify(weatherMock),{status:200,headers:{'Content-Type':'application/json'}}));
+      if(url.startsWith('https://marine-api.open-meteo.com/v1/marine'))return Promise.resolve(new Response(JSON.stringify(marineMock),{status:200,headers:{'Content-Type':'application/json'}}));
+      return nativeFetch(input,init);
+    };
+  },{weatherMock,marineMock});
   await page.goto(base,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fieldLive==='on');
   await page.locator('button.fish[data-fish="シーバス"]').click();
