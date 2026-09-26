@@ -15,7 +15,7 @@ assert.equal(await page.locator('script[data-extension="trip-pack-rules-v34-js"]
 assert.equal(await page.locator('script[data-extension="pack-checklist-v28-js"]').count(),1,'pack UI loaded once');
 assert.equal(await page.locator('link[data-extension="trip-pack-v34-css"]').count(),1,'trip pack CSS loaded once');
 await page.locator('#grid .fish').first().waitFor({state:'visible'});
-assert.equal(await page.locator('#appPackTabV30').count(),1,'packing has its own app tab');
+assert.equal(await page.locator('#appPackTabV30').count(),0,'packing lives inside trip conditions when the trip tab exists');
 assert.equal(await page.locator('#appTabBarV26 button').count(),4,'global shell has four tabs');
 assert.equal(await page.locator('#packStandaloneV30').isVisible(),false,'packing surface starts closed');
 
@@ -26,9 +26,11 @@ assert.equal(await page.locator('#result #quickPackV28').count(),0,'TRIP READY r
 await page.locator('#back').click();
 await page.locator('#home.on').waitFor({state:'visible'});
 
-await page.locator('#appPackTabV30').click();
+await page.locator('#appTabBarV26 [data-app-tab="conditions"]').click();
+await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='conditions');
+await page.locator('#conditionsPackBtn').click();
 await page.locator('#packStandaloneV30').waitFor({state:'visible'});
-assert.equal(await page.locator('#appPackTabV30.on').count(),1,'packing tab becomes active');
+assert.equal(await page.locator('#appTabBarV26 [data-app-tab="conditions"].on').count(),1,'trip tab remains active while packing is open');
 assert.match((await page.locator('#tripPackContextV34').textContent())||'',/ブリ・ワラサ/,'selected trip context is preserved');
 const runtime=await page.evaluate(()=>({
   version:globalThis.FISH_TARGET_QUICK_PACK?.version,
@@ -87,7 +89,7 @@ assert.ok(afterReady.items.filter(item=>item.priority==='required').every(item=>
 
 await page.locator('#packStandaloneCloseV30').click();
 assert.equal(await page.locator('#packStandaloneV30').isVisible(),false,'standalone packing surface closes');
-assert.equal(await page.locator('#appTabBarV26 button[data-app-tab="home"].on').count(),1,'home tab is restored');
+assert.equal(await page.locator('#appTabBarV26 button[data-app-tab="conditions"].on').count(),1,'trip tab is restored');
 
 const overflow=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,viewport:innerWidth}));
 assert.ok(overflow.doc<=391&&overflow.body<=391&&overflow.viewport===390,`390px overflow: ${JSON.stringify(overflow)}`);
