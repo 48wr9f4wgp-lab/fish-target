@@ -16,6 +16,7 @@ export const suite=Object.freeze([
   'human-factors-v33-browser-qa',
   'ux-accessibility-v34-browser-qa',
   'legibility-v34-browser-qa',
+  'tide-current-v34-browser-qa',
   'navigation-history-v34-browser-qa',
   'rc-storage-resilience-browser-qa',
   'publication-browser-qa'
