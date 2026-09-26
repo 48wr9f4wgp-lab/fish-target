@@ -31,7 +31,7 @@ jobs:
       - name: Build web bundle and generate Xcode project
         run: bash ios/FishTargetLocal/bootstrap.sh
 
-      - name: Build iOS simulator app
+      - name: Build iOS device app
         run: |
           xcodebuild \
             -project ios/FishTargetLocal/FishTargetLocal.xcodeproj \
