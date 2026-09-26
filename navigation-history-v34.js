@@ -64,7 +64,7 @@
       show(safe.view);
     }
     // Let existing MY SET rendering derive from current owned gear, not history.
-    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    if(safe.view==='fieldmode')await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     if(token!==restoreToken)return;
     if(safe.view==='fieldmode')document.getElementById('fieldModeBtn').click();
     if(safe.modal==='tackle')document.getElementById('tackleManage').click();

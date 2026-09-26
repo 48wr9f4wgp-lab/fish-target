@@ -60,6 +60,7 @@ try{
       assert.ok(bounds.left>=.08&&bounds.right>=.08&&bounds.top>=.08&&bounds.bottom>=.08,`${name}/${width} safe margins: ${JSON.stringify(bounds)}`);
       if(screenshots&&width===390)await page.locator('#tart').screenshot({path:`${screenshots}/preview-${i}-result.png`});
       await page.locator('#back').click();
+      await page.waitForFunction(()=>!globalThis.FISH_TARGET_NAVIGATION||(!FISH_TARGET_NAVIGATION.isRestoring()&&FISH_TARGET_NAVIGATION.getState()?.view==='home'));
       // Playwright visibility alone ignores the fixed bottom navigation.
       await page.evaluate(()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
       const reachable=await card.evaluate(el=>({bottom:el.getBoundingClientRect().bottom,dockTop:document.getElementById('appTabBarV26').getBoundingClientRect().top}));
