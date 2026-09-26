@@ -1,5 +1,6 @@
 const CACHE='fish-target-shell-__CACHE_BUILD_ID__';
 const SHELL=__SHELL_MANIFEST__;
+const AI_RUNTIME_ORIGINS=new Set(['https://cdn.jsdelivr.net']);
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()));
@@ -17,7 +18,18 @@ self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
   const url=new URL(request.url);
-  if(url.origin!==self.location.origin)return;
+  if(url.origin!==self.location.origin){
+    if(!AI_RUNTIME_ORIGINS.has(url.origin))return;
+    event.respondWith((async()=>{
+      const cache=await caches.open(CACHE);
+      const cached=await cache.match(request);
+      if(cached)return cached;
+      const fresh=await fetch(request);
+      if(fresh&&fresh.ok)cache.put(request,fresh.clone()).catch(()=>{});
+      return fresh;
+    })());
+    return;
+  }
 
   event.respondWith((async()=>{
     try{
