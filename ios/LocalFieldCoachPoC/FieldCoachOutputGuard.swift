@@ -22,16 +22,16 @@ enum FieldCoachOutputGuard {
         }
 
         var normalized = text
-        normalized = normalized.replacingOccurrences(of: "。", with: "。\\n")
-        normalized = normalized.replacingOccurrences(of: "！", with: "！\\n")
-        normalized = normalized.replacingOccurrences(of: "？", with: "？\\n")
+        normalized = normalized.replacingOccurrences(of: "。", with: "。\n")
+        normalized = normalized.replacingOccurrences(of: "！", with: "！\n")
+        normalized = normalized.replacingOccurrences(of: "？", with: "？\n")
         let pieces = normalized
             .components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
         let limit = min(max(request.rules.maxSentences ?? 3, 1), 3)
-        let result = pieces.prefix(limit).joined(separator: "\\n")
+        let result = pieces.prefix(limit).joined(separator: "\n")
         guard !result.isEmpty else { throw GuardError.emptyOutput }
         return String(result.prefix(280))
     }
