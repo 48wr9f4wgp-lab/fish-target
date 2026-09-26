@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdir} from 'node:fs/promises';
+import {mkdir,writeFile} from 'node:fs/promises';
 import {chromium,webkit} from 'playwright';
 
 const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
@@ -8,8 +8,18 @@ const browser=await engine.launch({headless:true});
 const screenshots=process.env.FISH_TARGET_SCREENSHOTS;
 const expectedNames=['ブリ・ワラサ','ニジマス','ヒラメ','アオリイカ','シーバス','アジ','メバル','マゴチ','タチウオ','マダイ','ブラックバス','サワラ'];
 if(screenshots)await mkdir(screenshots,{recursive:true});
+const diagnostics=process.env.FISH_TARGET_QA_DIAGNOSTICS;
+const events=[];let step='launch',page,context;
+const record=(event,detail='')=>{const row={time:new Date().toISOString(),step,event,detail};events.push(row);console.log('FISH_VISUAL_DIAGNOSTIC',JSON.stringify(row))};
+if(diagnostics)await mkdir(diagnostics,{recursive:true});
+browser.on('disconnected',()=>record('browser-disconnected'));
 try{
-  const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true});
+  context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true});
+  if(diagnostics)await context.tracing.start({screenshots:true,snapshots:true,sources:true});
+  page=await context.newPage();
+  page.on('crash',()=>record('page-crash'));page.on('close',()=>record('page-close'));
+  context.on('close',()=>record('context-close'));
+  step='initial-load';
   const errors=[];page.on('pageerror',error=>errors.push(String(error)));
   await page.goto(BASE);
   await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'));
@@ -30,12 +40,15 @@ try{
   for(const width of [375,390,430]){
     await page.setViewportSize({width,height:844});
     for(const [i,name] of expectedNames.entries()){
+      step=`${width}/${name}/search`;record('start');
       await page.locator('#q').fill(name);
       const card=page.locator(`button.fish[data-fish="${name}"]`);
       await card.scrollIntoViewIfNeeded();
       await page.evaluate(name=>globalThis.FISH_TARGET_REAL_FISH.prefetch(name),name);
       await card.locator('.realFishCanvas').waitFor();
+      step=`${width}/${name}/click`;record('click');
       await card.click();
+      step=`${width}/${name}/paint`;
       await page.waitForFunction(name=>document.querySelector('#tart .realFishCanvas')?.dataset.fish===name&&document.querySelector('#tart .realFishCanvas')?.width>0,name,{timeout:10000});
       const bounds=await page.locator('#tart .realFishCanvas').evaluate(canvas=>{
         const {width:w,height:h}=canvas;const data=canvas.getContext('2d').getImageData(0,0,w,h).data;
@@ -56,4 +69,15 @@ try{
   }
   assert.deepEqual(errors,[]);
   console.log('FISH_VISUAL_PREVIEW_BROWSER_QA_PASS',JSON.stringify({engine:engine.name(),widths:[375,390,430],metrics}));
-}finally{await browser.close()}
+}catch(error){
+  record('failure',String(error));
+  if(diagnostics){
+    await writeFile(`${diagnostics}/events.json`,JSON.stringify(events,null,2));
+    if(page&&!page.isClosed())await page.screenshot({path:`${diagnostics}/failure.png`}).catch(()=>{});
+  }
+  throw error;
+}finally{
+  if(diagnostics&&context)await context.tracing.stop({path:`${diagnostics}/trace.zip`}).catch(error=>record('trace-save-failed',String(error)));
+  step='cleanup';await browser.close();
+  if(diagnostics)await writeFile(`${diagnostics}/events.json`,JSON.stringify(events,null,2));
+}
