@@ -40,7 +40,9 @@ try{
   const selectedCast=(await page.locator('#firstBait').textContent()).trim();
   const selectedSize=(await page.locator('#firstSize').textContent()).trim();
   await page.locator('#back').click();
-  await page.locator('#appPackTabV30').click();
+  await page.locator('#appTabBarV26 [data-app-tab="conditions"]').click();
+  await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='conditions');
+  await page.locator('#conditionsPackBtn').click();
   const firstCast=page.locator('[data-id="plan-first-cast"]');
   assert.ok((await firstCast.textContent()).includes(selectedCast),'packing must use the selected alternative FIRST CAST');
   assert.ok((await firstCast.textContent()).includes(selectedSize),'packing must use the displayed size');
@@ -53,14 +55,14 @@ try{
     await globalThis.FISH_TARGET_TACKLE_AUTO_BUILD.run({loadCatalog:false});
   },id);
   await setOwned('rod-a');
-  await page.locator('#appPackTabV30').click();
+  await page.locator('#conditionsPackBtn').click();
   const rod=page.locator('[data-id="plan-rod"]');
   assert.match(await rod.textContent(),/AUDIT ROD/);
   await rod.locator('label').click();
   assert.equal(await rod.locator('input').isChecked(),true);
   await page.locator('#packStandaloneCloseV30').click();
   await setOwned('rod-b');
-  await page.locator('#appPackTabV30').click();
+  await page.locator('#conditionsPackBtn').click();
   assert.equal(await rod.locator('input').isChecked(),false,'a different physical rod with the same name is not already packed');
   await page.locator('#packStandaloneCloseV30').click();
 
