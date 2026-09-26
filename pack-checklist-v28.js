@@ -180,12 +180,12 @@
   function open(){
     ensureUi();render();const overlay=$('#packStandaloneV30');if(!overlay)return;
     returnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
-    overlay.hidden=false;document.body.classList.add('packOpenV30');syncPackTab(true);$('#packStandaloneCloseV30')?.focus();
+    overlay.hidden=false;document.body.classList.add('packOpenV30');syncPackTab(true);globalThis.FISH_TARGET_MODAL_FOCUS?.open(overlay,close);$('#packStandaloneCloseV30')?.focus();
   }
 
   function close(){
     const overlay=$('#packStandaloneV30');if(!overlay||overlay.hidden)return;
-    overlay.hidden=true;document.body.classList.remove('packOpenV30');syncPackTab(false);returnFocus?.focus?.();returnFocus=null;
+    overlay.hidden=true;document.body.classList.remove('packOpenV30');syncPackTab(false);globalThis.FISH_TARGET_MODAL_FOCUS?.close(overlay);returnFocus?.focus?.();returnFocus=null;
   }
 
   function playPlanEffect(){

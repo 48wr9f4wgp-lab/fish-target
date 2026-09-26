@@ -7,7 +7,7 @@
       ['home','result','saved'].forEach(x=>document.getElementById(x)?.classList.remove('on'));
       fm?.classList.add('on');
       document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
-      scrollTo({top:0,behavior:'smooth'});
+      scrollTo({top:0,behavior:'instant'});
       return;
     }
     baseShow(v);

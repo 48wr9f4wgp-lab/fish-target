@@ -110,7 +110,7 @@ html.clarity-v27 .appTackleSheetV26 .tackleSheetHead h2{font-size:21px!important
 html.clarity-v27 .appTackleSheetV26 .tackleFormCard{padding:14px!important}
 html.clarity-v27 .appTackleSheetV26 .tackleFormCard h3{font-size:18px!important;margin-bottom:10px!important}
 html.clarity-v27 .appTackleSheetV26 .userCatalogNote{justify-self:start!important;padding:6px 9px!important;border-radius:999px!important;font-size:9px!important;line-height:1!important}
-html.clarity-v27 .appTackleSheetV26 .catalogLoadState{min-height:8px!important;font-size:9px!important}
+html.clarity-v27 .appTackleSheetV26 .catalogLoadState{min-height:18px!important;font-size:12px!important;color:#465f66!important;line-height:1.5}
 html.clarity-v27 .appTackleSheetV26 .catalogLine>small,
 html.clarity-v27 .appTackleSheetV26 .ownedEditor>small,
 html.clarity-v27 .fitNote{display:none!important}
@@ -130,3 +130,12 @@ html.clarity-v27 .fitItem{padding:11px 12px!important}
   html.clarity-v27 #home .fish.discoveryCardV26{min-height:184px!important}
   html.clarity-v27 #home .fish.discoveryCardV26 .art{height:108px!important}
 }
+
+/* V34 audited controls: readable, reachable, and visibly focused. */
+html.app-shell-v26.clarity-v27 #tackleEditFromResult,
+html.app-shell-v26.clarity-v27 .targetChip,
+html.app-shell-v26.clarity-v27 .ownedActions button{min-height:44px!important;min-width:44px!important;font-size:12px!important}
+html.app-shell-v26.clarity-v27 #save,
+html.app-shell-v26.clarity-v27 #ux23MethodChange{font-size:12px!important}
+html.app-shell-v26 :is(button,input,select,summary,a):focus-visible{outline:3px solid #16887f!important;outline-offset:3px}
+html.app-shell-v26 .appTackleSheetV26 .tackleAdd:disabled{opacity:.5;cursor:not-allowed}

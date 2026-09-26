@@ -3,6 +3,36 @@
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
   document.documentElement.classList.add('app-shell-v26','clarity-v27');
 
+  // Shared by the two existing sheets: keep interaction inside the active dialog.
+  let activeModal=null;
+  globalThis.FISH_TARGET_MODAL_FOCUS=Object.freeze({
+    open(element,onClose){
+      if(activeModal?.element===element)return;
+      activeModal?.onClose();
+      const opener=document.activeElement;
+      const siblings=[...document.body.children].filter(el=>el!==element&&!el.contains(element)&&el.id!=='tackleBackdrop');
+      const previous=siblings.map(el=>[el,el.inert]);
+      siblings.forEach(el=>{el.inert=true});
+      activeModal={element,onClose,opener,previous};
+      element.querySelector('button')?.focus({preventScroll:true});
+    },
+    close(element){
+      if(activeModal?.element!==element)return;
+      const {opener,previous}=activeModal;activeModal=null;
+      previous.forEach(([el,value])=>{el.inert=value});
+      if(opener?.isConnected)opener.focus({preventScroll:true});
+    }
+  });
+  document.addEventListener('keydown',event=>{
+    if(!activeModal)return;
+    if(event.key==='Escape'){event.preventDefault();activeModal.onClose();return}
+    if(event.key!=='Tab')return;
+    const items=$$('button,input,select,textarea,a[href],[tabindex]',activeModal.element).filter(el=>!el.disabled&&el.tabIndex>=0&&el.getClientRects().length);
+    const first=items[0],last=items.at(-1);
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus()}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus()}
+  });
+
   const OWNED_STORAGE_KEYS=Object.freeze([
     'fish_target_v9','fish_target_v8','fish_target_v7','fish_target_v6','fish_target_v5',
     'fish_target_v9_checklists','fish_target_v9_events',
@@ -16,7 +46,7 @@
     if(legacy)legacy.click();
     syncTabs(view);
   };
-  const syncTabs=view=>$$('#appTabBarV26 button').forEach(b=>b.classList.toggle('on',b.dataset.appTab===view));
+  const syncTabs=view=>$$('#appTabBarV26 button').forEach(b=>{const active=b.dataset.appTab===view;b.classList.toggle('on',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
 
   function ensureTabBar(){
     if($('#appTabBarV26'))return;

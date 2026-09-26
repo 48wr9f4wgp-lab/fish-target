@@ -14,6 +14,7 @@ export const suite=Object.freeze([
   'pack-game-feel-v28-browser-qa',
   'tackle-auto-build-v29-browser-qa',
   'human-factors-v33-browser-qa',
+  'ux-accessibility-v34-browser-qa',
   'rc-storage-resilience-browser-qa',
   'publication-browser-qa'
 ]);

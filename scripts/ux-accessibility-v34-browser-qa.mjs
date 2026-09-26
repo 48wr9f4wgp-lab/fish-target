@@ -1,0 +1,60 @@
+import assert from 'node:assert/strict';
+import {chromium,webkit} from 'playwright';
+const engine=process.env.FISH_TARGET_QA_ENGINE==='webkit'?webkit:chromium;
+const browser=await engine.launch({headless:true});
+const BASE=process.env.FISH_TARGET_QA_URL||'http://127.0.0.1:4173/dist/';
+try{
+ for(const width of [375,390,430]){
+  const context=await browser.newContext({viewport:{width,height:812},serviceWorkers:'block'});
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
+  // A failed cold request must be actionable, and reopening must really retry.
+  let requests=0;
+  await page.route('**/catalog-providers.js*',route=>++requests===1?route.abort():route.continue());
+  await page.goto(BASE);await page.waitForFunction(()=>document.documentElement.classList.contains('ft-ready'));
+  await page.locator('#q').fill('シーバス');await page.locator('button.fish[data-fish="シーバス"]').click();
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_TACKLE_AUTO_BUILD?.getState?.().status==='ready');
+  await page.locator('#autoBuildNextV32').click();
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER.state.status==='error');
+  assert.match(await page.locator('#rodCatalogLoadState').innerText(),/読み込めません/);
+  assert.equal(await page.locator('#addCatalogRod').isDisabled(),true);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'tackleClose');
+  assert.equal(await page.locator('#result').evaluate(el=>Boolean(el.closest('[inert]'))),true);
+  await page.keyboard.press('Shift+Tab');
+  assert.equal(await page.evaluate(()=>Boolean(document.activeElement.closest('#tackleSheet'))),true);
+  await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'tackleClose');
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#tackleSheet').isHidden(),true);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'autoBuildNextV32');
+  assert.equal(await page.locator('#result').evaluate(el=>Boolean(el.closest('[inert]'))),false);
+  await page.locator('#autoBuildNextV32').click();
+  await page.waitForFunction(()=>globalThis.FISH_TARGET_CATALOG_LOADER.state.status==='ready');
+  await page.waitForFunction(()=>!document.getElementById('addCatalogRod').disabled);
+  assert.equal(requests,2);
+  await page.locator('[data-kind="rod"] [data-mode="manual"]').click();
+  await page.locator('#rodName').fill('監査用ロッド');
+  await page.setViewportSize({width,height:500});
+  await page.locator('#rodName').scrollIntoViewIfNeeded();
+  const closeBox=await page.locator('#tackleClose').boundingBox();
+  assert.ok(closeBox.y>=0&&closeBox.y+closeBox.height<=500,'close remains reachable in a reduced viewport');
+  await context.setOffline(true);
+  await page.locator('#addRod').click();
+  assert.match(await page.locator('#tackleOwned').innerText(),/監査用ロッド/);
+  await context.setOffline(false);
+  await page.setViewportSize({width,height:812});
+  await page.locator('#tackleClose').click();
+  await page.locator('#tackleEditFromResult').scrollIntoViewIfNeeded();
+  const height=await page.locator('#tackleEditFromResult').evaluate(e=>e.getBoundingClientRect().height);assert.ok(height>=44);
+  await page.locator('#fieldModeBtn').click();
+  assert.equal(await page.evaluate(()=>scrollY),0,'view transitions start at the answer, without inherited scroll');
+  assert.equal(await page.locator('.fmFirst').isVisible(),true);
+  await page.locator('#fieldBack').click();await page.locator('#back').click();
+  assert.equal(await page.locator('#q').inputValue(),'シーバス');
+  const chip=page.locator('.targetChip').first();assert.ok(await chip.evaluate(e=>e.getBoundingClientRect().height)>=44);
+  await page.locator('#appPackTabV30').click();await page.keyboard.press('Shift+Tab');
+  assert.equal(await page.evaluate(()=>Boolean(document.activeElement.closest('#packStandaloneV30'))),true);
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#packStandaloneV30').isHidden(),true);
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'appPackTabV30');
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  assert.deepEqual(errors,[]);await context.close();
+ }
+ console.log('UX_ACCESSIBILITY_V34_BROWSER_QA_PASS',engine.name());
+}finally{await browser.close()}
