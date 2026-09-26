@@ -41,7 +41,8 @@ try{
  assert.equal((await page.locator('#rname').textContent()||'').trim(),'シーバス');
  assert.equal(await page.locator('[data-method-id].on').getAttribute('data-method-id'),selected);
  await page.locator('#back').click();await view('home');
- await page.locator('#appPackTabV30').click();
+ await page.locator('#appTabBarV26 [data-app-tab="conditions"]').click();await view('conditions');
+ await page.locator('#conditionsPackBtn').click();
  await page.waitForFunction(()=>FISH_TARGET_NAVIGATION.getState()?.modal==='pack');
  await page.goBack();await settled();
  assert.equal(await page.locator('#packStandaloneV30').isHidden(),true);
@@ -49,6 +50,7 @@ try{
  assert.equal(await page.locator('#packStandaloneV30').isVisible(),true);
  await page.locator('#packStandaloneCloseV30').click();await settled();
  await page.waitForFunction(()=>FISH_TARGET_NAVIGATION.getState()?.modal===null);
+ await page.locator('#appTabBarV26 [data-app-tab="home"]').click();await view('home');
  await page.evaluate(()=>history.replaceState({fishTargetNavigationV34:{version:1,view:'unknown'}},''));
  await page.reload();await settled();await view('home');
  // The app must allow leaving its initial entry, without a back-button trap.
