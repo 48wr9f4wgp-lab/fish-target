@@ -85,7 +85,7 @@
 
   function syncPackTab(active){
     const hasPackTab=Boolean($('#appPackTabV30'));
-    $('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&(hasPackTab?button.dataset.appTab==='pack':button.dataset.appTab==='conditions')));
+    $$('#appTabBarV26 button').forEach(button=>button.classList.toggle('on',active&&(hasPackTab?button.dataset.appTab==='pack':button.dataset.appTab==='conditions')));
     if(active)return;
     const current=$('.view.on')?.id;
     const fallback=current==='saved'?'saved':current==='home'?'home':current==='conditions'?'conditions':null;
