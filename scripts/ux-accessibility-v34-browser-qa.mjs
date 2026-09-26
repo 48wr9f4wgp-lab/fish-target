@@ -61,11 +61,13 @@ try{
   await page.locator('#fieldBack').click();await page.locator('#back').click();
   assert.equal(await page.locator('#q').inputValue(),'シーバス');
   const chip=page.locator('.targetChip').first();assert.ok(await chip.evaluate(e=>e.getBoundingClientRect().height)>=44);
-  await page.locator('#appPackTabV30').click();await page.keyboard.press('Shift+Tab');
+  await page.locator('#appTabBarV26 [data-app-tab="conditions"]').click();
+  await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='conditions');
+  await page.locator('#conditionsPackBtn').click();await page.keyboard.press('Shift+Tab');
   assert.equal(await page.evaluate(()=>Boolean(document.activeElement.closest('#packStandaloneV30'))),true);
   await page.keyboard.press('Escape');assert.equal(await page.locator('#packStandaloneV30').isHidden(),true);
   assert.equal(await page.locator('#appTabBarV26').isVisible(),true,'dock returns after closing the sheet');
-  assert.equal(await page.evaluate(()=>document.activeElement.id),'appPackTabV30');
+  assert.equal(await page.evaluate(()=>document.activeElement.id),'conditionsPackBtn');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   assert.deepEqual(errors,[]);await context.close();
  }
