@@ -219,6 +219,9 @@
   byId('gcClose').onclick=close;byId('gcRetry').onclick=()=>void load();byId('gcReset').onclick=reset;byId('gcClear').onclick=()=>{state.selected=[];render();};byId('gcDifferences').onchange=renderTable;byId('gcMore').onclick=()=>{state.limit+=24;render();};byId('gcGo').onclick=()=>{renderTable();byId('gcComparison').scrollIntoView({block:'start',behavior:'instant'});byId('gcComparison').focus({preventScroll:true});};
   byId('gcQuickCompare').onclick=()=>byId('gcGo').click();byId('gcQuickTop').onclick=()=>{sheet.scrollTo({top:0,behavior:'instant'});byId('gcQuery').focus({preventScroll:true});};
   const launch=d.createElement('button');launch.type='button';launch.id='gearCompareLaunch';launch.className='gc-launch';launch.innerHTML='<b>メーカー横断で比較</b><span>リール・ロッドの仕様と価格帯を比べる ›</span>';launch.onclick=()=>open();byId('tackleSheet')?.querySelector('.tackleSheetBody')?.prepend(launch);
-  const home=d.createElement('button');home.type='button';home.id='gearCompareHome';home.className='gc-launch gc-home';home.innerHTML='<b>道具をメーカー横断で比べる</b><span>魚種を決めずに、条件・型番から比較 ›</span>';home.onclick=()=>open();byId('home')?.querySelector('.filterPanel')?.after(home);
+  const home=d.createElement('button');home.type='button';home.id='gearCompareHome';home.className='gc-launch gc-home';home.innerHTML='<b>道具をメーカー横断で比べる</b><span>魚種を決めずに、条件・型番から比較 ›</span>';home.onclick=()=>open();// The inherited filters live inside closed details; never put a primary entry there.
+  const homeBody=byId('home')?.querySelector('.body');
+  const homeUtilities=byId('v19Utilities');
+  if(homeUtilities?.parentElement===homeBody)homeUtilities.after(home);else homeBody?.prepend(home);
   root.FISH_TARGET_GEAR_COMPARE=Object.freeze({version:VERSION,open,close,isOpen:()=>!sheet.hidden,selected:()=>state.selected.slice()});
 })(typeof globalThis==='object'?globalThis:this);

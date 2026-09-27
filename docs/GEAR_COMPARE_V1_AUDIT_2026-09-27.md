@@ -46,10 +46,14 @@ Other prices are unknown. Abu's earlier source redirects to a new official colle
 
 The existing `V23_CATALOG_DATA_SOURCE_DECISION.md` remains binding. Technical data and commerce/offers stay separate. No manufacturer imagery, live offer API or analytics was added. Research-only comparison assets are excluded from `FISH_TARGET_PUBLICATION_BUILD=1`, not merely hidden. The feature is developed on a new non-deploy branch; Pages workflow unchanged.
 
-Completed locally: JavaScript syntax checks; 33 executable unit tests; actual comparison component with the real catalog snapshot and shared focus manager in installed Chromium; 375/390/430px overflow, selection limit, two-maker differences, PE filtering, alternatives, ambiguous rod length and Escape/focus checks; screenshot review. Local browser URL navigation was blocked by the environment, so this was a component harness, not a full deployed-PWA validation.
+Completed locally: JavaScript syntax checks; 34 executable unit/contract tests; actual comparison component with the real catalog snapshot and shared focus manager in installed Chromium; 375/390/430px overflow, selection limit, two-maker differences, PE filtering, alternatives, ambiguous rod length and Escape/focus checks; screenshot review. Local browser URL navigation was blocked by the environment, so this was a component harness, not a full deployed-PWA validation.
 
 Added CI: actual bootstrap, catalog retry, comparison, history/reload, MY TACKLE preservation, Chromium and WebKit, and publication build/asset isolation. CI outcome is recorded on the PR; it is not assumed here. Physical iPhone validation and release approval remain outstanding.
 
 ## Next boundary
 
 Broader price/grade coverage requires additional exact-SKU evidence and publication rights, not invented price tiers. Production source licensing and any live-price integration are separate decisions. This change does not replace the trip dashboard or automatically recommend a purchase.
+
+## Integration follow-up
+
+The first full-app CI exposed a Home entry mounted inside collapsed filters and a stylesheet outside the shared readiness list. These were corrected together: the entry is mounted in the Home main body, and preview-only comparison CSS participates in `extensionStyles`/`extensionCss`. A closed-filter component fixture and executable integration contract cover the regressions. Initial failing CI is not counted as a verified baseline; final outcomes are recorded on PR #66.
