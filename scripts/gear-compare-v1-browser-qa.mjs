@@ -54,7 +54,7 @@ try{
     await selection('カルディア 5000-CXH');await page.locator('#gcResults [data-gc-select]').click();
     await selection('ステラ C5000XG');await page.locator('#gcResults [data-gc-select]').click();assert.match(await page.locator('#gcError').textContent(),/最大3点/);
     await page.locator('#gcClear').click();await page.locator('#gcReset').click();
-    if(!(await page.locator('.gc-conditions').getAttribute('open')))await page.locator('.gc-conditions summary').click();await page.locator('#gcPe').fill('2');await page.locator('#gcMetres').fill('300');
+    if(await page.locator('.gc-conditions').getAttribute('open')===null)await page.locator('.gc-conditions summary').click();await page.locator('#gcPe').fill('2');await page.locator('#gcMetres').fill('300');
     assert.ok(await page.locator('#gcResults .gc-product').count()>1);
     await selection('レガリス 4000');assert.equal(await page.locator('#gcResults .gc-product').count(),0);
     await page.locator('#gcReset').click();await selection('レガリス 5000');await page.locator('#gcResults [data-gc-similar]').click();assert.ok(await page.locator('#gcSimilarRows .gc-product').count()>0);
