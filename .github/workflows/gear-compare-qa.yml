@@ -1,0 +1,61 @@
+name: gear-compare-qa
+on:
+  pull_request:
+    paths:
+      - 'gear-compare-v1.*'
+      - 'pwa.js'
+      - 'navigation-history-v34.js'
+      - 'scripts/build.mjs'
+      - 'scripts/gear-compare-v1-browser-qa.mjs'
+      - 'tests/gear-compare-v1.test.mjs'
+      - '.github/workflows/gear-compare-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: gear-compare-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax and comparison unit tests
+        run: |
+          node --check gear-compare-v1.js
+          node --check scripts/gear-compare-v1-browser-qa.mjs
+          node --test tests/gear-compare-v1.test.mjs
+          npm run build
+      - name: Browser runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Actual app comparison and publication isolation
+        env:
+          FISH_TARGET_QA_ENGINE: ${{ matrix.engine }}
+          FISH_TARGET_QA_DIAGNOSTICS: /tmp/gear-compare-qa
+        run: |
+          npm run serve > /tmp/gear-compare-serve.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/dist/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/gear-compare-v1-browser-qa.mjs
+          FISH_TARGET_PUBLICATION_BUILD=1 npm run build
+          test ! -e dist/gear-compare-v1.js
+          test ! -e dist/gear-compare-v1.css
+          FISH_TARGET_COMPARE_PUBLICATION=1 node scripts/gear-compare-v1-browser-qa.mjs
+      - name: Preserve comparison screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gear-compare-${{ matrix.engine }}
+          path: /tmp/gear-compare-qa
+          retention-days: 7

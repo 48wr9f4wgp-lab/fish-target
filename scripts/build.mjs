@@ -70,6 +70,7 @@ const allLazyRuntimeAssets=[...lazyRuntimeAssets,...lureLazyRuntimeAssets];
 
 const copiedAssets=[...new Set([
   'style.css','quick-plan.css','field-mode.css','pwa.css',
+  ...(publicationBuild?[]:['gear-compare-v1.js','gear-compare-v1.css']),
   'continuity.css','target-methods-v1.css','tackle.css','fit-explain.css','simplify.css','conditions-page-v34.css','visual-pass.css','visual-typography.css','fish-real.css','fish-photo-v27.css','visual-v8.css','result-ux-v20.css','result-ux-v23.css','visual-v24.css','visual-v25.css','visual-v26.css','game-feel-v28.css','tackle-auto-build-v29.css','trip-pack-v34.css',
   'data.js','products.js','app.js','field-mode.js','pwa.js',
   'continuity.js',

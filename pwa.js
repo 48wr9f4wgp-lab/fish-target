@@ -77,6 +77,11 @@
       await loadScript('./trip-pack-rules-v34.js','trip-pack-rules-v34-js');
       await loadScript('./pack-checklist-v28.js','pack-checklist-v28-js');
       await loadScript('./tackle-auto-build-v29.js','tackle-auto-build-v29-js');
+      // The comparison PoC has no production distribution approval. Do not fetch it in publication builds.
+      if(document.documentElement.dataset.publicationBuild!=='on'&&document.documentElement.dataset.catalogPublication!=='on'&&document.documentElement.dataset.catalogRuntime!=='off'){
+        await loadCss('./gear-compare-v1.css','gear-compare-v1-css');
+        await loadScript('./gear-compare-v1.js','gear-compare-v1-js');
+      }
       await loadScript('./navigation-history-v34.js','navigation-history-v34-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
       await maybeLoadLureUi();
