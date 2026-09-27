@@ -1,75 +1,67 @@
 # FISH TARGET
 
-Fish-first fishing setup advisor. Choose a target fish and get a recommended method, FIRST CAST, required tackle, owned-tackle compatibility, and a field-use plan.
+**LOCKED: owner-only personal fishing utility.** This app is for its owner's fishing decisions, gear comparison and trip preparation, not a general-release product.
+
+Canonical product intent: `build.config.json` -> `productIntent`.
+Decision and acceptance scope: [個人専用の確定方針](docs/PERSONAL_USE_LOCK_2026-09-27.md).
+Contributor instructions: `AGENTS.md`.
+
+App Store submission, general distribution, monetization, advertising, multi-user accounts and market-wide catalog completion are out of scope unless the owner explicitly changes this decision. Earlier release-oriented checklists are historical where they conflict with this scope; their accuracy, data-safety and usability findings are not automatically resolved.
 
 ## Current build
 
-- Canonical build version: `build.config.json` (single source of truth)
-- DEV / device test: GitHub Pages from `main`
-- Primary target: iPhone Safari / Home Screen PWA-style usage
-- Current and release-candidate delivery route: GitHub Pages only
-- Offline device verification is still pending; do not mark offline support complete until iPhone airplane-mode QA passes
+- Canonical build version: `build.config.json`.
+- Primary target: iPhone Safari / Home Screen PWA-style usage.
+- Current hosted preview route: GitHub Pages. Deployment is a separate, explicitly approved action.
+- Multiple branches automatically deploy Pages, including `chatgpt/v34-integration-review`; inspect `.github/workflows/pages.yml` before pushing or merging.
+- The product-intent flag is not authentication. The repository was observed public on 2026-09-27; owner-only site access has not been verified. Do not embed personal inventory, locations, credentials or tokens in code or CI artifacts.
+- Physical-iPhone offline verification is pending. Do not mark offline support complete from desktop or WebKit simulation alone.
 
 ## Product rule
 
-The default experience must answer one question as fast as possible:
+The fish-first path remains:
 
 `釣りたい魚 -> 何で釣る -> 最初に何を投げる -> 手持ちでいける -> 現場で何をする`
 
-Anything outside that path is secondary and should be collapsed, hidden from first view, or removed if it does not materially improve the decision.
-
-## Current product layers
-
-- v13 — 3-second result hierarchy: method -> FIRST CAST -> tackle -> three steps
-- v14 — FIELD MODE for on-the-water use
-- v15 — PWA shell / network-first offline fallback
-- v16 — last-plan resume, favorite targets, recent targets
-- v17 — MY TACKLE: owned rod/reel registration and simple compatibility matching
-- v18 — fit explanation: per-spec ○/△/× breakdown and NEXT BUY guidance
-- v19 — simplification pass: compact home, collapsed filters, compressed fish cards, one condition group, one details group
-- v20 — recommendation accuracy pass: unit-aware MY TACKLE matching, shore/boat lure-bait consistency, and high-risk species corrections
+Gear comparison, MY TACKLE, trip conditions and packing may also be entered independently. A fish selection or owned-gear registration must not be required merely to compare products.
+Prioritize the owner's actual uses, accurate source-labelled data and low operation count. Broad product coverage is not a completion gate.
 
 ## Main files
 
-- `index.html` — stable core markup
-- `style.css` / `quick-plan.css` / `field-mode.css` — core UI
-- `data.js` — fish/method data
-- `products.js` — product recommendation data
-- `app.js` — rendering, recommendation state, live-condition logic, persistence
-- `field-mode.js` — FIELD MODE
-- `pwa.js` / `sw.js` — PWA and offline shell
-- `continuity.js` / `continuity.css` — retention/continuity layer
-- `tackle.js` / `tackle.css` — MY TACKLE and compatibility checks
-- `fit-explain.js` / `fit-explain.css` — compatibility reasoning and buy guidance
-- `simplify.js` / `simplify.css` — information hierarchy and progressive disclosure
-- Recommendation corrections are canonical in `data.js`, `app.js`, and `tackle.js`; no late accuracy patch is required.
-- `ACCURACY_AUDIT_V20.md` — 19-species accuracy audit and release caveats
-- `scripts/build.mjs` — generates version-consistent `dist/index.html` and `dist/sw.js`
+- `index.html`: stable core markup.
+- `style.css` / `quick-plan.css` / `field-mode.css`: core UI.
+- `data.js` / `products.js`: fish, method and recommendation data.
+- `app.js` / `field-mode.js`: UI, recommendation state, live conditions and field mode.
+- `pwa.js` / `sw.js`: bootstrap and offline shell.
+- `continuity.js`: last-plan, favorite and recent-target utilities.
+- `tackle.js` / `fit-explain.js`: owned tackle and compatibility reasoning.
+- `gear-compare-v1.js` / `.css`: optional manufacturer-independent comparison; no owned-data writes.
+- `navigation-history-v34.js`: view and modal history.
+- `scripts/build.mjs`: generates version-consistent `dist/index.html` and `dist/sw.js`.
+- `docs/GEAR_COMPARE_V1_AUDIT_2026-09-27.md`: comparison evidence and limits at implementation time.
 
-## Release workflow
+## Personal development and validation
 
-1. Create a feature branch from `main`.
-2. Implement without changing unrelated core logic.
-3. Run syntax, mobile-width, behavior, and regression QA.
-4. Open a PR and inspect the diff.
-5. Merge to `main` only after QA passes.
-6. GitHub Pages automatically updates the DEV URL for iPhone testing.
-7. Keep GitHub Pages as the only current deployment route.
+1. Confirm the working branch, commit and recovery state. Work on a non-deploy branch.
+2. Implement the owner's requested improvement without unrelated rewrites.
+3. Run syntax, unit, browser and data-preservation checks. Inspect the diff and screenshots.
+4. Record exact-commit CI results separately from physical-device validation.
+5. Only after explicit approval, update the chosen device-test destination. A merge into a Pages-triggering branch is a deployment action.
 
-Local verification: run `npm test`, then `npm run serve` and open `/dist/` for browser/offline QA.
+Local verification: run `npm test`, then `npm run serve` and open `/dist/`.
+`FISH_TARGET_PUBLICATION_BUILD=1` and publication CI are retained as data-isolation regression tests, not an active public-launch milestone or proof of distribution permission.
+Personal use does not grant third-party content rights or external-service access; retain provenance and existing fail-closed data boundaries.
 
 ## Critical regression flows
 
-- Home renders all 19 target fish.
-- Search and filters work.
-- Fish -> result renders method, FIRST CAST, tackle, MY TACKLE, and three field steps before optional detail.
-- Shore/boat changes update method, LURE/BAIT metadata, and products where applicable.
-- Manual FIRST CAST is not overwritten until AUTO is restored.
-- Saltwater marine state does not leak into freshwater targets.
-- FIELD MODE opens and returns correctly.
-- Save/restore survives unavailable localStorage.
-- MY TARGETS resume/favorites/recent flows do not block first-use UX.
-- MY TACKLE compares only compatible units: g/oz for lure weight, 号 for line号; cm/inch/egi号/hook号/lb must not be silently reinterpreted.
-- Fit explanation must distinguish `推奨内`, `要確認`, and `差が大きい` without presenting manufacturer certification.
-- Optional live/detail content remains collapsed by default.
-- No horizontal overflow at iPhone widths.
+- Home, target search and filters derive their coverage from runtime registries.
+- Fish -> result exposes method, FIRST CAST, tackle, MY TACKLE and field steps before optional detail.
+- Shore/boat changes update the correct method and lure/bait context.
+- Manual FIRST CAST remains until AUTO is explicitly restored.
+- Saltwater conditions do not leak into freshwater targets.
+- FIELD MODE and independent utilities open and return correctly.
+- Save/restore tolerates unavailable storage without destroying existing data.
+- Product specs and the line actually spooled by the owner remain separate.
+- Units and missing values are explicit; same size labels or price bands are not cross-maker performance equivalence.
+- Comparison supports 2-3 products, sources, numeric differences, filtering, retry and history without changing MY TACKLE.
+- Optional content stays collapsed, with no unintended page overflow at iPhone widths.

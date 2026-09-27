@@ -65,3 +65,16 @@ test('trip dashboard V37 exposes a slack-watch window without claiming catch pro
   assert.match(css,/\.tripDashSlackCenterV37/);
   assert.doesNotMatch(page,/潮止まり.*釣れる/);
 });
+
+test('audit fixes keep missing data unknown, active slack visible, and freshwater marine-free',()=>{
+  const app=text('app.js'),page=text('conditions-page-v34.js');
+  assert.match(app,/function liveNumber\(value\)/);
+  assert.match(app,/return \['データ不足','unknown'\]/);
+  assert.match(app,/wc!==null&&wc>=95/);
+  assert.match(app,/const requestId=\+\+LIVE\.requestSeq/);
+  assert.match(app,/if\(requestId!==LIVE\.requestSeq\)return/);
+  assert.match(page,/if\(end<nowIndex/);
+  assert.match(page,/marineAllowed=!fish\|\|fish\.water==='salt'/);
+  assert.match(page,/判断保留/);
+  assert.match(page,/target\(\)\?\.water==='fresh'/);
+});

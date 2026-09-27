@@ -4,7 +4,9 @@
   const planKeys=['place','season','goal','wind','tide','clarity','rotation','rotationManual','refined','methodKey'];
   let applying=false,current=null,queued=false,restoreToken=0;
   const clone=value=>JSON.parse(JSON.stringify(value));
-  const modal=()=>!document.getElementById('tackleSheet')?.hidden?'tackle':!document.getElementById('packStandaloneV30')?.hidden?'pack':null;
+  const compareEnabled=()=>Boolean(globalThis.FISH_TARGET_GEAR_COMPARE);
+  const visible=id=>Boolean(document.getElementById(id)&&!document.getElementById(id).hidden);
+  const modal=()=>visible('gearCompareSheet')&&compareEnabled()?'compare':visible('tackleSheet')?'tackle':visible('packStandaloneV30')?'pack':null;
   const key=row=>`${row.view}/${row.fish||''}/${row.modal||''}`;
   const snapshot=()=>({
     view:document.querySelector('.view.on')?.id||'home',modal:modal(),
@@ -23,7 +25,7 @@
   }
   function valid(row){
     return row?.version===1&&views.includes(row.view)&&Number.isInteger(row.index)&&row.index>=0
-      &&[null,'tackle','pack'].includes(row.modal)&&row.home&&typeof row.home.query==='string'
+      &&[null,'tackle','pack',...(compareEnabled()?['compare']:[])].includes(row.modal)&&row.home&&typeof row.home.query==='string'
       &&row.plan&&typeof row.plan==='object'&&planKeys.every(k=>!Object.hasOwn(row.plan,k)||(['rotationManual','refined'].includes(k)?typeof row.plan[k]==='boolean':k==='rotation'?Number.isInteger(row.plan[k])&&row.plan[k]>=0&&row.plan[k]<100:typeof row.plan[k]==='string'&&row.plan[k].length<200))&&(!['result','fieldmode'].includes(row.view)||F.some(f=>f.name===row.fish))&&(row.view!=='conditions'||row.fish==null||F.some(f=>f.name===row.fish));
   }
   function sync(){
@@ -72,6 +74,7 @@
     if(safe.view==='fieldmode')document.getElementById('fieldModeBtn').click();
     if(safe.modal==='tackle')document.getElementById('tackleManage').click();
     if(safe.modal==='pack')globalThis.FISH_TARGET_QUICK_PACK.open();
+    if(safe.modal==='compare')globalThis.FISH_TARGET_GEAR_COMPARE.open({fromHistory:true,fromTackle:String(safe.parent||'').endsWith('/tackle')});
     scrollTo({top:safe.view==='home'?Math.max(0,Number(safe.scroll)||0):0,behavior:'instant'});
     write({...snapshot(),index:safe.index,parent:safe.parent});
     applying=false;
@@ -83,7 +86,7 @@
   window.addEventListener('pagehide',remember);
   window.addEventListener('popstate',event=>{void restore(event.state?.[KEY])});
   const observer=new MutationObserver(schedule);
-  for(const id of [...views,'tackleSheet','packStandaloneV30']){
+  for(const id of [...views,'tackleSheet','packStandaloneV30','gearCompareSheet']){
     const el=document.getElementById(id);if(el)observer.observe(el,{attributes:true,attributeFilter:['class','hidden']});
   }
   history.scrollRestoration='manual';

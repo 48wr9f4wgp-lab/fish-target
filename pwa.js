@@ -4,13 +4,11 @@
   const lureRuntime=document.documentElement.dataset.lureCatalogRuntime==='on';
   const lureTargets=new Set(String(document.documentElement.dataset.lureCatalogTargets||'').split('|').map(x=>x.trim()).filter(Boolean));
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
-  const status=()=>document.getElementById('networkStatus');
   const renderNetwork=()=>{
-    const el=status();if(!el)return;const offline=!navigator.onLine;el.hidden=!offline;
-    if(offline){el.textContent='OFFLINE · 基本診断は利用可';const weather=document.getElementById('weatherEmpty');if(weather)weather.textContent=document.documentElement.dataset.fieldLive==='on'?'オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。FIELD LIVEは接続復帰後に取得できます。':'オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。'}
+    const el=document.getElementById('networkStatus');if(!el)return;const offline=!navigator.onLine;el.hidden=!offline;
+    if(offline){el.textContent='OFFLINE · 基本診断は利用可';const weather=document.getElementById('weatherEmpty');if(weather)weather.textContent='オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。'+(document.documentElement.dataset.fieldLive==='on'?'FIELD LIVEは接続復帰後に取得できます。':'')}
   };
-  window.addEventListener('online',()=>{renderNetwork();if(typeof toast==='function')toast('オンラインに復帰した')});
-  window.addEventListener('offline',()=>{renderNetwork();if(typeof toast==='function')toast('オフラインモードへ切替')});
+  for(const event of ['online','offline'])window.addEventListener(event,()=>{renderNetwork();if(typeof toast==='function')toast(navigator.onLine?'オンラインに復帰した':'オフラインモードへ切替')});
   renderNetwork();
   if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register(versioned('./sw.js'),{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(err=>console.warn('SW registration failed',err))})}
   const loadCss=(href,key)=>new Promise(resolve=>{
@@ -34,8 +32,10 @@
     const targetName=document.getElementById('rname');
     if(targetName)new MutationObserver(()=>{void maybeLoadLureUi()}).observe(targetName,{childList:true,subtree:true,characterData:true});
   }
+  const compareRuntime=document.documentElement.dataset.publicationBuild!=='on'&&document.documentElement.dataset.catalogPublication!=='on'&&document.documentElement.dataset.catalogRuntime!=='off';
   const extensionStyles=[
-    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./conditions-page-v34.css','conditions-page-v34-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css'],['./game-feel-v28.css','game-feel-v28-css'],['./tackle-auto-build-v29.css','tackle-auto-build-v29-css'],['./trip-pack-v34.css','trip-pack-v34-css']
+    ['./continuity.css','continuity-css'],['./target-methods-v1.css','target-methods-v1-css'],['./tackle.css','tackle-css'],['./fit-explain.css','fit-explain-css'],['./simplify.css','simplify-css'],['./conditions-page-v34.css','conditions-page-v34-css'],['./visual-pass.css','visual-pass-css'],['./visual-typography.css','visual-typography-css'],['./fish-real.css','fish-real-css'],['./fish-photo-v27.css','fish-photo-v27-css'],['./visual-v8.css','visual-v8-css'],['./result-ux-v20.css','result-ux-v20-css'],['./result-ux-v23.css','result-ux-v23-css'],['./visual-v24.css','visual-v24-css'],['./visual-v25.css','visual-v25-css'],['./visual-v26.css','visual-v26-css'],['./game-feel-v28.css','game-feel-v28-css'],['./tackle-auto-build-v29.css','tackle-auto-build-v29-css'],['./trip-pack-v34.css','trip-pack-v34-css'],
+    ...(compareRuntime?[['./gear-compare-v1.css','gear-compare-v1-css']]:[])
   ];
   const extensionCss=Promise.all(extensionStyles.map(([href,key])=>loadCss(href,key)));
   const reveal=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>{document.documentElement.classList.add('ft-ready');resolve()})));
@@ -77,6 +77,10 @@
       await loadScript('./trip-pack-rules-v34.js','trip-pack-rules-v34-js');
       await loadScript('./pack-checklist-v28.js','pack-checklist-v28-js');
       await loadScript('./tackle-auto-build-v29.js','tackle-auto-build-v29-js');
+      // Research comparison never enters publication builds.
+      if(compareRuntime){
+        await loadScript('./gear-compare-v1.js','gear-compare-v1-js');
+      }
       await loadScript('./navigation-history-v34.js','navigation-history-v34-js');
       await loadScript('./fish-photo-v27.js','fish-photo-v27-js');
       await maybeLoadLureUi();

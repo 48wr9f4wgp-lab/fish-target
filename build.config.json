@@ -1,1 +1,14 @@
-{"version":"V23-DEV2-DAIWA-RC0-TARGET4-LAZY2-SCALE19-MULTI12-BOOT1-UX23D3-VIS26R3-PHOTO27R3","features":{"fieldLive":true}}
+{
+  "version": "V23-DEV2-DAIWA-RC0-TARGET4-LAZY2-SCALE19-MULTI12-BOOT1-UX23D3-VIS26R3-PHOTO27R3",
+  "features": {"fieldLive": true},
+  "productIntent": {
+    "status": "LOCKED",
+    "decidedAt": "2026-09-27",
+    "use": "personal",
+    "audience": "owner-only",
+    "generalDistribution": false,
+    "appStore": false,
+    "monetization": false,
+    "multiUser": false
+  }
+}

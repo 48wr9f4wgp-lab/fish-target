@@ -1,0 +1,83 @@
+name: gear-compare-qa
+on:
+  pull_request:
+    paths:
+      - 'gear-compare-v1.*'
+      - 'pwa.js'
+      - 'build.config.json'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'docs/PERSONAL_USE_LOCK_2026-09-27.md'
+      - 'navigation-history-v34.js'
+      - 'scripts/build.mjs'
+      - 'scripts/gear-compare-v1-browser-qa.mjs'
+      - 'tests/gear-compare*.test.mjs'
+      - 'tests/pwa-network.test.mjs'
+      - 'tests/personal-use-policy.test.mjs'
+      - '.github/workflows/gear-compare-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: gear-compare-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax and comparison unit tests
+        run: |
+          node --check gear-compare-v1.js
+          node --check scripts/gear-compare-v1-browser-qa.mjs
+          node --test tests/gear-compare*.test.mjs tests/pwa-network.test.mjs tests/personal-use-policy.test.mjs
+          npm run build
+      - name: Capture tracked source and personal test build without deployment
+        if: matrix.engine == 'chromium'
+        env:
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          mkdir -p /tmp/fish-target-personal-validation
+          git archive --format=tar --output=/tmp/fish-target-personal-validation/source.tar HEAD
+          tar -cf /tmp/fish-target-personal-validation/personal-build.tar -C dist .
+          printf 'review_head=%s\ncheckout_sha=%s\npurpose=owner-only-personal\naccess_control=not-established\ndeployment=not-performed\n' "$REVIEW_HEAD" "$(git rev-parse HEAD)" > /tmp/fish-target-personal-validation/identity.txt
+      - name: Browser runtime
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps ${{ matrix.engine }}
+      - name: Actual app comparison and publication isolation
+        env:
+          FISH_TARGET_QA_ENGINE: ${{ matrix.engine }}
+          FISH_TARGET_QA_DIAGNOSTICS: /tmp/gear-compare-qa
+        run: |
+          npm run serve > /tmp/gear-compare-serve.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/dist/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/gear-compare-v1-browser-qa.mjs
+          FISH_TARGET_PUBLICATION_BUILD=1 npm run build
+          test ! -e dist/gear-compare-v1.js
+          test ! -e dist/gear-compare-v1.css
+          FISH_TARGET_COMPARE_PUBLICATION=1 node scripts/gear-compare-v1-browser-qa.mjs
+      - name: Preserve comparison screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gear-compare-${{ matrix.engine }}
+          path: /tmp/gear-compare-qa
+          retention-days: 7
+      - name: Preserve exact-commit source and build for local verification
+        if: always() && matrix.engine == 'chromium'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fish-target-personal-validation-${{ github.event.pull_request.head.sha }}
+          path: /tmp/fish-target-personal-validation
+          retention-days: 7
