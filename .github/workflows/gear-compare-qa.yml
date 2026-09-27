@@ -4,10 +4,16 @@ on:
     paths:
       - 'gear-compare-v1.*'
       - 'pwa.js'
+      - 'build.config.json'
+      - 'AGENTS.md'
+      - 'README.md'
+      - 'docs/PERSONAL_USE_LOCK_2026-09-27.md'
       - 'navigation-history-v34.js'
       - 'scripts/build.mjs'
       - 'scripts/gear-compare-v1-browser-qa.mjs'
-      - 'tests/gear-compare-v1.test.mjs'
+      - 'tests/gear-compare*.test.mjs'
+      - 'tests/pwa-network.test.mjs'
+      - 'tests/personal-use-policy.test.mjs'
       - '.github/workflows/gear-compare-qa.yml'
 permissions:
   contents: read
@@ -31,8 +37,17 @@ jobs:
         run: |
           node --check gear-compare-v1.js
           node --check scripts/gear-compare-v1-browser-qa.mjs
-          node --test tests/gear-compare-v1.test.mjs
+          node --test tests/gear-compare*.test.mjs tests/pwa-network.test.mjs tests/personal-use-policy.test.mjs
           npm run build
+      - name: Capture tracked source and personal test build without deployment
+        if: matrix.engine == 'chromium'
+        env:
+          REVIEW_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          mkdir -p /tmp/fish-target-personal-validation
+          git archive --format=tar --output=/tmp/fish-target-personal-validation/source.tar HEAD
+          tar -cf /tmp/fish-target-personal-validation/personal-build.tar -C dist .
+          printf 'review_head=%s\ncheckout_sha=%s\npurpose=owner-only-personal\naccess_control=not-established\ndeployment=not-performed\n' "$REVIEW_HEAD" "$(git rev-parse HEAD)" > /tmp/fish-target-personal-validation/identity.txt
       - name: Browser runtime
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
@@ -58,4 +73,11 @@ jobs:
         with:
           name: gear-compare-${{ matrix.engine }}
           path: /tmp/gear-compare-qa
+          retention-days: 7
+      - name: Preserve exact-commit source and build for local verification
+        if: always() && matrix.engine == 'chromium'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fish-target-personal-validation-${{ github.event.pull_request.head.sha }}
+          path: /tmp/fish-target-personal-validation
           retention-days: 7

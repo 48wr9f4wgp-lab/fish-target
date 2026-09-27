@@ -4,13 +4,11 @@
   const lureRuntime=document.documentElement.dataset.lureCatalogRuntime==='on';
   const lureTargets=new Set(String(document.documentElement.dataset.lureCatalogTargets||'').split('|').map(x=>x.trim()).filter(Boolean));
   const versioned=src=>`${src}${src.includes('?')?'&':'?'}v=${BUILD}`;
-  const status=()=>document.getElementById('networkStatus');
   const renderNetwork=()=>{
-    const el=status();if(!el)return;const offline=!navigator.onLine;el.hidden=!offline;
-    if(offline){el.textContent='OFFLINE · 基本診断は利用可';const weather=document.getElementById('weatherEmpty');if(weather)weather.textContent=document.documentElement.dataset.fieldLive==='on'?'オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。FIELD LIVEは接続復帰後に取得できます。':'オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。'}
+    const el=document.getElementById('networkStatus');if(!el)return;const offline=!navigator.onLine;el.hidden=!offline;
+    if(offline){el.textContent='OFFLINE · 基本診断は利用可';const weather=document.getElementById('weatherEmpty');if(weather)weather.textContent='オフライン中。魚の基本診断・保存済みプラン・FIELD MODEは利用できます。'+(document.documentElement.dataset.fieldLive==='on'?'FIELD LIVEは接続復帰後に取得できます。':'')}
   };
-  window.addEventListener('online',()=>{renderNetwork();if(typeof toast==='function')toast('オンラインに復帰した')});
-  window.addEventListener('offline',()=>{renderNetwork();if(typeof toast==='function')toast('オフラインモードへ切替')});
+  for(const event of ['online','offline'])window.addEventListener(event,()=>{renderNetwork();if(typeof toast==='function')toast(navigator.onLine?'オンラインに復帰した':'オフラインモードへ切替')});
   renderNetwork();
   if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register(versioned('./sw.js'),{updateViaCache:'none'}).then(reg=>reg.update().catch(()=>{})).catch(err=>console.warn('SW registration failed',err))})}
   const loadCss=(href,key)=>new Promise(resolve=>{
@@ -79,7 +77,7 @@
       await loadScript('./trip-pack-rules-v34.js','trip-pack-rules-v34-js');
       await loadScript('./pack-checklist-v28.js','pack-checklist-v28-js');
       await loadScript('./tackle-auto-build-v29.js','tackle-auto-build-v29-js');
-      // The comparison PoC has no production distribution approval. Do not fetch it in publication builds.
+      // Research comparison never enters publication builds.
       if(compareRuntime){
         await loadScript('./gear-compare-v1.js','gear-compare-v1-js');
       }
