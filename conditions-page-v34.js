@@ -45,16 +45,19 @@
     return out;
   }
   function slackWatchWindow(times,velocities,nowIndex=0){
-    const a=(velocities||[]).map(asNumber);
+    const a=(velocities||[]).map(asNumber),candidates=[];
     for(let i=1;i<Math.min(times.length,a.length)-1;i++){
       const prev=a[i-1],v=a[i],next=a[i+1],start=i-1,end=i+1;
       if(end<nowIndex||![prev,v,next].every(Number.isFinite))continue;
       if(v<=prev&&v<=next&&((prev-v)>=0.1||(next-v)>=0.1)){
         const slack=v<=0.6;
-        return {i,start,end,time:times[i],startTime:times[start],endTime:times[end],velocity:v,slack,label:slack?'潮止まり前後':'潮流弱まり前後'};
+        candidates.push({i,start,end,time:times[i],startTime:times[start],endTime:times[end],velocity:v,slack,label:slack?'潮止まり前後':'潮流弱まり前後'});
       }
     }
-    return null;
+    return candidates.find(x=>x.slack&&x.start<=nowIndex&&nowIndex<=x.end)
+      ||candidates.find(x=>x.slack)
+      ||candidates.find(x=>x.start<=nowIndex&&nowIndex<=x.end)
+      ||candidates[0]||null;
   }
 
   function dashboardX(times,value,x0=18,x1=342){
