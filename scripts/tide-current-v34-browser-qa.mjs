@@ -84,6 +84,7 @@ try{
   assert.deepEqual(await page.evaluate(()=>fieldStatus(null,null,null,null,null,true)),['データ不足','unknown']);
   await page.evaluate(()=>{LIVE.weather={temperature:null,precipitation:null,code:null,wind:null,gust:null,direction:null,time:'2026-09-26T18:00'};LIVE.marine={wave:null,wavePeriod:null,swell:null,swellPeriod:null,sst:null,current:null,currentDir:null,level:null,time:'2026-09-26T18:00'};LIVE.hourly={time:['2026-09-26T18:00'],weather_code:[null],wind_speed_10m:[null],wind_gusts_10m:[null],precipitation:[null]};LIVE.marineHourly={time:[],ocean_current_velocity:[],sea_level_height_msl:[]};renderFieldLive()});
   await page.waitForFunction(()=>document.getElementById('fieldFit')?.textContent.includes('データ不足'));
+  await page.waitForFunction(()=>document.getElementById('tripDashVerdictV35')?.textContent.includes('判断保留'));
   assert.match(await page.locator('#tripDashVerdictV35').textContent(),/判断保留/);
   assert.equal((await page.locator('#tripDashWindV35').textContent()||'').trim(),'--');
   assert.equal((await page.locator('#tripDashLevelV35').textContent()||'').trim(),'-- cm');
