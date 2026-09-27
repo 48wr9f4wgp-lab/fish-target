@@ -33,11 +33,18 @@ try{
     }
   };
   await page.addInitScript(({weatherMock,marineMock})=>{
-    const nativeFetch=globalThis.fetch.bind(globalThis);
+    const nativeFetch=globalThis.fetch.bind(globalThis);globalThis.__raceMode=false;
+    const delayed=(body,ms)=>new Promise(resolve=>setTimeout(()=>resolve(new Response(JSON.stringify(body),{status:200,headers:{'Content-Type':'application/json'}})),ms));
     globalThis.fetch=(input,init)=>{
-      const url=typeof input==='string'?input:String(input?.url||input);
-      if(url.startsWith('https://api.open-meteo.com/v1/forecast'))return Promise.resolve(new Response(JSON.stringify(weatherMock),{status:200,headers:{'Content-Type':'application/json'}}));
-      if(url.startsWith('https://marine-api.open-meteo.com/v1/marine'))return Promise.resolve(new Response(JSON.stringify(marineMock),{status:200,headers:{'Content-Type':'application/json'}}));
+      const url=typeof input==='string'?input:String(input?.url||input),u=new URL(url,location.href),lat=Number(u.searchParams.get('latitude')),lon=Number(u.searchParams.get('longitude'));
+      if(url.startsWith('https://api.open-meteo.com/v1/forecast')){
+        if(globalThis.__raceMode){const body=JSON.parse(JSON.stringify(weatherMock));body.current.weather_code=Math.abs(lat-37.9333)<.02?3:1;return delayed(body,Math.abs(lat-34.6833)<.02?120:10);}
+        return Promise.resolve(new Response(JSON.stringify(weatherMock),{status:200,headers:{'Content-Type':'application/json'}}));
+      }
+      if(url.startsWith('https://marine-api.open-meteo.com/v1/marine')){
+        if(globalThis.__raceMode){const body=JSON.parse(JSON.stringify(marineMock));body.latitude=lat;body.longitude=lon;return delayed(body,Math.abs(lat-34.6833)<.02?120:10);}
+        return Promise.resolve(new Response(JSON.stringify(marineMock),{status:200,headers:{'Content-Type':'application/json'}}));
+      }
       return nativeFetch(input,init);
     };
   },{weatherMock,marineMock});
@@ -73,8 +80,33 @@ try{
   assert.match(await page.locator('#tripDashSlackSubV37').textContent(),/中心 20:00 · 0\.2km\/h/);
   assert.equal(await page.locator('#tripDashGraphV35 .tripDashSlackBandV37').count(),1,'slack watch band appears on the main graph');
   assert.equal(await page.locator('#tripDashGraphV35 .tripDashSlackCenterV37').count(),1,'slack center line appears on the main graph');
+  // Missing inputs stay unknown rather than becoming calm/zero.
+  assert.deepEqual(await page.evaluate(()=>fieldStatus(null,null,null,null,null,true)),['データ不足','unknown']);
+  await page.evaluate(()=>{LIVE.weather={temperature:null,precipitation:null,code:null,wind:null,gust:null,direction:null,time:'2026-09-26T18:00'};LIVE.marine={wave:null,wavePeriod:null,swell:null,swellPeriod:null,sst:null,current:null,currentDir:null,level:null,time:'2026-09-26T18:00'};LIVE.hourly={time:['2026-09-26T18:00'],weather_code:[null],wind_speed_10m:[null],wind_gusts_10m:[null],precipitation:[null]};LIVE.marineHourly={time:[],ocean_current_velocity:[],sea_level_height_msl:[]};renderFieldLive()});
+  await page.waitForFunction(()=>document.getElementById('fieldFit')?.textContent.includes('データ不足'));
+  assert.match(await page.locator('#tripDashVerdictV35').textContent(),/判断保留/);
+  assert.equal((await page.locator('#tripDashWindV35').textContent()||'').trim(),'--');
+  assert.equal((await page.locator('#tripDashLevelV35').textContent()||'').trim(),'-- cm');
+  // Thunder is a known hazard even with otherwise calm numbers.
+  await page.evaluate(()=>{LIVE.weather={temperature:22,precipitation:0,code:95,wind:1,gust:2,direction:90,time:'2026-09-26T18:00'};LIVE.marine={wave:0.2,wavePeriod:8,swell:0.1,swellPeriod:10,sst:24,current:0.5,currentDir:90,level:0.1,time:'2026-09-26T18:00'};renderFieldLive()});
+  await page.waitForFunction(()=>document.getElementById('fieldFit')?.textContent.includes('見合わせ検討'));
+  assert.match(await page.locator('#tripDashVerdictV35').textContent(),/無理せず見合わせ/);
+  // Restore mocked normal conditions.
+  await page.locator('#tripDashRefreshV35').click();await page.waitForFunction(()=>document.getElementById('fieldFit')?.textContent.includes('操作しやすい'));
   for(const width of [375,390,430]){await page.setViewportSize({width,height:844});const metrics=await page.evaluate(()=>{const d=document.getElementById('tripDashboardV35'),mini=[...document.querySelectorAll('.tripDashMiniV35>div')];return {doc:document.documentElement.scrollWidth,body:document.body.scrollWidth,dash:d.getBoundingClientRect().width,viewport:innerWidth,mini:mini.map(x=>({client:x.clientWidth,scroll:x.scrollWidth}))}});assert.ok(metrics.doc<=width+1&&metrics.body<=width+1,`dashboard overflow at ${width}: ${JSON.stringify(metrics)}`);assert.ok(metrics.mini.every(x=>x.scroll<=x.client+1),`mini-card horizontal overflow at ${width}: ${JSON.stringify(metrics.mini)}`)}
   await page.setViewportSize({width:390,height:844});
+  // A slower old location response must never overwrite the newest selection.
+  await page.locator('#conditionsLocationEditV36').click();await page.evaluate(()=>{globalThis.__raceMode=true});
+  await page.locator('#spotPresets button',{hasText:'伊豆・下田'}).click();await page.locator('#spotPresets button',{hasText:'新潟西港'}).click();
+  await page.waitForFunction(()=>LIVE.place?.id==='niigata');await page.waitForTimeout(180);
+  assert.equal(await page.evaluate(()=>LIVE.place?.name),'新潟西港');
+  await page.evaluate(()=>{globalThis.__raceMode=false});await page.locator('#conditionsLocationEditV36').click();await page.locator('#spotPresets button',{hasText:'伊豆・下田'}).click();await page.waitForFunction(()=>LIVE.place?.id==='shimoda');
+  // The slack-watch band stays visible at and just after its center.
+  await page.evaluate(()=>{LIVE.marine.time='2026-09-26T20:00';renderFieldLive()});await page.waitForFunction(()=>document.getElementById('tripDashSlackV35')?.textContent==='19:00–21:00');
+  assert.equal(await page.locator('#tripDashGraphV35 .tripDashSlackBandV37').count(),1);
+  await page.evaluate(()=>{LIVE.marine.time='2026-09-26T21:00';renderFieldLive()});await page.waitForFunction(()=>document.getElementById('tripDashSlackV35')?.textContent==='19:00–21:00');
+  assert.equal(await page.locator('#tripDashGraphV35 .tripDashSlackBandV37').count(),1);
+  await page.locator('#tripDashRefreshV35').click();await page.waitForFunction(()=>LIVE.marine?.time==='2026-09-26T18:00');
   await page.locator('#conditionsChooseFishBtn').click();
   await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='home');
   await page.locator('button.fish[data-fish="シーバス"]').click();
@@ -108,6 +140,12 @@ try{
   await page.locator('#back').click();
   await page.locator('button.fish[data-fish="ニジマス"]').click();
   assert.equal(await page.evaluate(()=>document.getElementById('tideFlow').hidden),true,'freshwater must not retain marine tide/current model state');
+  await page.locator('#conditionsOpenBtn').click();await page.waitForFunction(()=>document.querySelector('.view.on')?.id==='conditions');
+  assert.equal((await page.locator('#tripDashLevelV35').textContent()||'').trim(),'-- cm');
+  assert.equal((await page.locator('#tripDashWaveV35').textContent()||'').trim(),'--');
+  assert.equal((await page.locator('#tripDashTempV35').textContent()||'').trim(),'--');
+  assert.equal(await page.locator('#tripDashGraphV35 .tripDashCurveV35').count(),0);
+  assert.match(await page.locator('#tripDashTrendV35').textContent(),/淡水・潮汐対象外/);
   assert.deepEqual(errors,[]);
   console.log('TIDE_CURRENT_V34_BROWSER_QA_PASS',engine.name());
 }finally{await browser.close()}

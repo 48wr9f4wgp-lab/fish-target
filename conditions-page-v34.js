@@ -24,7 +24,8 @@
   const target=()=>LIVE.conditionsFish||null;
   const fmtDate=value=>{const m=String(value||'').match(/-(\d\d)-(\d\d)/);return m?`${Number(m[1])}/${Number(m[2])}`:'--/--'};
   const fmtClock=value=>value?String(value).slice(11,16):'--:--';
-  const fmtLevel=value=>{const n=Number(value);if(!Number.isFinite(n))return '-- cm';const cm=Math.round(n*100);return `${cm>0?'+':''}${cm} cm`};
+  const asNumber=value=>value===null||value===undefined||value===''?NaN:Number(value);
+  const fmtLevel=value=>{const n=asNumber(value);if(!Number.isFinite(n))return '-- cm';const cm=Math.round(n*100);return `${cm>0?'+':''}${cm} cm`};
   const localMs=value=>{const n=Date.parse(String(value||''));return Number.isFinite(n)?n:NaN};
   const compass=deg=>typeof compass8==='function'?compass8(deg):'-';
 
@@ -36,7 +37,7 @@
   function tideTurns(times,levels,nowIndex=0){
     const out=[];
     for(let i=Math.max(1,nowIndex+1);i<Math.min(times.length,levels.length)-1;i++){
-      const a=Number(levels[i-1]),b=Number(levels[i]),c=Number(levels[i+1]);
+      const a=asNumber(levels[i-1]),b=asNumber(levels[i]),c=asNumber(levels[i+1]);
       if(![a,b,c].every(Number.isFinite))continue;
       if(b>=a&&b>c&&Math.max(Math.abs(b-a),Math.abs(b-c))>=0.015)out.push({i,type:'満潮候補',kind:'high',symbol:'満',time:times[i],level:b});
       else if(b<=a&&b<c&&Math.max(Math.abs(b-a),Math.abs(b-c))>=0.015)out.push({i,type:'干潮候補',kind:'low',symbol:'干',time:times[i],level:b});
@@ -44,12 +45,12 @@
     return out;
   }
   function slackWatchWindow(times,velocities,nowIndex=0){
-    const a=(velocities||[]).map(Number);
-    for(let i=Math.max(1,nowIndex+1);i<Math.min(times.length,a.length)-1;i++){
-      const prev=a[i-1],v=a[i],next=a[i+1];
-      if(![prev,v,next].every(Number.isFinite))continue;
+    const a=(velocities||[]).map(asNumber);
+    for(let i=1;i<Math.min(times.length,a.length)-1;i++){
+      const prev=a[i-1],v=a[i],next=a[i+1],start=i-1,end=i+1;
+      if(end<nowIndex||![prev,v,next].every(Number.isFinite))continue;
       if(v<=prev&&v<=next&&((prev-v)>=0.1||(next-v)>=0.1)){
-        const start=Math.max(nowIndex,i-1),end=Math.min(times.length-1,i+1),slack=v<=0.6;
+        const slack=v<=0.6;
         return {i,start,end,time:times[i],startTime:times[start],endTime:times[end],velocity:v,slack,label:slack?'潮止まり前後':'潮流弱まり前後'};
       }
     }
@@ -63,13 +64,13 @@
     return x0+(x1-x0)*((Math.max(a,Math.min(b,v))-a)/(b-a));
   }
   function dashboardY(values,index,y0=30,y1=132){
-    const nums=(values||[]).map(Number),valid=nums.filter(Number.isFinite),v=nums[index];
+    const nums=(values||[]).map(asNumber),valid=nums.filter(Number.isFinite),v=nums[index];
     if(valid.length<2||!Number.isFinite(v))return null;
     let lo=Math.min(...valid),hi=Math.max(...valid);if(hi-lo<.001){lo-=.5;hi+=.5}
     return y1-(y1-y0)*((v-lo)/(hi-lo));
   }
   function dashboardPoints(values,x0=18,x1=342,y0=30,y1=132){
-    const nums=(values||[]).map(Number),valid=nums.filter(Number.isFinite);
+    const nums=(values||[]).map(asNumber),valid=nums.filter(Number.isFinite);
     if(valid.length<2)return '';
     let lo=Math.min(...valid),hi=Math.max(...valid);if(hi-lo<.001){lo-=.5;hi+=.5}
     return nums.map((v,i)=>{if(!Number.isFinite(v))return null;const x=x0+(x1-x0)*(i/Math.max(1,nums.length-1)),y=y1-(y1-y0)*((v-lo)/(hi-lo));return [x,y]}).filter(Boolean).map(p=>p.map(n=>n.toFixed(1)).join(',')).join(' ');
@@ -87,21 +88,22 @@
     return out;
   }
   function renderDashboardGraph(){
-    const box=byId('tripDashGraphV35'),win=dashboardWindow(),times=win.times,levels=win.levels,nowIdx=win.now;
-    if(!box||times.length<2||levels.filter(v=>Number.isFinite(Number(v))).length<2){if(box)box.innerHTML='';return}
+    const box=byId('tripDashGraphV35');if(target()?.water==='fresh'){if(box){box.innerHTML='';box.removeAttribute('data-now-percent')}return}const win=dashboardWindow(),times=win.times,levels=win.levels,nowIdx=win.now;
+    if(!box||times.length<2||levels.filter(v=>Number.isFinite(asNumber(v))).length<2){if(box){box.innerHTML='';box.removeAttribute('data-now-percent')}return}
     const velocities=(win.h.ocean_current_velocity||[]).slice(win.start,win.end),slack=slackWatchWindow(times,velocities,nowIdx),pts=dashboardPoints(levels),pairs=pts.split(' '),first=pairs[0]||'18,132',last=pairs[pairs.length-1]||'342,132',turns=tideTurns(times,levels,nowIdx).slice(0,3),nowX=18+324*(nowIdx/Math.max(1,times.length-1));
     const ticks=[0,6,12,18,23].filter(i=>i<times.length).map(i=>{const x=18+324*(i/Math.max(1,times.length-1));return `<text class="tripDashTickV35" x="${x.toFixed(1)}" y="158" text-anchor="${i===0?'start':i===times.length-1?'end':'middle'}">${fmtClock(times[i])}</text>`}).join('');
     const markers=turns.map(t=>{const x=18+324*(t.i/Math.max(1,times.length-1)),y=dashboardY(levels,t.i);return y==null?'':`<g class="tripDashTurnMarkV35 ${t.kind}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5"/><text x="${x.toFixed(1)}" y="${Math.max(19,y-9).toFixed(1)}" text-anchor="middle">${t.symbol} ${fmtClock(t.time)}</text></g>`}).join('');
     const slackBand=slack?(()=>{const x1=18+324*(slack.start/Math.max(1,times.length-1)),x2=18+324*(slack.end/Math.max(1,times.length-1)),cx=18+324*(slack.i/Math.max(1,times.length-1));return `<g class="tripDashSlackWatchV37 ${slack.slack?'slack':'slow'}"><rect class="tripDashSlackBandV37" x="${x1.toFixed(1)}" y="22" width="${Math.max(5,x2-x1).toFixed(1)}" height="116" rx="6"/><line class="tripDashSlackCenterV37" x1="${cx.toFixed(1)}" y1="22" x2="${cx.toFixed(1)}" y2="140"/><text class="tripDashSlackLabelV37" x="${cx.toFixed(1)}" y="60" text-anchor="middle">${slack.slack?'潮止まり前後':'弱まり前後'}</text></g>`})():'';
-    const nowY=dashboardY(levels,nowIdx),current=Number(LIVE.marine?.current),flow=Number.isFinite(current)?`潮流 ${current.toFixed(1)} km/h`:'潮流 --';
+    const nowY=dashboardY(levels,nowIdx),current=asNumber(LIVE.marine?.current),flow=Number.isFinite(current)?`潮流 ${current.toFixed(1)} km/h`:'潮流 --';
     box.innerHTML=`<svg viewBox="0 0 360 168" aria-hidden="true">${dashboardMazume(times)}${slackBand}<line class="tripDashGridV35" x1="18" y1="82" x2="342" y2="82"/><polygon class="tripDashAreaV35" points="${pts} ${last.split(',')[0]},140 ${first.split(',')[0]},140"/><polyline class="tripDashCurveV35" points="${pts}"/><line class="tripDashNowLineV35" x1="${nowX.toFixed(1)}" y1="22" x2="${nowX.toFixed(1)}" y2="140"/><text class="tripDashNowLabelV35" x="${(nowX+4).toFixed(1)}" y="47">NOW</text>${nowY==null?'':`<circle class="tripDashNowDotV35" cx="${nowX.toFixed(1)}" cy="${nowY.toFixed(1)}" r="4.5"/>`}<text class="tripDashFlowV35" x="342" y="18" text-anchor="end">${flow}</text>${markers}${ticks}</svg>`;
     box.dataset.nowPercent=String(Math.round(100*nowIdx/Math.max(1,times.length-1)));
     box.setAttribute('aria-label',`24時間の潮位目安。過去約4時間とこれから約20時間。現在 ${fmtLevel(LIVE.marine?.level)}。${flow}。${slack?`${slack.label}は${fmtClock(slack.startTime)}から${fmtClock(slack.endTime)}、中心は${fmtClock(slack.time)}。`:''}`);
   }
 
   function humanVerdict(fit,slackWatch){
-    if(fit.includes('見合わせ'))return ['無理せず見合わせ','風・雨・波の条件が厳しい'];
+    if(fit.includes('見合わせ'))return ['無理せず見合わせ','風・雨・波または雷の条件が厳しい'];
     if(fit.includes('要注意'))return ['風・波に注意','軽い仕掛けより安全余裕を優先'];
+    if(fit.includes('データ不足')||fit.includes('未取得'))return ['判断保留','未取得を好条件として扱わず、現地確認を優先'];
     const now=localMs(LIVE.marine?.time||LIVE.weather?.time),bite=localMs(LIVE.tideDecision?.biteTime),slack=localMs(LIVE.tideDecision?.nextSlackTime),watchStart=localMs(slackWatch?.startTime),watchEnd=localMs(slackWatch?.endTime);
     if(slackWatch?.slack&&Number.isFinite(now)&&Number.isFinite(watchStart)&&Number.isFinite(watchEnd)&&now>=watchStart&&now<=watchEnd)return ['潮止まり前後',`${fmtClock(slackWatch.startTime)}–${fmtClock(slackWatch.endTime)} · 弱まり→止まり→動き出し`];
     if(slackWatch?.slack&&Number.isFinite(now)&&Number.isFinite(watchStart)&&watchStart>now&&watchStart-now<=60*60000)return ['潮止まり接近',`${fmtClock(slackWatch.startTime)}–${fmtClock(slackWatch.endTime)}を注視`];
@@ -111,7 +113,7 @@
     return ['まだ狙える',LIVE.tideDecision?.biteWindow&&LIVE.tideDecision.biteWindow!=='条件重なり待ち'?`条件重なり ${LIVE.tideDecision.biteWindow}`:'大きな悪条件は出ていない'];
   }
   function syncDashboard(){
-    const dash=byId('tripDashboardV35'),fish=target(),place=LIVE?.place?.name||null,w=LIVE.weather||null,m=LIVE.marine||null,h=LIVE.marineHourly||{},loc=byId('conditionsLocationMountV35')?.closest('.conditionsLocationV35'),edit=byId('conditionsLocationEditV36');
+    const dash=byId('tripDashboardV35'),fish=target(),place=LIVE?.place?.name||null,w=LIVE.weather||null,marineAllowed=!fish||fish.water==='salt',m=marineAllowed?LIVE.marine:null,h=marineAllowed?(LIVE.marineHourly||{}):{},loc=byId('conditionsLocationMountV35')?.closest('.conditionsLocationV35'),edit=byId('conditionsLocationEditV36');
     if(!dash)return;
     const hasData=Boolean(place&&w);
     dash.classList.toggle('is-empty',!hasData);
@@ -123,27 +125,27 @@
     set('tripDashSunV35',solar?`☀ ${fmtClock(solar.sunrise)}　☾ ${fmtClock(solar.sunset)}`:'☀ --:--　☾ --:--');
     const fit=text('fieldFit','FIELD STATUS · 未取得').replace('FIELD STATUS · ','');
     set('tripDashStatusV35',fit);
-    set('tripDashLevelV35',fmtLevel(m?.level));
-    const trend=LIVE.tideDecision?.trend||text('tideFlowState','地点を選んで取得');
+    set('tripDashLevelV35',marineAllowed?fmtLevel(m?.level):'-- cm');
+    const trend=marineAllowed?(LIVE.tideDecision?.trend||text('tideFlowState','地点を選んで取得')):'淡水・潮汐対象外';
     set('tripDashTrendV35',trend);
-    const win=dashboardWindow(),turn=tideTurns(win.times,win.levels,win.now)[0]||null,nowMs=localMs(m?.time||w?.time),turnMs=localMs(turn?.time),deltaMin=Number.isFinite(nowMs)&&Number.isFinite(turnMs)?Math.max(0,Math.round((turnMs-nowMs)/60000)):null;
+    const win=marineAllowed?dashboardWindow():{h:{},start:0,end:0,now:0,times:[],levels:[]},turn=marineAllowed?tideTurns(win.times,win.levels,win.now)[0]||null:null,nowMs=localMs(m?.time||w?.time),turnMs=localMs(turn?.time),deltaMin=Number.isFinite(nowMs)&&Number.isFinite(turnMs)?Math.max(0,Math.round((turnMs-nowMs)/60000)):null;
     set('tripDashTurnLabelV35',turn?`次の${turn.type}`:'次の潮位変化');
     set('tripDashTurnTimeV35',turn?fmtClock(turn.time):'--:--');
     set('tripDashTurnEtaV35',turn?`${deltaMin!=null?(deltaMin<60?'あと'+deltaMin+'分':'あと約'+Math.round(deltaMin/60)+'時間'):'まもなく'} · ${fmtLevel(turn.level)}`:'24hモデルから算出');
-    const velocities=(win.h.ocean_current_velocity||[]).slice(win.start,win.end),slackWatch=slackWatchWindow(win.times,velocities,win.now);
+    const velocities=marineAllowed?(win.h.ocean_current_velocity||[]).slice(win.start,win.end):[],slackWatch=marineAllowed?slackWatchWindow(win.times,velocities,win.now):null;
     set('tripDashSlackLabelV37',slackWatch?.slack?'潮止まり前後':slackWatch?'潮流弱まり前後':'潮流変化');
-    set('tripDashSlackV35',slackWatch?`${fmtClock(slackWatch.startTime)}–${fmtClock(slackWatch.endTime)}`:LIVE.tideDecision?.nextSlack||text('tideNextSlack','--'));
+    set('tripDashSlackV35',marineAllowed?(slackWatch?`${fmtClock(slackWatch.startTime)}–${fmtClock(slackWatch.endTime)}`:LIVE.tideDecision?.nextSlack||text('tideNextSlack','--')):'--');
     set('tripDashSlackSubV37',slackWatch?`中心 ${fmtClock(slackWatch.time)} · ${slackWatch.velocity.toFixed(1)}km/h`:'次の弱まり候補');
     set('tripDashBiteLabelV35',fish?'地合い候補':'釣行しやすい時間');
-    set('tripDashBiteV35',LIVE.tideDecision?.biteWindow||text('tideBiteWindow','--'));
+    set('tripDashBiteV35',marineAllowed?(LIVE.tideDecision?.biteWindow||text('tideBiteWindow','--')):'淡水・潮汐対象外');
     set('tripDashWeatherV35',w?text('wxCode','--'):'--');
-    set('tripDashRainV35',w?`雨${Number(w.precipitation??0).toFixed(1)}mm`:'--');
-    const wind=Number(w?.wind),gust=Number(w?.gust);
+    const rain=asNumber(w?.precipitation);set('tripDashRainV35',w&&Number.isFinite(rain)?`雨${rain.toFixed(1)}mm`:'雨--');
+    const wind=asNumber(w?.wind),gust=asNumber(w?.gust);
     set('tripDashWindV35',Number.isFinite(wind)?`${wind.toFixed(1)}m/s`:'--');
     set('tripDashWindSubV35',w?`${compass(w.direction)} · 突風${Number.isFinite(gust)?gust.toFixed(1):'-'}`:'--');
-    set('tripDashWaveV35',m?.wave!=null?`${Number(m.wave).toFixed(1)}m · ${m.wavePeriod!=null?Number(m.wavePeriod).toFixed(0)+'s':'--'}`:'--');
-    set('tripDashWaveSubV35',m?.swell!=null?`うねり${Number(m.swell).toFixed(1)}m · ${m.swellPeriod!=null?Number(m.swellPeriod).toFixed(0)+'s':'--'}`:'海況モデル');
-    set('tripDashTempV35',m?.sst!=null?`${Number(m.sst).toFixed(1)}℃`:'--');
+    set('tripDashWaveV35',m?.wave!=null&&Number.isFinite(asNumber(m.wave))?`${asNumber(m.wave).toFixed(1)}m · ${m.wavePeriod!=null&&Number.isFinite(asNumber(m.wavePeriod))?asNumber(m.wavePeriod).toFixed(0)+'s':'--'}`:'--');
+    set('tripDashWaveSubV35',m?.swell!=null&&Number.isFinite(asNumber(m.swell))?`うねり${asNumber(m.swell).toFixed(1)}m · ${m.swellPeriod!=null&&Number.isFinite(asNumber(m.swellPeriod))?asNumber(m.swellPeriod).toFixed(0)+'s':'--'}`:marineAllowed?'海況モデル':'淡水・対象外');
+    set('tripDashTempV35',m?.sst!=null&&Number.isFinite(asNumber(m.sst))?`${asNumber(m.sst).toFixed(1)}℃`:'--');
     const n=typeof marineNowIndex==='function'?marineNowIndex(h.time||[]):0,temp=typeof seaTempTrend==='function'?seaTempTrend((h.sea_surface_temperature||[]).slice(n,n+24)):null;
     set('tripDashTempSubV35',temp?`${temp.label} · ${temp.delta>=0?'+':''}${temp.delta.toFixed(1)}℃/24h`:'24h推移');
     const verdict=humanVerdict(fit,slackWatch);set('tripDashVerdictV35',verdict[0]);set('tripDashVerdictSubV35',verdict[1]);

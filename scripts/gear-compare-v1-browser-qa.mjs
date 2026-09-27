@@ -35,6 +35,14 @@ try{
     assert.match(await page.locator('#gcTable').innerText(),/SHIMANO/);
     assert.match(await page.locator('#gcTable').innerText(),/基準比 \+55g/);
     assert.match(await page.locator('#gcTable').innerText(),/¥15,100/);
+    // Invalid criteria must invalidate stale comparison verdicts and actions.
+    await page.locator('.gc-conditions summary').click();await page.locator('#gcBudget').fill('-1');
+    await page.waitForFunction(()=>document.getElementById('gcError')?.textContent.includes('0より'));
+    assert.equal(await page.locator('#gcComparison').isHidden(),true);
+    assert.equal(await page.locator('#gcGo').isDisabled(),true);
+    assert.equal(await page.locator('#gcQuickCompare').isDisabled(),true);
+    assert.equal((await page.locator('#gcTable').textContent()||'').trim(),'');
+    await page.locator('#gcBudget').fill('');await page.waitForFunction(()=>!document.getElementById('gcComparison').hidden);
     await mkdir(artifact,{recursive:true});
     for(const width of [375,390,430]){
       await page.setViewportSize({width,height:844});
@@ -46,7 +54,7 @@ try{
     await selection('カルディア 5000-CXH');await page.locator('#gcResults [data-gc-select]').click();
     await selection('ステラ C5000XG');await page.locator('#gcResults [data-gc-select]').click();assert.match(await page.locator('#gcError').textContent(),/最大3点/);
     await page.locator('#gcClear').click();await page.locator('#gcReset').click();
-    await page.locator('.gc-conditions summary').click();await page.locator('#gcPe').fill('2');await page.locator('#gcMetres').fill('300');
+    if(!(await page.locator('.gc-conditions').getAttribute('open')))await page.locator('.gc-conditions summary').click();await page.locator('#gcPe').fill('2');await page.locator('#gcMetres').fill('300');
     assert.ok(await page.locator('#gcResults .gc-product').count()>1);
     await selection('レガリス 4000');assert.equal(await page.locator('#gcResults .gc-product').count(),0);
     await page.locator('#gcReset').click();await selection('レガリス 5000');await page.locator('#gcResults [data-gc-similar]').click();assert.ok(await page.locator('#gcSimilarRows .gc-product').count()>0);

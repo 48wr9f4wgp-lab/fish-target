@@ -37,3 +37,9 @@ test('invalid links and synthetic products cannot enter the comparison',()=>{ass
 test('new assets are excluded from publication output and loaded before history binding in preview',()=>{const build=read('scripts/build.mjs'),pwa=read('pwa.js');assert.ok(build.includes("...(publicationBuild?[]:['gear-compare-v1.js','gear-compare-v1.css'])"));assert.ok(pwa.indexOf("loadScript('./gear-compare-v1.js'")<pwa.indexOf("loadScript('./navigation-history-v34.js'"));assert.match(pwa,/dataset\.publicationBuild!=='on'/);});
 
 test('product-first alternatives do not inherit a maker or exact model search that would exclude other makers',()=>{assert.ok(E.similar(legalis,rows,{category:'reel',query:'レガリス 5000',maker:'DAIWA'}).some(m=>m.product.id===nasci.id));});
+
+test('invalid comparison criteria clear stale comparison output and disable actions in UI source',()=>{
+  assert.match(source,/if\(error\)\{[^}]*gcComparison[^}]*hidden=true/);
+  assert.match(source,/gcTable'\)\.replaceChildren\(\)/);
+  assert.match(source,/gcQuickCompare'\)\.disabled=true/);
+});

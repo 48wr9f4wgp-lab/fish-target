@@ -191,7 +191,7 @@
   function render(){
     if(state.loading){byId('gcCount').textContent='比較用カタログを読み込み中…';return;}
     const c=criteria(),error=validateCriteria(c);message(state.error||error);byId('gcRetry').hidden=!state.error;
-    if(error){byId('gcResults').replaceChildren();byId('gcCount').textContent='入力条件を確認してください';byId('gcMore').hidden=true;return;}
+    if(error){byId('gcResults').replaceChildren();byId('gcCount').textContent='入力条件を確認してください';byId('gcMore').hidden=true;byId('gcComparison').hidden=true;byId('gcTable').replaceChildren();byId('gcLimits').textContent='';byId('gcSimilar').hidden=true;byId('gcGo').disabled=true;byId('gcQuickCompare').disabled=true;return;}
     const filtered=filter(state.rows,c),all=state.rows.filter(p=>p.category===state.category),priced=all.filter(p=>p.price).length;
     byId('gcCount').textContent=`${filtered.length}型番 / ${all.length}型番 · 価格確認 ${priced}型番。全製品網羅ではありません。`;
     byId('gcResults').innerHTML=filtered.length?filtered.slice(0,state.limit).map(p=>card(p)).join(''):'<p class="gc-empty">条件に一致する確認済みデータがありません。未確認を含めるか、条件を緩めてください。</p>';
